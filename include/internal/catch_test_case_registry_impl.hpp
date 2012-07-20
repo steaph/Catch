@@ -26,7 +26,8 @@ namespace Catch {
             if( testInfo.getName() == "" ) {
                 std::ostringstream oss;
                 oss << testInfo.getName() << "unnamed/" << ++m_unnamedCount;
-                return registerTest( TestCaseInfo( testInfo, oss.str() ) );
+                registerTest( TestCaseInfo( testInfo, oss.str() ) );
+                return;
             }
 
             if( m_functions.find( testInfo ) == m_functions.end() ) {
