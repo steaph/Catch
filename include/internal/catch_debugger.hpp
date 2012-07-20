@@ -85,7 +85,10 @@
 
 #elif defined(_MSC_VER)
     extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
-    #define BreakIntoDebugger() if (IsDebuggerPresent() ) { __debugbreak(); }
+	#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+	#define __debugbreak() __asm { int 3 }
+	#endif
+	#define BreakIntoDebugger() if (IsDebuggerPresent() ) { __debugbreak(); }
     inline bool isDebuggerActive() {
         return IsDebuggerPresent() != 0;
     }
