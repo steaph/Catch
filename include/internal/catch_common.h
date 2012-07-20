@@ -15,6 +15,13 @@
 #define INTERNAL_CATCH_STRINGIFY2( expr ) #expr
 #define INTERNAL_CATCH_STRINGIFY( expr ) INTERNAL_CATCH_STRINGIFY2( expr )
 
+#ifdef _MSC_VER
+#define INTERNAL_CATCH_COMPILER_IS_MSVC
+#if ( _MSC_VER >= 1200 ) && ( _MSC_VER < 1300 )
+#define INTERNAL_CATCH_COMPILER_IS_MSVC6
+#endif
+#endif
+
 #ifdef __GNUC__
 #define ATTRIBUTE_NORETURN __attribute__ ((noreturn))
 #else
