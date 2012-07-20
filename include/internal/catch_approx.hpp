@@ -16,6 +16,13 @@
 namespace Catch {
 namespace Detail {
 
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+	template <typename T> 
+	inline T max( const T& x, const T& y ) { return std::_cpp_max( x, y ); }
+#else
+	using std::max;
+#endif
+
     class Approx {
     public:
         explicit Approx ( double value )
@@ -43,7 +50,7 @@ namespace Detail {
         
         friend bool operator == ( double lhs, const Approx& rhs ) {
             // Thanks to Richard Harris for his help refining this formula
-            return fabs( lhs - rhs.m_value ) < rhs.m_epsilon * (rhs.m_scale + (std::max)( fabs(lhs), fabs(rhs.m_value) ) );
+            return fabs( lhs - rhs.m_value ) < rhs.m_epsilon * (rhs.m_scale + (max)( fabs(lhs), fabs(rhs.m_value) ) );
         }
         
         friend bool operator == ( const Approx& lhs, double rhs ) {
