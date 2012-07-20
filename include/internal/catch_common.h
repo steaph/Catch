@@ -32,6 +32,10 @@
 #include <stdexcept>
 #include <algorithm>
 
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+namespace std { using ::size_t; }
+#endif
+
 namespace Catch {
 
 	class NonCopyable {
