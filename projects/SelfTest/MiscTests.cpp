@@ -289,3 +289,14 @@ TEST_CASE( "example/factorial", "The Factorial function should return the factor
   REQUIRE( Factorial(3) == 6 );
   REQUIRE( Factorial(10) == 3628800 );
 }
+
+ANON_TEST_CASE()
+{
+	REQUIRE( 1 == 1 );
+}
+
+ANON_TEST_CASE()
+{
+	REQUIRE( 2 == 2 );
+}
+
