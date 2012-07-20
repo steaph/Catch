@@ -30,49 +30,65 @@ namespace Internal {
     
     // So the compare overloads can be operator agnostic we convey the operator as a template
     // enum, which is used to specialise an Evaluator for doing the comparison.
-    template<typename T1, typename T2, Operator Op>
-    class Evaluator{};
+    template<Operator Op>
+    struct Evaluator
+    {
+       template<typename T1, typename T2>
+       static bool evaluate( const T1& lhs, const T2& rhs);
+    };
     
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsEqualTo> {
+    template<>
+    struct Evaluator<IsEqualTo>
+    {
+       template<typename T1, typename T2>
         static bool evaluate( const T1& lhs, const T2& rhs) {
             return const_cast<T1&>( lhs ) ==  const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsNotEqualTo> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
+    template<>
+    struct Evaluator<IsNotEqualTo>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
             return const_cast<T1&>( lhs ) != const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsLessThan> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
+    template<>
+    struct Evaluator<IsLessThan>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
             return const_cast<T1&>( lhs ) < const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsGreaterThan> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
+    template<>
+    struct Evaluator<IsGreaterThan>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
             return const_cast<T1&>( lhs ) > const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsGreaterThanOrEqualTo> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
-            return const_cast<T1&>( lhs ) >= const_cast<T2&>( rhs );
+    template<>
+    struct Evaluator<IsGreaterThanOrEqualTo>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
+            return const_cast<T1&>( lhs ) >=  const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsLessThanOrEqualTo> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
-            return const_cast<T1&>( lhs ) <= const_cast<T2&>( rhs );
+    template<>
+    struct Evaluator<IsLessThanOrEqualTo>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
+            return const_cast<T1&>( lhs ) <=  const_cast<T2&>( rhs );
         }
     };
-    
+
     template<Operator Op, typename T1, typename T2>
     bool applyEvaluator( const T1& lhs, const T2& rhs ) {
-        return Evaluator<T1, T2, Op>::evaluate( lhs, rhs );
+        return Evaluator<Op>::evaluate( lhs, rhs );
     }
     
     // "base" overload
