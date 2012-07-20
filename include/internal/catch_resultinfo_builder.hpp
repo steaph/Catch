@@ -74,11 +74,15 @@ public:
         const RhsT&
     );
     
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+public:
+#else
 private:
     friend class ExpressionBuilder;
     template<typename T> friend class Expression;
 
     template<typename T> friend class PtrExpression;
+#endif
 
     ResultInfoBuilder& captureBoolExpression( bool result ) {
         m_lhs = Catch::toString( result );
