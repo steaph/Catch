@@ -124,7 +124,7 @@ namespace Catch {
         }
         
         template<typename T>
-        XmlWriter& writeAttribute( const std::string& name, const T& attribute ) {
+        XmlWriter& writeAttribute( const std::string& name, const T& attribute, int=0 ) {
             if( !name.empty() )
                 stream() << " " << name << "=\"" << attribute << "\"";
             return *this;
