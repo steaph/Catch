@@ -1,15 +1,18 @@
+*.bak
 *.build
 *.pbxuser
 *.mode1v3
-*.ncb
 *.suo
 *.obj
 *.exe
-Debug
-Release
+*.lnt
+*.ncb
+*.opt
 *.user
 *.xcuserstate
 .DS_Store
+Debug
+Release
 xcuserdata
 CatchSelfTest.xcscheme
 Breakpoints.xcbkptlist
@@ -17,4 +20,3 @@ projects/VS2010/TestCatch/_UpgradeReport_Files/
 projects/VS2010/TestCatch/TestCatch/TestCatch.vcxproj.filters
 projects/VisualStudio/TestCatch/UpgradeLog.XML
 UpgradeLog.XML
-/projects/CodeBlocks/*.bak
