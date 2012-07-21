@@ -85,7 +85,7 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\Tutorial1.cpp
+SOURCE=..\..\Tutorial\Tutorial1.cpp
 # End Source File
 # End Group
 # End Target
