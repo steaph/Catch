@@ -94,7 +94,7 @@ namespace Internal {
     // "base" overload
     template<Operator Op, typename T1, typename T2>
     bool compare( const T1& lhs, const T2& rhs ) {
-        return Evaluator<T1, T2, Op>::evaluate( lhs, rhs );
+        return Evaluator<Op>::evaluate( lhs, rhs );
     }
     
     // unsigned X to int
@@ -144,45 +144,45 @@ namespace Internal {
     // pointer to long (when comparing against NULL)
     template<Operator Op, typename T>
     bool compare( long lhs, const T* rhs ) {
-        return Evaluator<const T*, const T*, Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
     }
     
     template<Operator Op, typename T>
     bool compare( long lhs, T* rhs ) {
-        return Evaluator<T*, T*, Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
     }
 
     template<Operator Op, typename T>
     bool compare( const T* lhs, long rhs ) {
-        return Evaluator<const T*, const T*, Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
     }
     
     template<Operator Op, typename T>
     bool compare( T* lhs, long rhs ) {
-        return Evaluator<T*, T*, Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
     }
     
     // pointer to int (when comparing against NULL)
     template<Operator Op, typename T>
     bool compare( int lhs, const T* rhs ) {
-        return Evaluator<const T*, const T*, Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
     }
     
     template<Operator Op, typename T>
     bool compare( int lhs, T* rhs ) {
-        return Evaluator<T*, T*, Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
     }
 
     template<Operator Op, typename T>
     bool compare( const T* lhs, int rhs ) {
-        return Evaluator<const T*, const T*, Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
     }
     
     template<Operator Op, typename T>
     bool compare( T* lhs, int rhs ) {
-        return Evaluator<T*, T*, Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
     }
-        
+
 } // end of namespace Internal
 } // end of namespace Catch
 
