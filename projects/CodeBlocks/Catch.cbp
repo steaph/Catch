@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Catch" />
+		<Option pch_mode="2" />
+		<Option compiler="microsoft_visual_c_60" />
+		<Build>
+			<Target title="Win32 Release">
+				<Option output="Catch" prefix_auto="1" extension_auto="1" />
+				<Option object_output="D:\Dropbox\Accu\PhilNash\Projects\Catch\.objs" />
+				<Option type="1" />
+				<Option compiler="microsoft_visual_c_60" />
+				<Compiler>
+					<Add option="/Og" />
+					<Add option="/Ox" />
+					<Add option="/DNDEBUG" />
+				</Compiler>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="/W3" />
+		</Compiler>
+		<Unit filename="..\..\include\catch.hpp" />
+		<Unit filename="..\..\include\catch_runner.hpp" />
+		<Unit filename="..\..\include\catch_with_main.hpp" />
+		<Unit filename="..\..\include\internal\catch_approx.hpp" />
+		<Unit filename="..\..\include\internal\catch_capture.hpp" />
+		<Unit filename="..\..\include\internal\catch_commandline.hpp" />
+		<Unit filename="..\..\include\internal\catch_common.h" />
+		<Unit filename="..\..\include\internal\catch_config.hpp" />
+		<Unit filename="..\..\include\internal\catch_console_colour.hpp" />
+		<Unit filename="..\..\include\internal\catch_console_colour_impl.hpp" />
+		<Unit filename="..\..\include\internal\catch_context.h" />
+		<Unit filename="..\..\include\internal\catch_context_impl.hpp" />
+		<Unit filename="..\..\include\internal\catch_debugger.hpp" />
+		<Unit filename="..\..\include\internal\catch_default_main.hpp" />
+		<Unit filename="..\..\include\internal\catch_evaluate.hpp" />
+		<Unit filename="..\..\include\internal\catch_exception_translator_registry.hpp" />
+		<Unit filename="..\..\include\internal\catch_expression.hpp" />
+		<Unit filename="..\..\include\internal\catch_expression_builder.hpp" />
+		<Unit filename="..\..\include\internal\catch_generators.hpp" />
+		<Unit filename="..\..\include\internal\catch_generators_impl.hpp" />
+		<Unit filename="..\..\include\internal\catch_interfaces_capture.h" />
+		<Unit filename="..\..\include\internal\catch_interfaces_config.h" />
+		<Unit filename="..\..\include\internal\catch_interfaces_exception.h" />
+		<Unit filename="..\..\include\internal\catch_interfaces_reporter.h" />
+		<Unit filename="..\..\include\internal\catch_interfaces_runner.h" />
+		<Unit filename="..\..\include\internal\catch_interfaces_testcase.h" />
+		<Unit filename="..\..\include\internal\catch_list.hpp" />
+		<Unit filename="..\..\include\internal\catch_matchers.hpp" />
+		<Unit filename="..\..\include\internal\catch_objc.hpp" />
+		<Unit filename="..\..\include\internal\catch_ptr.hpp" />
+		<Unit filename="..\..\include\internal\catch_reporter_registrars.hpp" />
+		<Unit filename="..\..\include\internal\catch_reporter_registry.hpp" />
+		<Unit filename="..\..\include\internal\catch_result_type.h" />
+		<Unit filename="..\..\include\internal\catch_resultinfo.hpp" />
+		<Unit filename="..\..\include\internal\catch_resultinfo_builder.hpp" />
+		<Unit filename="..\..\include\internal\catch_runner_impl.hpp" />
+		<Unit filename="..\..\include\internal\catch_running_test.hpp" />
+		<Unit filename="..\..\include\internal\catch_section.hpp" />
+		<Unit filename="..\..\include\internal\catch_section_info.hpp" />
+		<Unit filename="..\..\include\internal\catch_stream.hpp" />
+		<Unit filename="..\..\include\internal\catch_test_case_info.hpp" />
+		<Unit filename="..\..\include\internal\catch_test_case_registry_impl.hpp" />
+		<Unit filename="..\..\include\internal\catch_test_registry.hpp" />
+		<Unit filename="..\..\include\internal\catch_tostring.hpp" />
+		<Unit filename="..\..\include\internal\catch_totals.hpp" />
+		<Unit filename="..\..\include\internal\catch_xmlwriter.hpp" />
+		<Unit filename="..\..\include\reporters\catch_reporter_basic.hpp" />
+		<Unit filename="..\..\include\reporters\catch_reporter_junit.hpp" />
+		<Unit filename="..\..\include\reporters\catch_reporter_xml.hpp" />
+		<Unit filename="..\..\single_include\catch.hpp" />
+		<Unit filename="..\SelfTest\ApproxTests.cpp" />
+		<Unit filename="..\SelfTest\ClassTests.cpp" />
+		<Unit filename="..\SelfTest\ConditionTests.cpp" />
+		<Unit filename="..\SelfTest\ExceptionTests.cpp" />
+		<Unit filename="..\SelfTest\GeneratorTests.cpp" />
+		<Unit filename="..\SelfTest\MessageTests.cpp" />
+		<Unit filename="..\SelfTest\MiscTests.cpp" />
+		<Unit filename="..\SelfTest\TestMain.cpp" />
+		<Unit filename="..\SelfTest\TrickyTests.cpp" />
+		<Unit filename="..\SelfTest\catch_self_test.cpp" />
+		<Unit filename="..\SelfTest\catch_self_test.hpp" />
+		<Unit filename="..\Tutorial\Tutorial1.cpp" />
+		<Unit filename="..\VS2008\TestCatch\TestCatch\TestCatch.cpp" />
+		<Unit filename="..\VS2008\TestCatch\_UpgradeReport_Files\UpgradeReport_Minus.gif" />
+		<Unit filename="..\VS2008\TestCatch\_UpgradeReport_Files\UpgradeReport_Plus.gif" />
+		<Unit filename="..\VS2008\Tutorial\compile.bat" />
+		<Unit filename="..\VS2010\TestCatch\TestCatch\TestCatch.cpp" />
+		<Unit filename="..\VS2010\TestCatch\compile.bat" />
+		<Unit filename="..\VS2010\Tutorial\compile.bat" />
+		<Unit filename="..\VS6\TestCatch\compile.bat" />
+		<Unit filename="..\VS6\Tutorial\compile.bat" />
+		<Unit filename="..\XCode3\OCTest\CatchOCTestCase.h" />
+		<Unit filename="..\XCode3\OCTest\TestObj.h" />
+		<Unit filename="..\XCode4\OCTest\OCTest\CatchOCTestCase.h" />
+		<Unit filename="..\XCode4\OCTest\OCTest\TestObj.h" />
+		<Unit filename="..\XCode4\iOSTest\iOSTest\TestObj.h" />
+		<Unit filename="..\gcc\TestCatch\compile.bat" />
+		<Unit filename="..\gcc\Tutorial\compile.bat" />
+		<Unit filename="..\runners\iTchRunner\internal\iTchRunnerAppDelegate.h" />
+		<Unit filename="..\runners\iTchRunner\internal\iTchRunnerMainView.h" />
+		<Unit filename="..\runners\iTchRunner\internal\iTchRunnerReporter.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
