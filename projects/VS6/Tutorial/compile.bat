@@ -5,4 +5,4 @@
 :: Compile Catch Tutorial1
 ::
 
-cl -nologo -W3 -EHsc -GR -I../../../include Tutorial1.cpp && Tutorial1
+cl -nologo -W3 -EHsc -GR -I../../../include ../../Tutorial/Tutorial1.cpp && Tutorial1
