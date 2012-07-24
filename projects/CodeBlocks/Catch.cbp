@@ -94,6 +94,8 @@
 		<Unit filename="..\VS6\TestCatch\compile-01-misc.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-02-generator.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-03-message.bat" />
+		<Unit filename="..\VS6\TestCatch\compile-04-class.bat" />
+		<Unit filename="..\VS6\TestCatch\compile-05-approx.bat" />
 		<Unit filename="..\VS6\TestCatch\compile.bat" />
 		<Unit filename="..\VS6\Tutorial\compile.bat" />
 		<Unit filename="..\XCode3\OCTest\CatchOCTestCase.h" />
