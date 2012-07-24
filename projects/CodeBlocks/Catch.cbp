@@ -90,6 +90,7 @@
 		<Unit filename="..\VS2010\TestCatch\TestCatch\TestCatch.cpp" />
 		<Unit filename="..\VS2010\TestCatch\compile.bat" />
 		<Unit filename="..\VS2010\Tutorial\compile.bat" />
+		<Unit filename="..\VS6\README.md" />
 		<Unit filename="..\VS6\TestCatch\compile.bat" />
 		<Unit filename="..\VS6\Tutorial\compile.bat" />
 		<Unit filename="..\XCode3\OCTest\CatchOCTestCase.h" />
