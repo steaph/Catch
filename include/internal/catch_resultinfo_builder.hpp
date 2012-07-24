@@ -15,6 +15,11 @@
 #include "catch_common.h"
 
 namespace Catch {
+    
+namespace Internal {
+    template<Operator Op>
+    struct Apply;
+}
 
 struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
     
@@ -82,6 +87,7 @@ private:
     template<typename T> friend class Expression;
 
     template<typename T> friend class PtrExpression;
+    template<typename T> friend class Internal::Apply;
 #endif
 
     ResultInfoBuilder& captureBoolExpression( bool result ) {
