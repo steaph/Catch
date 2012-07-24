@@ -97,78 +97,54 @@ namespace Internal {
         return Evaluator<Op>::evaluate( lhs, rhs );
     }
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6    
     // "base" overload
     template<Operator Op, typename T1, typename T2>
     bool compare( const T1& lhs, const T2& rhs ) {
         return Evaluator<Op>::evaluate( lhs, rhs );
     }
-#else
-    template<Operator Op> bool compare( int lhs, int rhs ) {
-        return applyEvaluator<Op>( lhs, rhs );
-    }
-    template<Operator Op> bool compare( long lhs, long rhs ) {
-        return applyEvaluator<Op>( lhs, rhs );
-    }
-    template<Operator Op> bool compare( double lhs, double rhs ) {
-        return applyEvaluator<Op>( lhs, rhs );
-    }
-    template<Operator Op> bool compare( double lhs, const ::Catch::Detail::Approx & rhs ) {
-        return applyEvaluator<Op>( lhs, rhs );
-    }
-    template<Operator Op> bool compare( const ::Catch::Detail::Approx & lhs, double rhs ) {
-        return applyEvaluator<Op>( lhs, rhs );
-    }
-    template<Operator Op> bool compare( const char * lhs, const char * rhs ) {
-        return applyEvaluator<Op>( lhs, rhs );
-    }
-    template<Operator Op> bool compare( const std::string lhs, std::string rhs ) {
-        return applyEvaluator<Op>( lhs, rhs );
-    }
-#endif
 
     // unsigned X to int
     template<Operator Op> bool compare( unsigned int lhs, int rhs ) {
-        return applyEvaluator<Op>( lhs, static_cast<unsigned int>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
     }
     template<Operator Op> bool compare( unsigned long lhs, int rhs ) {
-        return applyEvaluator<Op>( lhs, static_cast<unsigned int>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
     }
     template<Operator Op> bool compare( unsigned char lhs, int rhs ) {
-        return applyEvaluator<Op>( lhs, static_cast<unsigned int>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
     }
     
     // unsigned X to long
     template<Operator Op> bool compare( unsigned int lhs, long rhs ) {
-        return applyEvaluator<Op>( lhs, static_cast<unsigned long>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned long>( rhs ) );
     }
     template<Operator Op> bool compare( unsigned long lhs, long rhs ) {
-        return applyEvaluator<Op>( lhs, static_cast<unsigned long>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned long>( rhs ) );
     }
     template<Operator Op> bool compare( unsigned char lhs, long rhs ) {
-        return applyEvaluator<Op>( lhs, static_cast<unsigned long>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned long>( rhs ) );
     }
     
     // int to unsigned X
     template<Operator Op> bool compare( int lhs, unsigned int rhs ) {
-        return applyEvaluator<Op>( static_cast<unsigned int>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( static_cast<unsigned int>( lhs ), rhs );
     }
     template<Operator Op> bool compare( int lhs, unsigned long rhs ) {
-        return applyEvaluator<Op>( static_cast<unsigned int>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( static_cast<unsigned int>( lhs ), rhs );
     }
     template<Operator Op> bool compare( int lhs, unsigned char rhs ) {
-        return applyEvaluator<Op>( static_cast<unsigned int>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( static_cast<unsigned int>( lhs ), rhs );
     }
     
     // long to unsigned X
     template<Operator Op> bool compare( long lhs, unsigned int rhs ) {
-        return applyEvaluator<Op>( static_cast<unsigned long>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( static_cast<unsigned long>( lhs ), rhs );
     }
     template<Operator Op> bool compare( long lhs, unsigned long rhs ) {
-        return applyEvaluator<Op>( static_cast<unsigned long>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( static_cast<unsigned long>( lhs ), rhs );
     }
     template<Operator Op> bool compare( long lhs, unsigned char rhs ) {
-        return applyEvaluator<Op>( static_cast<unsigned long>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( static_cast<unsigned long>( lhs ), rhs );
     }
 
     // pointer to long (when comparing against NULL)
