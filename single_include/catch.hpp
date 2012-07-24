@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-07-23 08:24:23.434402
+ *  Generated: 2012-07-24 12:47:22.734000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -23,6 +23,13 @@
 #define INTERNAL_CATCH_STRINGIFY2( expr ) #expr
 #define INTERNAL_CATCH_STRINGIFY( expr ) INTERNAL_CATCH_STRINGIFY2( expr )
 
+#ifdef _MSC_VER
+#define INTERNAL_CATCH_COMPILER_IS_MSVC
+#if ( _MSC_VER >= 1200 ) && ( _MSC_VER < 1300 )
+#define INTERNAL_CATCH_COMPILER_IS_MSVC6
+#endif
+#endif
+
 #ifdef __GNUC__
 #define ATTRIBUTE_NORETURN __attribute__ ((noreturn))
 #else
@@ -32,6 +39,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
+
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+namespace std { using ::size_t; }
+#endif
 
 namespace Catch {
 
@@ -810,7 +821,11 @@ namespace Catch {
             return expr && expr[0] == '!';
         }
 
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    public:
+#else
     protected:
+#endif
         std::string m_macroName;
         SourceLineInfo m_lineInfo;
         std::string m_expr, m_lhs, m_rhs, m_op;
@@ -845,55 +860,71 @@ namespace Internal {
 
     // So the compare overloads can be operator agnostic we convey the operator as a template
     // enum, which is used to specialise an Evaluator for doing the comparison.
-    template<typename T1, typename T2, Operator Op>
-    class Evaluator{};
+    template<Operator Op>
+    struct Evaluator
+    {
+       template<typename T1, typename T2>
+       static bool evaluate( const T1& lhs, const T2& rhs);
+    };
 
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsEqualTo> {
+    template<>
+    struct Evaluator<IsEqualTo>
+    {
+       template<typename T1, typename T2>
         static bool evaluate( const T1& lhs, const T2& rhs) {
             return const_cast<T1&>( lhs ) ==  const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsNotEqualTo> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
+    template<>
+    struct Evaluator<IsNotEqualTo>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
             return const_cast<T1&>( lhs ) != const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsLessThan> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
+    template<>
+    struct Evaluator<IsLessThan>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
             return const_cast<T1&>( lhs ) < const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsGreaterThan> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
+    template<>
+    struct Evaluator<IsGreaterThan>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
             return const_cast<T1&>( lhs ) > const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsGreaterThanOrEqualTo> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
-            return const_cast<T1&>( lhs ) >= const_cast<T2&>( rhs );
+    template<>
+    struct Evaluator<IsGreaterThanOrEqualTo>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
+            return const_cast<T1&>( lhs ) >=  const_cast<T2&>( rhs );
         }
     };
-    template<typename T1, typename T2>
-    struct Evaluator<T1, T2, IsLessThanOrEqualTo> {
-        static bool evaluate( const T1& lhs, const T2& rhs ) {
-            return const_cast<T1&>( lhs ) <= const_cast<T2&>( rhs );
+    template<>
+    struct Evaluator<IsLessThanOrEqualTo>
+    {
+       template<typename T1, typename T2>
+        static bool evaluate( const T1& lhs, const T2& rhs) {
+            return const_cast<T1&>( lhs ) <=  const_cast<T2&>( rhs );
         }
     };
 
     template<Operator Op, typename T1, typename T2>
     bool applyEvaluator( const T1& lhs, const T2& rhs ) {
-        return Evaluator<T1, T2, Op>::evaluate( lhs, rhs );
+        return Evaluator<Op>::evaluate( lhs, rhs );
     }
 
     // "base" overload
     template<Operator Op, typename T1, typename T2>
     bool compare( const T1& lhs, const T2& rhs ) {
-        return Evaluator<T1, T2, Op>::evaluate( lhs, rhs );
+        return Evaluator<Op>::evaluate( lhs, rhs );
     }
 
     // unsigned X to int
@@ -943,43 +974,43 @@ namespace Internal {
     // pointer to long (when comparing against NULL)
     template<Operator Op, typename T>
     bool compare( long lhs, const T* rhs ) {
-        return Evaluator<const T*, const T*, Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
     }
 
     template<Operator Op, typename T>
     bool compare( long lhs, T* rhs ) {
-        return Evaluator<T*, T*, Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
     }
 
     template<Operator Op, typename T>
     bool compare( const T* lhs, long rhs ) {
-        return Evaluator<const T*, const T*, Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
     }
 
     template<Operator Op, typename T>
     bool compare( T* lhs, long rhs ) {
-        return Evaluator<T*, T*, Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
     }
 
     // pointer to int (when comparing against NULL)
     template<Operator Op, typename T>
     bool compare( int lhs, const T* rhs ) {
-        return Evaluator<const T*, const T*, Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
     }
 
     template<Operator Op, typename T>
     bool compare( int lhs, T* rhs ) {
-        return Evaluator<T*, T*, Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
+        return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
     }
 
     template<Operator Op, typename T>
     bool compare( const T* lhs, int rhs ) {
-        return Evaluator<const T*, const T*, Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
     }
 
     template<Operator Op, typename T>
     bool compare( T* lhs, int rhs ) {
-        return Evaluator<T*, T*, Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
+        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
     }
 
 } // end of namespace Internal
@@ -1045,11 +1076,15 @@ public:
         const RhsT&
     );
 
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+public:
+#else
 private:
     friend class ExpressionBuilder;
     template<typename T> friend class Expression;
 
     template<typename T> friend class PtrExpression;
+#endif
 
     ResultInfoBuilder& captureBoolExpression( bool result ) {
         m_lhs = Catch::toString( result );
@@ -1057,22 +1092,34 @@ private:
         setResultType( result ? ResultWas::Ok : ResultWas::ExpressionFailed );
         return *this;
     }
-
-    template<Internal::Operator Op, typename T1, typename T2>
-    ResultInfoBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
-        setResultType( Internal::compare<Op>( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
-        m_lhs = Catch::toString( lhs );
-        m_rhs = Catch::toString( rhs );
-        m_op = Internal::OperatorTraits<Op>::getName();
-        return *this;
-    }
-
-    template<Internal::Operator Op, typename T>
-    ResultInfoBuilder& captureExpression( const T* lhs, int rhs ) {
-        return captureExpression<Op>( lhs, reinterpret_cast<const T*>( rhs ) );
-    }
 };
 
+namespace Internal {
+
+    template<Operator Op>
+    struct Apply
+    {
+        ResultInfoBuilder & m_result;
+
+        Apply( ResultInfoBuilder & result )
+        : m_result( result ) {}
+
+        template<typename T1, typename T2>
+        ResultInfoBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
+            m_result.setResultType( Internal::compare<Op>( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
+            m_result.m_lhs = Catch::toString( lhs );
+            m_result.m_rhs = Catch::toString( rhs );
+            m_result.m_op = Internal::OperatorTraits<Op>::getName();
+            return m_result;
+        }
+
+        template<typename T>
+        ResultInfoBuilder& captureExpression( const T* lhs, int rhs ) {
+            return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
+        }
+    };
+
+} // end namespace Internal
 } // end namespace Catch
 
 namespace Catch {
@@ -1089,40 +1136,40 @@ public:
 
     template<typename RhsT>
     ResultInfoBuilder& operator == ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
     ResultInfoBuilder& operator != ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsNotEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
     ResultInfoBuilder& operator < ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsLessThan>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
     ResultInfoBuilder& operator > ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsGreaterThan>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
     ResultInfoBuilder& operator <= ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsLessThanOrEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
     ResultInfoBuilder& operator >= ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsGreaterThanOrEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     ResultInfoBuilder& operator == ( bool rhs ) {
-        return m_result.captureExpression<Internal::IsEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     ResultInfoBuilder& operator != ( bool rhs ) {
-        return m_result.captureExpression<Internal::IsNotEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     operator ResultInfoBuilder& () {
@@ -1331,7 +1378,10 @@ namespace Catch {
 
 #elif defined(_MSC_VER)
     extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
-    #define BreakIntoDebugger() if (IsDebuggerPresent() ) { __debugbreak(); }
+	#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+	#define __debugbreak() __asm { int 3 }
+	#endif
+	#define BreakIntoDebugger() if (IsDebuggerPresent() ) { __debugbreak(); }
     inline bool isDebuggerActive() {
         return IsDebuggerPresent() != 0;
     }
@@ -1784,6 +1834,13 @@ namespace Catch {
 namespace Catch {
 namespace Detail {
 
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+	template <typename T>
+	inline T max( const T& x, const T& y ) { return std::_cpp_max( x, y ); }
+#else
+	using std::max;
+#endif
+
     class Approx {
     public:
         explicit Approx ( double value )
@@ -1811,7 +1868,7 @@ namespace Detail {
 
         friend bool operator == ( double lhs, const Approx& rhs ) {
             // Thanks to Richard Harris for his help refining this formula
-            return fabs( lhs - rhs.m_value ) < rhs.m_epsilon * (rhs.m_scale + (std::max)( fabs(lhs), fabs(rhs.m_value) ) );
+            return fabs( lhs - rhs.m_value ) < rhs.m_epsilon * (rhs.m_scale + (max)( fabs(lhs), fabs(rhs.m_value) ) );
         }
 
         friend bool operator == ( const Approx& lhs, double rhs ) {
@@ -2220,9 +2277,6 @@ namespace Catch {
     inline std::string toString( NSString* const& nsstring ) {
         return std::string( "@\"" ) + [nsstring UTF8String] + "\"";
     }
-    inline std::string toString( NSObject* const& nsObject ) {
-        return toString( [nsObject description] );
-    }
 
     namespace Matchers {
         namespace Impl {
@@ -2344,7 +2398,8 @@ namespace Catch {
             if( testInfo.getName() == "" ) {
                 std::ostringstream oss;
                 oss << testInfo.getName() << "unnamed/" << ++m_unnamedCount;
-                return registerTest( TestCaseInfo( testInfo, oss.str() ) );
+                registerTest( TestCaseInfo( testInfo, oss.str() ) );
+                return;
             }
 
             if( m_functions.find( testInfo ) == m_functions.end() ) {
@@ -4172,7 +4227,11 @@ namespace Catch {
         }
 
         template<typename T>
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        XmlWriter& writeAttribute( const std::string& name, const T& attribute, int=0 ) {
+#else
         XmlWriter& writeAttribute( const std::string& name, const T& attribute ) {
+#endif
             if( !name.empty() )
                 stream() << " " << name << "=\"" << attribute << "\"";
             return *this;
