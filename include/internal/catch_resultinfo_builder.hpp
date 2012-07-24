@@ -90,22 +90,34 @@ private:
         setResultType( result ? ResultWas::Ok : ResultWas::ExpressionFailed );
         return *this;
     }    
-
-    template<Internal::Operator Op, typename T1, typename T2>    
-    ResultInfoBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
-        setResultType( Internal::compare<Op>( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
-        m_lhs = Catch::toString( lhs );
-        m_rhs = Catch::toString( rhs );
-        m_op = Internal::OperatorTraits<Op>::getName();
-        return *this;
-    }
-
-    template<Internal::Operator Op, typename T>
-    ResultInfoBuilder& captureExpression( const T* lhs, int rhs ) {
-        return captureExpression<Op>( lhs, reinterpret_cast<const T*>( rhs ) );
-    }    
 };
 
+namespace Internal {
+
+    template<Operator Op>
+    struct Apply
+    {
+        ResultInfoBuilder & m_result;
+
+        Apply( ResultInfoBuilder & result )
+        : m_result( result ) {}
+
+        template<typename T1, typename T2>
+        ResultInfoBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
+            m_result.setResultType( Internal::compare<Op>( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
+            m_result.m_lhs = Catch::toString( lhs );
+            m_result.m_rhs = Catch::toString( rhs );
+            m_result.m_op = Internal::OperatorTraits<Op>::getName();
+            return m_result;
+        }
+        
+        template<typename T>
+        ResultInfoBuilder& captureExpression( const T* lhs, int rhs ) {
+            return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
+        }    
+    };
+
+} // end namespace Internal
 } // end namespace Catch
 
 #endif // TWOBLUECUBES_CATCH_RESULTINFO_BUILDER_HPP_INCLUDED

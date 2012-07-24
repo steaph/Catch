@@ -116,7 +116,11 @@ namespace Catch {
             return expr && expr[0] == '!';
         }        
         
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    public:
+#else
     protected:
+#endif
         std::string m_macroName;
         SourceLineInfo m_lineInfo;
         std::string m_expr, m_lhs, m_rhs, m_op;
