@@ -25,40 +25,40 @@ public:
     
     template<typename RhsT>
     ResultInfoBuilder& operator == ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
     
     template<typename RhsT>
     ResultInfoBuilder& operator != ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsNotEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
     
     template<typename RhsT>
     ResultInfoBuilder& operator < ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsLessThan>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
     }
     
     template<typename RhsT>
     ResultInfoBuilder& operator > ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsGreaterThan>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
     }
     
     template<typename RhsT>
     ResultInfoBuilder& operator <= ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsLessThanOrEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
     
     template<typename RhsT>
     ResultInfoBuilder& operator >= ( const RhsT& rhs ) {
-        return m_result.captureExpression<Internal::IsGreaterThanOrEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     ResultInfoBuilder& operator == ( bool rhs ) {
-        return m_result.captureExpression<Internal::IsEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
     
     ResultInfoBuilder& operator != ( bool rhs ) {
-        return m_result.captureExpression<Internal::IsNotEqualTo>( m_lhs, rhs );
+        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
     
     operator ResultInfoBuilder& () {
