@@ -9,6 +9,12 @@
 #define TWOBLUECUBES_CATCH_EVALUATE_HPP_INCLUDED
 
 namespace Catch {
+
+namespace Detail { 
+    // required for VC6:
+    class Approx;
+}
+
 namespace Internal {
 
     enum Operator {
@@ -99,16 +105,25 @@ namespace Internal {
     }
 #else
     template<Operator Op> bool compare( int lhs, int rhs ) {
-        return Evaluator<Op>::evaluate( lhs, rhs );
+        return applyEvaluator<Op>( lhs, rhs );
     }
     template<Operator Op> bool compare( long lhs, long rhs ) {
-        return Evaluator<Op>::evaluate( lhs, rhs );
+        return applyEvaluator<Op>( lhs, rhs );
+    }
+    template<Operator Op> bool compare( double lhs, double rhs ) {
+        return applyEvaluator<Op>( lhs, rhs );
+    }
+    template<Operator Op> bool compare( double lhs, const ::Catch::Detail::Approx & rhs ) {
+        return applyEvaluator<Op>( lhs, rhs );
+    }
+    template<Operator Op> bool compare( const ::Catch::Detail::Approx & lhs, double rhs ) {
+        return applyEvaluator<Op>( lhs, rhs );
     }
     template<Operator Op> bool compare( const char * lhs, const char * rhs ) {
-        return Evaluator<Op>::evaluate( lhs, rhs );
+        return applyEvaluator<Op>( lhs, rhs );
     }
     template<Operator Op> bool compare( const std::string lhs, std::string rhs ) {
-        return Evaluator<Op>::evaluate( lhs, rhs );
+        return applyEvaluator<Op>( lhs, rhs );
     }
 #endif
 
