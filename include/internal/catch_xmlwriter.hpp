@@ -124,7 +124,11 @@ namespace Catch {
         }
         
         template<typename T>
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
         XmlWriter& writeAttribute( const std::string& name, const T& attribute, int=0 ) {
+#else
+        XmlWriter& writeAttribute( const std::string& name, const T& attribute ) {
+#endif
             if( !name.empty() )
                 stream() << " " << name << "=\"" << attribute << "\"";
             return *this;
