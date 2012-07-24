@@ -18,7 +18,7 @@ namespace Catch {
     
 namespace Internal {
     template<Operator Op>
-    struct Apply;
+    class Apply;
 }
 
 struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
@@ -87,7 +87,7 @@ private:
     template<typename T> friend class Expression;
 
     template<typename T> friend class PtrExpression;
-    template<typename T> friend class Internal::Apply;
+    template<Internal::Operator Op> friend class Internal::Apply;
 #endif
 
     ResultInfoBuilder& captureBoolExpression( bool result ) {
@@ -101,10 +101,9 @@ private:
 namespace Internal {
 
     template<Operator Op>
-    struct Apply
+    class Apply
     {
-        ResultInfoBuilder & m_result;
-
+    public:
         Apply( ResultInfoBuilder & result )
         : m_result( result ) {}
 
@@ -121,6 +120,9 @@ namespace Internal {
         ResultInfoBuilder& captureExpression( const T* lhs, int rhs ) {
             return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
         }    
+
+    private:
+        ResultInfoBuilder & m_result;
     };
 
 } // end namespace Internal
