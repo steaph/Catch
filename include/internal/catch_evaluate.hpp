@@ -42,7 +42,7 @@ namespace Internal {
     {
        template<typename T1, typename T2>
         static bool evaluate( const T1& lhs, const T2& rhs) {
-            return const_cast<T1&>( lhs ) ==  const_cast<T2&>( rhs );
+            return const_cast<T1&>( lhs ) == const_cast<T2&>( rhs );
         }
     };
     template<>
@@ -74,7 +74,7 @@ namespace Internal {
     {
        template<typename T1, typename T2>
         static bool evaluate( const T1& lhs, const T2& rhs) {
-            return const_cast<T1&>( lhs ) >=  const_cast<T2&>( rhs );
+            return const_cast<T1&>( lhs ) >= const_cast<T2&>( rhs );
         }
     };
     template<>
@@ -82,7 +82,7 @@ namespace Internal {
     {
        template<typename T1, typename T2>
         static bool evaluate( const T1& lhs, const T2& rhs) {
-            return const_cast<T1&>( lhs ) <=  const_cast<T2&>( rhs );
+            return const_cast<T1&>( lhs ) <= const_cast<T2&>( rhs );
         }
     };
 
@@ -90,13 +90,28 @@ namespace Internal {
     bool applyEvaluator( const T1& lhs, const T2& rhs ) {
         return Evaluator<Op>::evaluate( lhs, rhs );
     }
-    
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6    
     // "base" overload
     template<Operator Op, typename T1, typename T2>
     bool compare( const T1& lhs, const T2& rhs ) {
         return Evaluator<Op>::evaluate( lhs, rhs );
     }
-    
+#else
+    template<Operator Op> bool compare( int lhs, int rhs ) {
+        return Evaluator<Op>::evaluate( lhs, rhs );
+    }
+    template<Operator Op> bool compare( long lhs, long rhs ) {
+        return Evaluator<Op>::evaluate( lhs, rhs );
+    }
+    template<Operator Op> bool compare( const char * lhs, const char * rhs ) {
+        return Evaluator<Op>::evaluate( lhs, rhs );
+    }
+    template<Operator Op> bool compare( const std::string lhs, std::string rhs ) {
+        return Evaluator<Op>::evaluate( lhs, rhs );
+    }
+#endif
+
     // unsigned X to int
     template<Operator Op> bool compare( unsigned int lhs, int rhs ) {
         return applyEvaluator<Op>( lhs, static_cast<unsigned int>( rhs ) );
