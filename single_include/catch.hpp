@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-07-24 12:47:22.734000
+ *  Generated: 2012-07-24 15:48:29.015000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -1018,6 +1018,11 @@ namespace Internal {
 
 namespace Catch {
 
+namespace Internal {
+    template<Operator Op>
+    class Apply;
+}
+
 struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
 
 class ResultInfoBuilder : public ResultInfo {
@@ -1084,6 +1089,7 @@ private:
     template<typename T> friend class Expression;
 
     template<typename T> friend class PtrExpression;
+    template<Internal::Operator Op> friend class Internal::Apply;
 #endif
 
     ResultInfoBuilder& captureBoolExpression( bool result ) {
@@ -1097,10 +1103,9 @@ private:
 namespace Internal {
 
     template<Operator Op>
-    struct Apply
+    class Apply
     {
-        ResultInfoBuilder & m_result;
-
+    public:
         Apply( ResultInfoBuilder & result )
         : m_result( result ) {}
 
@@ -1117,6 +1122,9 @@ namespace Internal {
         ResultInfoBuilder& captureExpression( const T* lhs, int rhs ) {
             return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
         }
+
+    private:
+        ResultInfoBuilder & m_result;
     };
 
 } // end namespace Internal
