@@ -72,6 +72,7 @@
 		<Unit filename="..\..\include\reporters\catch_reporter_xml.hpp" />
 		<Unit filename="..\..\single_include\catch.hpp" />
 		<Unit filename="..\SelfTest\ApproxTests.cpp" />
+		<Unit filename="..\SelfTest\BasicTests.cpp" />
 		<Unit filename="..\SelfTest\ClassTests.cpp" />
 		<Unit filename="..\SelfTest\ConditionTests.cpp" />
 		<Unit filename="..\SelfTest\ExceptionTests.cpp" />
@@ -91,6 +92,7 @@
 		<Unit filename="..\VS2010\TestCatch\compile.bat" />
 		<Unit filename="..\VS2010\Tutorial\compile.bat" />
 		<Unit filename="..\VS6\README.md" />
+		<Unit filename="..\VS6\TestCatch\compile-00-basic.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-01-misc.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-02-generator.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-03-message.bat" />
