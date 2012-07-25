@@ -116,102 +116,100 @@ namespace Internal {
         }
     };
 
-    template<Operator Op, typename T1, typename T2>
-    bool applyEvaluator( const T1& lhs, const T2& rhs ) {
-        return Evaluator<Op>::evaluate( lhs, rhs );
-    }
+    template<Operator Op>
+    struct Comparator
+    {
+        template<typename T1, typename T2>
+        static bool compare( const T1& lhs, const T2& rhs ) {
+            return Evaluator<Op>::evaluate( lhs, rhs );
+        }
+        
+        // unsigned X to int
+        static bool compare( unsigned int lhs, int rhs ) {
+            return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
+        }
+        static bool compare( unsigned long lhs, int rhs ) {
+            return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
+        }
+        static bool compare( unsigned char lhs, int rhs ) {
+            return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
+        }
+        
+        // unsigned X to long
+        static bool compare( unsigned int lhs, long rhs ) {
+            return Evaluator<Op>::evaluate( lhs, static_cast<unsigned long>( rhs ) );
+        }
+        static bool compare( unsigned long lhs, long rhs ) {
+            return Evaluator<Op>::evaluate( lhs, static_cast<unsigned long>( rhs ) );
+        }
+        static bool compare( unsigned char lhs, long rhs ) {
+            return Evaluator<Op>::evaluate( lhs, static_cast<unsigned long>( rhs ) );
+        }
+        
+        // int to unsigned X
+        static bool compare( int lhs, unsigned int rhs ) {
+            return Evaluator<Op>::evaluate( static_cast<unsigned int>( lhs ), rhs );
+        }
+        static bool compare( int lhs, unsigned long rhs ) {
+            return Evaluator<Op>::evaluate( static_cast<unsigned int>( lhs ), rhs );
+        }
+        static bool compare( int lhs, unsigned char rhs ) {
+            return Evaluator<Op>::evaluate( static_cast<unsigned int>( lhs ), rhs );
+        }
+        
+        // long to unsigned X
+        static bool compare( long lhs, unsigned int rhs ) {
+            return Evaluator<Op>::evaluate( static_cast<unsigned long>( lhs ), rhs );
+        }
+        static bool compare( long lhs, unsigned long rhs ) {
+            return Evaluator<Op>::evaluate( static_cast<unsigned long>( lhs ), rhs );
+        }
+        static bool compare( long lhs, unsigned char rhs ) {
+            return Evaluator<Op>::evaluate( static_cast<unsigned long>( lhs ), rhs );
+        }
 
-    // "base" overload
-    template<Operator Op, typename T1, typename T2>
-    bool compare( const T1& lhs, const T2& rhs ) {
-        return Evaluator<Op>::evaluate( lhs, rhs );
-    }
+        // pointer to long (when comparing against NULL)
+        template<typename T>
+        static bool compare( long lhs, const T* rhs ) {
+            return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
+        }
+        
+        template<typename T>
+        static bool compare( long lhs, T* rhs ) {
+            return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
+        }
 
-    // unsigned X to int
-    template<Operator Op> bool compare( unsigned int lhs, int rhs ) {
-        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
-    }
-    template<Operator Op> bool compare( unsigned long lhs, int rhs ) {
-        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
-    }
-    template<Operator Op> bool compare( unsigned char lhs, int rhs ) {
-        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
-    }
-    
-    // unsigned X to long
-    template<Operator Op> bool compare( unsigned int lhs, long rhs ) {
-        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned long>( rhs ) );
-    }
-    template<Operator Op> bool compare( unsigned long lhs, long rhs ) {
-        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned long>( rhs ) );
-    }
-    template<Operator Op> bool compare( unsigned char lhs, long rhs ) {
-        return Evaluator<Op>::evaluate( lhs, static_cast<unsigned long>( rhs ) );
-    }
-    
-    // int to unsigned X
-    template<Operator Op> bool compare( int lhs, unsigned int rhs ) {
-        return Evaluator<Op>::evaluate( static_cast<unsigned int>( lhs ), rhs );
-    }
-    template<Operator Op> bool compare( int lhs, unsigned long rhs ) {
-        return Evaluator<Op>::evaluate( static_cast<unsigned int>( lhs ), rhs );
-    }
-    template<Operator Op> bool compare( int lhs, unsigned char rhs ) {
-        return Evaluator<Op>::evaluate( static_cast<unsigned int>( lhs ), rhs );
-    }
-    
-    // long to unsigned X
-    template<Operator Op> bool compare( long lhs, unsigned int rhs ) {
-        return Evaluator<Op>::evaluate( static_cast<unsigned long>( lhs ), rhs );
-    }
-    template<Operator Op> bool compare( long lhs, unsigned long rhs ) {
-        return Evaluator<Op>::evaluate( static_cast<unsigned long>( lhs ), rhs );
-    }
-    template<Operator Op> bool compare( long lhs, unsigned char rhs ) {
-        return Evaluator<Op>::evaluate( static_cast<unsigned long>( lhs ), rhs );
-    }
+        template<typename T>
+        static bool compare( const T* lhs, long rhs ) {
+            return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
+        }
+        
+        template<typename T>
+        static bool compare( T* lhs, long rhs ) {
+            return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
+        }
+        
+        // pointer to int (when comparing against NULL)
+        template<typename T>
+        static bool compare( int lhs, const T* rhs ) {
+            return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
+        }
+        
+        template<typename T>
+        static bool compare( int lhs, T* rhs ) {
+            return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
+        }
 
-    // pointer to long (when comparing against NULL)
-    template<Operator Op, typename T>
-    bool compare( long lhs, const T* rhs ) {
-        return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
-    }
-    
-    template<Operator Op, typename T>
-    bool compare( long lhs, T* rhs ) {
-        return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
-    }
-
-    template<Operator Op, typename T>
-    bool compare( const T* lhs, long rhs ) {
-        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
-    }
-    
-    template<Operator Op, typename T>
-    bool compare( T* lhs, long rhs ) {
-        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
-    }
-    
-    // pointer to int (when comparing against NULL)
-    template<Operator Op, typename T>
-    bool compare( int lhs, const T* rhs ) {
-        return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
-    }
-    
-    template<Operator Op, typename T>
-    bool compare( int lhs, T* rhs ) {
-        return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
-    }
-
-    template<Operator Op, typename T>
-    bool compare( const T* lhs, int rhs ) {
-        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
-    }
-    
-    template<Operator Op, typename T>
-    bool compare( T* lhs, int rhs ) {
-        return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
-    }
+        template<typename T>
+        static bool compare( const T* lhs, int rhs ) {
+            return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
+        }
+        
+        template<typename T>
+        static bool compare( T* lhs, int rhs ) {
+            return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
+        }
+    };
 
 } // end of namespace Internal
 } // end of namespace Catch

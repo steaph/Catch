@@ -109,11 +109,7 @@ namespace Internal {
 
         template<typename T1, typename T2>
         ResultInfoBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            m_result.setResultType( Evaluator<Op>::evaluate( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
-#else
-            m_result.setResultType( compare<Op>( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
-#endif
+            m_result.setResultType( Comparator<Op>::compare( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
             m_result.m_lhs = Catch::toString( lhs );
             m_result.m_rhs = Catch::toString( rhs );
             m_result.m_op = Internal::OperatorTraits<Op>::getName();
