@@ -20,6 +20,10 @@ TEST_CASE( "./succeeding/Basic/integral", "integral comparison" )
 {
     REQUIRE( 1 == 1 );
     REQUIRE( 1 != 2 );
+    REQUIRE( 1 <= 1 );
+    REQUIRE( 1 <  2 );
+    REQUIRE( 1 >= 1 );
+    REQUIRE( 2 >  1 );
     
     int a = 1;
     int b = 2;
@@ -32,6 +36,10 @@ TEST_CASE( "./failing/Basic/integral", "integral comparison" )
 {
     CHECK( 1 != 1 );
     CHECK( 1 == 2 );
+    CHECK( 2 <= 1 );
+    CHECK( 2 <  1 );
+    CHECK( 1 >= 2 );
+    CHECK( 1 >  1 );
     
     int a = 1;
     int b = 2;
