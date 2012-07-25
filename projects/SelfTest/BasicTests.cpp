@@ -30,53 +30,14 @@ TEST_CASE( "./succeeding/Basic/integral", "integral comparison" )
 
 TEST_CASE( "./failing/Basic/integral", "integral comparison" )
 {
-    REQUIRE( 1 != 1 );
-    REQUIRE( 1 == 2 );
+    CHECK( 1 != 1 );
+    CHECK( 1 == 2 );
     
     int a = 1;
     int b = 2;
     
-    REQUIRE( a == b );
-    REQUIRE( b == a );
-}
-
-TEST_CASE( "./succeeding/Basic/cstring", "C string comparison" )
-{
-//    REQUIRE( "hello" == "hello" );
-//    REQUIRE( "hello" != "world" );
-    
-    char * h = "hello" ;
-    char * w = "world" ;
-    
-    REQUIRE( h == h );
-    REQUIRE( w == w );
-    REQUIRE( h != w );
-    REQUIRE( w != h );
-
-    char const * const ch = "hello" ;
-    char const * const cw= "world" ;
-    
-    REQUIRE( ch == ch );
-    REQUIRE( cw == cw );
-    REQUIRE( ch != cw );
-    REQUIRE( cw != ch );
-
-    REQUIRE( ch ==  h );
-    REQUIRE(  h == ch );
-    REQUIRE( cw ==  w );
-    REQUIRE(  w == cw );
-}
-
-TEST_CASE( "./failing/Basic/cstring", "C string comparison" )
-{
-    REQUIRE( "hello" != "hello" );
-    REQUIRE( "hello" == "world" );
-    
-    char * h = "hello" ;
-    char * w = "world" ;
-    
-    REQUIRE( h == w );
-    REQUIRE( w == h );
+    CHECK( a == b );
+    CHECK( b == a );
 }
 
 TEST_CASE( "./succeeding/Basic/string", "std::string comparison" )
@@ -87,6 +48,9 @@ TEST_CASE( "./succeeding/Basic/string", "std::string comparison" )
     std::string h = "hello" ;
     std::string w = "world" ;
     
+    REQUIRE( h == h );
+    REQUIRE( w == w );
+
     REQUIRE( h != w );
     REQUIRE( w != h );
 }
@@ -107,34 +71,62 @@ TEST_CASE( "./succeeding/Basic/mixedstring", "C and std::string comparison" )
 {
     REQUIRE( std::string("hello") == "hello" );
     REQUIRE( std::string("hello") != "world" );
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     REQUIRE( "hello" == std::string("hello") );
     REQUIRE( "hello" != std::string("world") );
-    
+#endif
+
     char * ch = "hello" ;
     char * cw = "world" ;
     std::string h = "hello" ;
     std::string w = "world" ;
     
+    REQUIRE( h == ch );
+    REQUIRE( w == cw );
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    REQUIRE( ch == h );
+    REQUIRE( cw == w );
+#endif
+
     REQUIRE( h != cw );
     REQUIRE( w != ch );
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     REQUIRE( ch != w );
     REQUIRE( cw != h );
+#endif
 }
 
 TEST_CASE( "./failing/Basic/mixedstring", "C and std::string comparison" )
 {
-    REQUIRE( std::string("hello") != "hello" );
-    REQUIRE( std::string("hello") == "world" );
-    REQUIRE( "hello" != std::string("hello") );
-    REQUIRE( "hello" == std::string("world") );
-    
+    CHECK( std::string("hello") != "hello" );
+    CHECK( std::string("hello") == "world" );
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    CHECK( "hello" != std::string("hello") );
+    CHECK( "hello" == std::string("world") );
+#endif
+
     char * ch = "hello" ;
     char * cw = "world" ;
     std::string h = "hello" ;
     std::string w = "world" ;
     
-    REQUIRE( h == cw );
-    REQUIRE( w == ch );
-    REQUIRE( ch == w );
-    REQUIRE( cw == h );
+    CHECK( h != ch );
+    CHECK( w != cw );
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    CHECK( ch != h );
+    CHECK( cw != w );
+#endif
+
+    CHECK( h == cw );
+    CHECK( w == ch );
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    CHECK( ch == w );
+    CHECK( cw == h );
+#endif
 }
