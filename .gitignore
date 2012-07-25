@@ -8,6 +8,8 @@
 *.lnt
 *.ncb
 *.opt
+*.ilk
+*.pdb
 *.user
 *.xcuserstate
 .DS_Store
