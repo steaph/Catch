@@ -73,7 +73,7 @@ namespace Internal {
        template<typename T1, typename T2>
         static bool evaluate( const T1& lhs, const T2& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs != rhs;
+            return lhs < rhs;
 #else
             return const_cast<T1&>( lhs ) < const_cast<T2&>( rhs );
 #endif
@@ -85,7 +85,7 @@ namespace Internal {
        template<typename T1, typename T2>
         static bool evaluate( const T1& lhs, const T2& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs != rhs;
+            return lhs > rhs;
 #else
             return const_cast<T1&>( lhs ) > const_cast<T2&>( rhs );
 #endif
@@ -97,7 +97,7 @@ namespace Internal {
        template<typename T1, typename T2>
         static bool evaluate( const T1& lhs, const T2& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs != rhs;
+            return lhs >= rhs;
 #else
             return const_cast<T1&>( lhs ) >= const_cast<T2&>( rhs );
 #endif
@@ -109,7 +109,7 @@ namespace Internal {
        template<typename T1, typename T2>
         static bool evaluate( const T1& lhs, const T2& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs != rhs;
+            return lhs <= rhs;
 #else
             return const_cast<T1&>( lhs ) <= const_cast<T2&>( rhs );
 #endif
