@@ -114,6 +114,7 @@ namespace Internal {
 #else
             m_result.setResultType( compare<Op>( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
 #endif
+            m_result.m_lhs = Catch::toString( lhs );
             m_result.m_rhs = Catch::toString( rhs );
             m_result.m_op = Internal::OperatorTraits<Op>::getName();
             return m_result;
