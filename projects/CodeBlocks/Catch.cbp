@@ -79,6 +79,7 @@
 		<Unit filename="..\SelfTest\GeneratorTests.cpp" />
 		<Unit filename="..\SelfTest\MessageTests.cpp" />
 		<Unit filename="..\SelfTest\MiscTests.cpp" />
+		<Unit filename="..\SelfTest\PointerTests.cpp" />
 		<Unit filename="..\SelfTest\TestMain.cpp" />
 		<Unit filename="..\SelfTest\TrickyTests.cpp" />
 		<Unit filename="..\SelfTest\catch_self_test.cpp" />
@@ -93,6 +94,7 @@
 		<Unit filename="..\VS2010\Tutorial\compile.bat" />
 		<Unit filename="..\VS6\README.md" />
 		<Unit filename="..\VS6\TestCatch\compile-00-basic.bat" />
+		<Unit filename="..\VS6\TestCatch\compile-00-pointer.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-01-misc.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-02-generator.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-03-message.bat" />
