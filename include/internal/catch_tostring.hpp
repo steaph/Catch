@@ -21,44 +21,52 @@ namespace Detail {
     struct NonStreamable {
         template<typename T> NonStreamable( const T& ){}
     };
-    
+
     // If the type does not have its own << overload for ostream then
     // this one will be used instead
     inline std::ostream& operator << ( std::ostream& ss, NonStreamable ){
         return ss << "{?}";
     }
-    
+
     template<typename T>
     inline std::string makeString( const T& value ) {
         std::ostringstream oss;
         oss << value;
         return oss.str();
-    }    
+    }
 
     template<typename T>
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    inline std::string makeString( T*& p ) {
+#else
     inline std::string makeString( T* p ) {
+#endif
         if( !p )
             return INTERNAL_CATCH_STRINGIFY( NULL );
         std::ostringstream oss;
         oss << p;
         return oss.str();
-    }    
+    }
 
     template<typename T>
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    inline std::string makeString( const T*& p ) {
+#else
     inline std::string makeString( const T* p ) {
+#endif
         if( !p )
             return INTERNAL_CATCH_STRINGIFY( NULL );
         std::ostringstream oss;
         oss << p;
         return oss.str();
-    }    
+    }
 
 } // end namespace Detail
 
 /// \brief converts any type to a string
 ///
-/// The default template forwards on to ostringstream - except when an 
-/// ostringstream overload does not exist - in which case it attempts to detect 
+/// The default template forwards on to ostringstream - except when an
+/// ostringstream overload does not exist - in which case it attempts to detect
 /// that and writes {?}.
 /// Overload (not specialise) this template for custom typs that you don't want
 /// to provide an ostream overload for.
@@ -66,7 +74,7 @@ template<typename T>
 std::string toString( const T& value ) {
     return Detail::makeString( value );
 }
-    
+
 // Built in overloads
 
 inline std::string toString( const std::string& value ) {
@@ -84,11 +92,11 @@ inline std::string toString( const std::wstring& value ) {
 
 inline std::string toString( const char* const value ) {
     return value ? Catch::toString( std::string( value ) ) : std::string( "{null string}" );
-}   
+}
 
 inline std::string toString( char* const value ) {
     return Catch::toString( static_cast<const char*>( value ) );
-}        
+}
 
 inline std::string toString( int value ) {
     std::ostringstream oss;
@@ -104,16 +112,16 @@ inline std::string toString( unsigned long value ) {
         oss << value;
     return oss.str();
 }
-    
+
 inline std::string toString( unsigned int value ) {
     return toString( static_cast<unsigned long>( value ) );
 }
-    
+
 inline std::string toString( const double value ) {
     std::ostringstream oss;
     oss << value;
     return oss.str();
-}    
+}
 
 inline std::string toString( bool value ) {
     return value ? "true" : "false";
