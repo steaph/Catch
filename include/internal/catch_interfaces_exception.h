@@ -26,6 +26,37 @@ namespace Catch {
         virtual std::string translateActiveException() const = 0;
     };
 
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    class ExceptionTranslatorRegistrar {
+        template<typename T>
+        class ExceptionTranslator : public IExceptionTranslator {
+        public:
+            
+            ExceptionTranslator( std::string(*translateFunction)( T ) )
+            : m_translateFunction( translateFunction )
+            {}
+            
+            virtual std::string translate() const {
+                try {
+                    throw;
+                }
+                catch( T ex ) {
+                    return m_translateFunction( ex );
+                }
+            }
+            
+        protected:
+            std::string(*m_translateFunction)( T );
+        };
+        
+    public:
+        template<typename T>
+        ExceptionTranslatorRegistrar( std::string(*translateFunction)( T ) ) {
+            getCurrentContext().getExceptionTranslatorRegistry().registerTranslator
+                ( new ExceptionTranslator<T>( translateFunction ) );
+        }
+    };
+#else
     class ExceptionTranslatorRegistrar {
         template<typename T>
         class ExceptionTranslator : public IExceptionTranslator {
@@ -55,6 +86,7 @@ namespace Catch {
                 ( new ExceptionTranslator<T>( translateFunction ) );
         }
     };
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
