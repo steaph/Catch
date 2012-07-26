@@ -30,6 +30,11 @@ TEST_CASE( "./succeeding/Basic/integral", "integral comparison" )
     
     REQUIRE( a != b );
     REQUIRE( b != a );
+
+    REQUIRE( a <= b );
+    REQUIRE( b >= a );
+    REQUIRE( a <  b );
+    REQUIRE( b >  a );
 }
 
 TEST_CASE( "./failing/Basic/integral", "integral comparison" )
@@ -46,6 +51,74 @@ TEST_CASE( "./failing/Basic/integral", "integral comparison" )
     
     CHECK( a == b );
     CHECK( b == a );
+
+    CHECK( b <= a );
+    CHECK( a >= b );
+    CHECK( b <  a );
+    CHECK( a >  b );
+}
+
+TEST_CASE( "./succeeding/Basic/mixed_integral", "mixed-type integral comparison" )
+{
+    REQUIRE( (int)1 == (long)1 );
+    REQUIRE( (int)1 != (long)2 );
+    REQUIRE( (int)1 <= (long)2 );
+    REQUIRE( (int)1 <  (long)2 );
+    REQUIRE( (int)2 >= (long)1 );
+    REQUIRE( (int)2 >  (long)1 );
+
+    REQUIRE( (long)1 == (int)1 );
+    REQUIRE( (long)1 != (int)2 );
+    REQUIRE( (long)1 <= (int)2 );
+    REQUIRE( (long)1 <  (int)2 );
+    REQUIRE( (long)2 >= (int)1 );
+    REQUIRE( (long)2 >  (int)1 );
+
+    REQUIRE( (unsigned int)1 == (unsigned long)1 );
+    REQUIRE( (unsigned int)1 != (unsigned long)2 );
+    REQUIRE( (unsigned int)1 <= (unsigned long)2 );
+    REQUIRE( (unsigned int)1 <  (unsigned long)2 );
+    REQUIRE( (unsigned int)2 >= (unsigned long)1 );
+    REQUIRE( (unsigned int)2 >  (unsigned long)1 );
+
+    REQUIRE( (unsigned long)1 == (unsigned int)1 );
+    REQUIRE( (unsigned long)1 != (unsigned int)2 );
+    REQUIRE( (unsigned long)1 <= (unsigned int)2 );
+    REQUIRE( (unsigned long)1 <  (unsigned int)2 );
+    REQUIRE( (unsigned long)2 >= (unsigned int)1 );
+    REQUIRE( (unsigned long)2 >  (unsigned int)1 );
+
+    REQUIRE( (unsigned int)1 == (long)1 );
+    REQUIRE( (unsigned int)1 != (long)2 );
+    REQUIRE( (unsigned int)1 <= (long)2 );
+    REQUIRE( (unsigned int)1 <  (long)2 );
+    REQUIRE( (unsigned int)2 >= (long)1 );
+    REQUIRE( (unsigned int)2 >  (long)1 );
+
+    REQUIRE( (unsigned long)1 == (int)1 );
+    REQUIRE( (unsigned long)1 != (int)2 );
+    REQUIRE( (unsigned long)1 <= (int)2 );
+    REQUIRE( (unsigned long)1 <  (int)2 );
+    REQUIRE( (unsigned long)2 >= (int)1 );
+    REQUIRE( (unsigned long)2 >  (int)1 );
+
+    REQUIRE( (int)1 == (unsigned long)1 );
+    REQUIRE( (int)1 != (unsigned long)2 );
+    REQUIRE( (int)1 <= (unsigned long)2 );
+    REQUIRE( (int)1 <  (unsigned long)2 );
+    REQUIRE( (int)2 >= (unsigned long)1 );
+    REQUIRE( (int)2 >  (unsigned long)1 );
+
+    REQUIRE( (long)1 == (unsigned int)1 );
+    REQUIRE( (long)1 != (unsigned int)2 );
+    REQUIRE( (long)1 <= (unsigned int)2 );
+    REQUIRE( (long)1 <  (unsigned int)2 );
+    REQUIRE( (long)2 >= (unsigned int)1 );
+    REQUIRE( (long)2 >  (unsigned int)1 );
+}
+
+TEST_CASE( "./failing/Basic/mixed_integral", "mixed-type integral comparison" )
+{
 }
 
 TEST_CASE( "./succeeding/Basic/string", "std::string comparison" )
@@ -137,4 +210,13 @@ TEST_CASE( "./failing/Basic/mixedstring", "C and std::string comparison" )
     CHECK( ch == w );
     CHECK( cw == h );
 #endif
+}
+
+TEST_CASE( "./succeeding/Basic/pointer", "pointer--NULL comparison" )
+{
+    char * p = NULL;
+    char * cp = NULL;
+    
+//    REQUIRE( p == NULL );
+//    REQUIRE( cp == NULL );
 }
