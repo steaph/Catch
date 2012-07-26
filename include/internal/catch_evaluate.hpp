@@ -162,7 +162,8 @@ class ::Catch::Detail::Approx;
         INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, float )
         INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, double )
 
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, int )
+//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
+//        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, int )
 //      exclude: error C2668: 'compare' : ambiguous call to overloaded function
 //        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, long )
         INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, float )
@@ -176,13 +177,15 @@ class ::Catch::Detail::Approx;
         INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, double )
         INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, ::Catch::Detail::Approx )
 
-        INTERNAL_CATCH_DEFINE_COMPARE( int, unsigned int )
+//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
+//        INTERNAL_CATCH_DEFINE_COMPARE( int, unsigned int )
 //      exclude: error C2668: 'compare' : ambiguous call to overloaded function
 //        INTERNAL_CATCH_DEFINE_COMPARE( int, unsigned long )
 
 //      exclude: error C2668: 'compare' : ambiguous call to overloaded function
 //        INTERNAL_CATCH_DEFINE_COMPARE( long, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( long, unsigned long )
+//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
+//        INTERNAL_CATCH_DEFINE_COMPARE( long, unsigned long )
         
         INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, unsigned int )
         INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, unsigned long )
