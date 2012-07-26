@@ -117,7 +117,11 @@ namespace Internal {
         }
         
         template<typename T>
-        ResultInfoBuilder& captureExpression( const T* lhs, int rhs ) {
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        ResultInfoBuilder& captureExpression( const T*& lhs, const int& rhs ) {
+#else
+        ResultInfoBuilder& captureExpression( const T*  lhs, const int& rhs ) {
+#endif
             return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
         }    
 
