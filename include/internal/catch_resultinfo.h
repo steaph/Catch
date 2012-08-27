@@ -15,15 +15,15 @@ namespace Catch {
 
     class ResultInfo {
     public:
-        ResultInfo();        
-        ResultInfo( const char* expr, 
-                    ResultWas::OfType result, 
+        ResultInfo();
+        ResultInfo( const char* expr,
+                    ResultWas::OfType result,
                     bool isNot,
                     const SourceLineInfo& lineInfo,
                     const char* macroName,
                    const char* message );
         ~ResultInfo();
-        
+
         bool ok() const;
         ResultWas::OfType getResultType() const;
         bool hasExpression() const;
@@ -40,8 +40,12 @@ namespace Catch {
 
         std::string getExpandedExpressionInternal() const;
         bool isNotExpression( const char* expr );
-        
+
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+    public:
+#else
     protected:
+#endif
         std::string m_macroName;
         SourceLineInfo m_lineInfo;
         std::string m_expr, m_lhs, m_rhs, m_op;
@@ -49,7 +53,7 @@ namespace Catch {
         ResultWas::OfType m_result;
         bool m_isNot;
     };
-    
+
 } // end namespace Catch
 
 #endif // TWOBLUECUBES_CATCH_RESULT_INFO_H_INCLUDED
