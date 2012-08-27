@@ -16,16 +16,21 @@
 
 namespace Catch {
 
+namespace Internal {
+    template<Operator Op>
+    class Apply;
+}
+
 struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
-    
+
 class ResultInfoBuilder : public ResultInfo {
 
 public:
-    
+
     ResultInfoBuilder();
-    
-    ResultInfoBuilder(  const char* expr, 
-                        bool isNot, 
+
+    ResultInfoBuilder(  const char* expr,
+                        bool isNot,
                         const SourceLineInfo& lineInfo,
                         const char* macroName,
                         const char* message = "" );
@@ -36,7 +41,7 @@ public:
     void setLhs( const std::string& lhs );
     void setRhs( const std::string& rhs );
     void setOp( const std::string& op );
-    
+
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator ||
     (
@@ -48,30 +53,53 @@ public:
     (
         const RhsT&
     );
-    
+
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+public:
+#else
 private:
     friend class ExpressionBuilder;
     template<typename T> friend class Expression;
 
     template<typename T> friend class PtrExpression;
+    template<Internal::Operator Op> friend class Internal::Apply;
+#endif
 
     ResultInfoBuilder& captureBoolExpression( bool result );
-
-    template<Internal::Operator Op, typename T1, typename T2>    
-    ResultInfoBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
-        setResultType( Internal::compare<Op>( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
-        m_lhs = Catch::toString( lhs );
-        m_rhs = Catch::toString( rhs );
-        m_op = Internal::OperatorTraits<Op>::getName();
-        return *this;
-    }
-
-    template<Internal::Operator Op, typename T>
-    ResultInfoBuilder& captureExpression( const T* lhs, int rhs ) {
-        return captureExpression<Op>( lhs, reinterpret_cast<const T*>( rhs ) );
-    }    
 };
 
+namespace Internal {
+
+    template<Operator Op>
+    class Apply
+    {
+    public:
+        Apply( ResultInfoBuilder & result )
+        : m_result( result ) {}
+
+        template<typename T1, typename T2>
+        ResultInfoBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
+            m_result.setResultType( Comparator<Op>::compare( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
+            m_result.m_lhs = Catch::toString( lhs );
+            m_result.m_rhs = Catch::toString( rhs );
+            m_result.m_op = Internal::OperatorTraits<Op>::getName();
+            return m_result;
+        }
+
+        template<typename T>
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        ResultInfoBuilder& captureExpression( const T*& lhs, const int& rhs ) {
+#else
+        ResultInfoBuilder& captureExpression( const T*  lhs, const int& rhs ) {
+#endif
+            return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
+        }
+
+    private:
+        ResultInfoBuilder & m_result;
+    };
+
+} // end namespace Internal
 } // end namespace Catch
 
 #endif // TWOBLUECUBES_CATCH_RESULTINFO_BUILDER_H_INCLUDED
