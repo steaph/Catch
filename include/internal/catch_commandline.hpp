@@ -16,10 +16,10 @@ namespace Catch {
     class Command {
     public:
         Command(){}
-        
+
         explicit Command( const std::string& name ) : m_name( name ) {
         }
-                
+
         Command& operator += ( const std::string& arg ) {
             m_args.push_back( arg );
             return *this;
@@ -35,11 +35,11 @@ namespace Catch {
             newCommand += other;
             return newCommand;
         }
-        
+
         operator SafeBool::type() const {
             return SafeBool::makeSafe( !m_name.empty() || !m_args.empty() );
         }
-        
+
         std::string name() const { return m_name; }
         std::string operator[]( std::size_t i ) const { return m_args[i]; }
         std::size_t argsCount() const { return m_args.size(); }
@@ -58,13 +58,13 @@ namespace Catch {
                 oss << " " << m_args[i];
             throw std::domain_error( oss.str() );
         }
-        
+
     private:
-        
+
         std::string m_name;
         std::vector<std::string> m_args;
     };
-    
+
     class CommandParser {
     public:
         CommandParser( int argc, char const * const * argv ) : m_argc( static_cast<std::size_t>( argc ) ), m_argv( argv ) {}
@@ -96,7 +96,7 @@ namespace Catch {
                 command += m_argv[i];
             return command;
         }
-        
+
         std::size_t m_argc;
         char const * const * m_argv;
     };
@@ -106,7 +106,7 @@ namespace Catch {
         OptionParser( int minArgs = 0, int maxArgs = 0 )
         : m_minArgs( minArgs ), m_maxArgs( maxArgs )
         {}
-        
+
         virtual ~OptionParser() {}
 
         Command find( const CommandParser& parser ) const {
@@ -160,7 +160,7 @@ namespace Catch {
                 names += "]";
             return names;
         }
-        
+
     protected:
 
         bool tooFewArgs( const Command& args ) const {
@@ -194,7 +194,7 @@ namespace Catch {
                 // Does not affect config
             }
         };
-        
+
         class TestCaseOptionParser : public OptionParser {
         public:
             TestCaseOptionParser() : OptionParser( 1, -1 ) {
@@ -217,14 +217,14 @@ namespace Catch {
                     groupName += cmd[i];
                 }
                 TestCaseFilters filters( groupName );
-                for( std::size_t i = 0; i < cmd.argsCount(); ++i ) {
+                {for( std::size_t i = 0; i < cmd.argsCount(); ++i ) {
                     if( startsWith( cmd[i], "exclude:" ) )
                         filters.addFilter( TestCaseFilter( cmd[i].substr( 8 ), IfFilterMatches::ExcludeTests ) );
                     else if( startsWith( cmd[i], "~" ) )
                         filters.addFilter( TestCaseFilter( cmd[i].substr( 1 ), IfFilterMatches::ExcludeTests ) );
                     else
                         filters.addFilter( TestCaseFilter( cmd[i] ) );
-                }
+                }}
                 config.filters.push_back( filters );
             }
         };
@@ -264,7 +264,7 @@ namespace Catch {
                 }
             }
         };
-        
+
         class ReporterOptionParser : public OptionParser {
         public:
             ReporterOptionParser() : OptionParser( 1, 1 ) {
@@ -303,7 +303,7 @@ namespace Catch {
                     config.outputFilename = cmd[0];
             }
         };
-        
+
         class SuccesssOptionParser : public OptionParser {
         public:
             SuccesssOptionParser() {
@@ -321,7 +321,7 @@ namespace Catch {
                 config.includeWhichResults = Include::SuccessfulResults;
             }
         };
-        
+
         class DebugBreakOptionParser : public OptionParser {
         public:
             DebugBreakOptionParser() {
@@ -339,7 +339,7 @@ namespace Catch {
                 config.shouldDebugBreak = true;
             }
         };
-        
+
         class NameOptionParser : public OptionParser {
         public:
             NameOptionParser() : OptionParser( 1, 1 ) {
@@ -402,7 +402,7 @@ namespace Catch {
             }
         };
     }
-    
+
     class AllOptions
     {
     public:
@@ -410,7 +410,7 @@ namespace Catch {
         typedef Parsers::const_iterator const_iterator;
         typedef Parsers::const_iterator iterator;
 
-        AllOptions() {            
+        AllOptions() {
             add<Options::TestCaseOptionParser>();
             add<Options::ListOptionParser>();
             add<Options::ReporterOptionParser>();
@@ -443,7 +443,7 @@ namespace Catch {
         Parsers m_parsers;
 
     };
-        
+
 } // end namespace Catch
 
 #endif // TWOBLUECUBES_CATCH_COMMANDLINE_HPP_INCLUDED
