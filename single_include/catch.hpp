@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-08-27 23:49:50.845000
+ *  Generated: 2012-08-28 11:17:08.354000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -291,7 +291,7 @@ namespace Catch {
             swap( temp );
             return *this;
         }
-        Ptr& operator = ( Ptr& other ){
+        Ptr& operator = ( Ptr const & other ){
             Ptr temp( other );
             swap( temp );
             return *this;
@@ -3113,7 +3113,17 @@ namespace Catch {
         typedef Parsers::const_iterator iterator;
 
         AllOptions() {
-            add<Options::TestCaseOptionParser>();
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+            add(Options::ListOptionParser());
+            add(Options::ReporterOptionParser());
+            add(Options::OutputOptionParser());
+            add(Options::SuccesssOptionParser());
+            add(Options::DebugBreakOptionParser());
+            add(Options::NameOptionParser());
+            add(Options::AbortOptionParser());
+            add(Options::NoThrowOptionParser());
+            add(Options::HelpOptionParser());
+#else
             add<Options::ListOptionParser>();
             add<Options::ReporterOptionParser>();
             add<Options::OutputOptionParser>();
@@ -3123,6 +3133,7 @@ namespace Catch {
             add<Options::AbortOptionParser>();
             add<Options::NoThrowOptionParser>();
             add<Options::HelpOptionParser>();
+#endif
         }
 
         void parseIntoConfig( const CommandParser& parser, ConfigData& config ) {
@@ -3139,7 +3150,11 @@ namespace Catch {
     private:
 
         template<typename T>
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        void add( T & ) {
+#else
         void add() {
+#endif
             m_parsers.push_back( new T() );
         }
         Parsers m_parsers;
