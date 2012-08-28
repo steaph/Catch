@@ -411,7 +411,17 @@ namespace Catch {
         typedef Parsers::const_iterator iterator;
 
         AllOptions() {
-            add<Options::TestCaseOptionParser>();
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+            add(Options::ListOptionParser());
+            add(Options::ReporterOptionParser());
+            add(Options::OutputOptionParser());
+            add(Options::SuccesssOptionParser());
+            add(Options::DebugBreakOptionParser());
+            add(Options::NameOptionParser());
+            add(Options::AbortOptionParser());
+            add(Options::NoThrowOptionParser());
+            add(Options::HelpOptionParser());
+#else
             add<Options::ListOptionParser>();
             add<Options::ReporterOptionParser>();
             add<Options::OutputOptionParser>();
@@ -421,6 +431,7 @@ namespace Catch {
             add<Options::AbortOptionParser>();
             add<Options::NoThrowOptionParser>();
             add<Options::HelpOptionParser>();
+#endif
         }
 
         void parseIntoConfig( const CommandParser& parser, ConfigData& config ) {
@@ -437,7 +448,11 @@ namespace Catch {
     private:
 
         template<typename T>
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        void add( T & ) {
+#else
         void add() {
+#endif
             m_parsers.push_back( new T() );
         }
         Parsers m_parsers;

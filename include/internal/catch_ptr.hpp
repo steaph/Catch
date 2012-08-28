@@ -36,7 +36,7 @@ namespace Catch {
             swap( temp );
             return *this;
         }
-        Ptr& operator = ( Ptr& other ){
+        Ptr& operator = ( Ptr const & other ){
             Ptr temp( other );
             swap( temp );
             return *this;
@@ -44,14 +44,14 @@ namespace Catch {
         void swap( Ptr& other ){
             std::swap( m_p, other.m_p );
         }
-        
+
         T* get(){
             return m_p;
         }
         const T* get() const{
             return m_p;
         }
-        
+
         T& operator*() const {
             return *m_p;
         }
@@ -59,26 +59,26 @@ namespace Catch {
         T* operator->() const {
             return m_p;
         }
-        
+
         bool operator !() const {
             return m_p == NULL;
         }
-        
+
     private:
         T* m_p;
     };
-    
+
     struct IShared : NonCopyable {
         virtual ~IShared();
         virtual void addRef() = 0;
         virtual void release() = 0;
     };
-    
+
     template<typename T>
     struct SharedImpl : T {
-        
+
         SharedImpl() : m_rc( 0 ){}
-        
+
         virtual void addRef(){
             ++m_rc;
         }
@@ -86,10 +86,10 @@ namespace Catch {
             if( --m_rc == 0 )
                 delete this;
         }
-        
+
         int m_rc;
     };
-    
+
 } // end namespace Catch
 
 #endif // TWOBLUECUBES_CATCH_PTR_HPP_INCLUDED
