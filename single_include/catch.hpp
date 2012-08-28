@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-08-28 11:17:08.354000
+ *  Generated: 2012-08-28 14:31:34.740000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -3114,6 +3114,7 @@ namespace Catch {
 
         AllOptions() {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+            add(Options::TestCaseOptionParser());
             add(Options::ListOptionParser());
             add(Options::ReporterOptionParser());
             add(Options::OutputOptionParser());
@@ -3124,6 +3125,7 @@ namespace Catch {
             add(Options::NoThrowOptionParser());
             add(Options::HelpOptionParser());
 #else
+            add<Options::TestCaseOptionParser>();
             add<Options::ListOptionParser>();
             add<Options::ReporterOptionParser>();
             add<Options::OutputOptionParser>();
