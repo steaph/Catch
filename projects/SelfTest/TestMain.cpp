@@ -13,27 +13,6 @@
 
 #define CATCH_DIMENSION_OF( a ) ( sizeof(a) / sizeof(0[a]) )
 
-#if defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 )
-
-#define SUCCEED(msg)  INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Ok, true, "SUCCEED" )
-
-#define VC6_SUCCEED_TEST( tag, N ) \
-    TEST_CASE( tag, "VC6: Skipping tricky tests" ) {\
-        WARN( "VC6: Skip succeeding tricky test:" ) \
-        for ( int i = 0; i < N; ++i ) { \
-            SUCCEED( "VC6: Skip succeeding tricky test." ) \
-        } \
-    }
-
-#define VC6_FAIL_TEST( tag, N ) \
-    TEST_CASE( tag, "VC6: Skipping tricky tests" ) { \
-        for ( int i = 0; i < N; ++i ) { \
-            FAIL( "VC6: Skip failing tricky test." ) \
-        } \
-    }
-
-#endif
-
 TEST_CASE( "selftest/main", "Runs all Catch self tests and checks their results" ) {
     using namespace Catch;
 
@@ -236,9 +215,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
-            parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config );
-            SUCCEED( "Skipping: VC6 would break flow here." )
-//            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
+            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
 #endif
 
             REQUIRE( config.reporter == "basic" );
@@ -258,9 +235,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
-            parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config );
-            SUCCEED( "Skipping: VC6 would break flow here." )
-//            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
+            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
 #endif
 
             REQUIRE( config.reporter == "junit" );
@@ -281,9 +256,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
-            parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config );
-            SUCCEED( "Skipping: VC6 would break flow here." )
-//            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
+            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
 #endif
 
             REQUIRE( config.shouldDebugBreak == true );
@@ -464,12 +437,7 @@ TEST_CASE( "selftest/option parsers", "" )
     Catch::CommandParser parser( CATCH_DIMENSION_OF(argv), argv );
 #endif
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     CHECK_NOTHROW( opt.parseIntoConfig( parser, config ) );
-#else
-    opt.parseIntoConfig( parser, config );
-    SUCCEED( "Skipping: VC6 would break flow here." )
-#endif
 
     REQUIRE( config.filters.size() == 1 );
     REQUIRE( config.filters[0].shouldInclude( makeTestCase( "notIncluded" ) ) == false );
