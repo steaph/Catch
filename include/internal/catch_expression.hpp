@@ -11,6 +11,11 @@
 #include "catch_resultinfo_builder.h"
 #include "catch_evaluate.hpp"
 
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+#pragma warning( push )
+#pragma warning( disable: 4800 )
+#endif
+
 namespace Catch {
 
 template<typename T>
@@ -22,32 +27,32 @@ public:
     :   m_result( result ),
         m_lhs( lhs )
     {}
-    
+
     template<typename RhsT>
     ResultInfoBuilder& operator == ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
-    
+
     template<typename RhsT>
     ResultInfoBuilder& operator != ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
-    
+
     template<typename RhsT>
     ResultInfoBuilder& operator < ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
     }
-    
+
     template<typename RhsT>
     ResultInfoBuilder& operator > ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
     }
-    
+
     template<typename RhsT>
     ResultInfoBuilder& operator <= ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
-    
+
     template<typename RhsT>
     ResultInfoBuilder& operator >= ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
@@ -56,18 +61,18 @@ public:
     ResultInfoBuilder& operator == ( bool rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
-    
+
     ResultInfoBuilder& operator != ( bool rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
-    
+
     operator ResultInfoBuilder& () {
         return m_result.captureBoolExpression( m_lhs );
     }
-    
+
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator + ( const RhsT& );
-    
+
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator - ( const RhsT& );
 
@@ -77,5 +82,9 @@ private:
 };
 
 } // end namespace Catch
+
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+#pragma warning( pop )
+#endif
 
 #endif // TWOBLUECUBES_CATCH_EXPRESSION_HPP_INCLUDED
