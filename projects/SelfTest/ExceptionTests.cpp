@@ -44,13 +44,9 @@ TEST_CASE( "./succeeding/exceptions/explicit", "When checked exceptions are thro
 CATCH_ATTRIBUTE_NORETURN
 TEST_CASE( "./failing/exceptions/explicit", "When checked exceptions are thrown they can be expected or unexpected" )
 {
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-    FAIL( "Skipping: VC6 would break flow here." )
-#else
     CHECK_THROWS_AS( thisThrows(), std::string );
     CHECK_THROWS_AS( thisDoesntThrow(), std::domain_error );
     CHECK_NOTHROW( thisThrows() );
-#endif
 }
 
 TEST_CASE_NORETURN( "./failing/exceptions/implicit", "When unchecked exceptions are thrown they are always failures" )
