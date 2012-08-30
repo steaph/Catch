@@ -305,7 +305,7 @@ TEST_CASE("./succeeding/boolean member", "")
 
 #if defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 )
 
-VC6_SUCCEED_TEST( "./succeeding/unimplemented static bool", 1 )
+VC6_SUCCEED_TEST( "./succeeding/unimplemented static bool", 8 )
 
 #else // defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 )
 
