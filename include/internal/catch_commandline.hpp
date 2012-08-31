@@ -445,6 +445,7 @@ namespace Catch {
             add(Options::AbortOptionParser());
             add(Options::NoThrowOptionParser());
             add(Options::HelpOptionParser());
+            add(Options::WarningsOptionParser());
 #else
             add<Options::TestCaseOptionParser>();   // Keep this one first
 
