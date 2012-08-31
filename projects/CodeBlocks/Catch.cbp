@@ -114,9 +114,8 @@
 		<Unit filename="..\VS6\TestCatch\compile-06-condition.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-07-exception.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-08-tricky.bat" />
-		<Unit filename="..\VS6\TestCatch\compile-09-main-debug.bat" />
-		<Unit filename="..\VS6\TestCatch\compile-09-main.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-10-most.bat" />
+		<Unit filename="..\VS6\TestCatch\compile-debug.bat" />
 		<Unit filename="..\VS6\TestCatch\compile.bat" />
 		<Unit filename="..\VS6\Tutorial\compile.bat" />
 		<Unit filename="..\XCode3\OCTest\CatchOCTestCase.h" />
