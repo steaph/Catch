@@ -14,8 +14,6 @@
 
 #if defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 )
 
-#define SUCCEED(msg)  INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Ok, true, "SUCCEED" )
-
 #define VC6_SUCCEED_TEST( tag, N ) \
     TEST_CASE( tag, "VC6: Skipping tricky tests" ) {\
         WARN( "VC6: Skip succeeding tricky test:" ) \
