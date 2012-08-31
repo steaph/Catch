@@ -435,7 +435,8 @@ namespace Catch {
 
         AllOptions() {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            add(Options::TestCaseOptionParser());
+            add(Options::TestCaseOptionParser());   // Keep this one first
+
             add(Options::ListOptionParser());
             add(Options::ReporterOptionParser());
             add(Options::OutputOptionParser());
@@ -444,8 +445,9 @@ namespace Catch {
             add(Options::NameOptionParser());
             add(Options::AbortOptionParser());
             add(Options::NoThrowOptionParser());
-            add(Options::HelpOptionParser());
             add(Options::WarningsOptionParser());
+
+            add(Options::HelpOptionParser());       // Keep this one last
 #else
             add<Options::TestCaseOptionParser>();   // Keep this one first
 
