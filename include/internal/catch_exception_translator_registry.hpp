@@ -37,7 +37,11 @@ namespace Catch {
                     return toString( [exception description] );
                 }
 #else
+# if defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 ) && defined( _DEBUG )
+                throw std::runtime_error( "VC6: cannot correctly rethrow in debug build to report original exception" );
+# else
                 throw;
+# endif
 #endif
             }
             catch( std::exception& ex ) {
