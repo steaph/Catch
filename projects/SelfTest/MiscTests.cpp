@@ -294,6 +294,11 @@ TEST_CASE( "empty", "An empty test with no assertions" )
 {
 }
 
+TEST_CASE( "Nice descriptive name", "[tag1][tag2][hide]" )
+{
+    WARN( "This one ran" );
+}
+
 ANON_TEST_CASE()
 {
 	REQUIRE( 1 == 1 );

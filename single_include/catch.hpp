@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-09-10 07:13:05.154000
+ *  Generated: 2012-09-15 23:45:47.560000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -1844,6 +1844,7 @@ using namespace Generators;
 #define TWOBLUECUBES_CATCH_TESTCASEINFO_H_INCLUDED
 
 #include <string>
+#include <set>
 
 namespace Catch {
 
@@ -1866,6 +1867,8 @@ namespace Catch {
         const std::string& getDescription() const;
         const SourceLineInfo& getLineInfo() const;
         bool isHidden() const;
+        bool hasTag( const std::string& tag ) const;
+        const std::set<std::string>& tags() const;
 
         void swap( TestCaseInfo& other );
         bool operator == ( const TestCaseInfo& other ) const;
@@ -1876,7 +1879,9 @@ namespace Catch {
         Ptr<ITestCase> m_test;
         std::string m_name;
         std::string m_description;
+        std::set<std::string> m_tags;
         SourceLineInfo m_lineInfo;
+        bool m_isHidden;
     };
 }
 
@@ -1993,6 +1998,10 @@ namespace Catch {
                 if( it == itEnd )
                     return false;
             }
+            else if( m_exclusionFilters.empty() ) {
+                return !testCase.isHidden();
+            }
+
             std::vector<TestCaseFilter>::const_iterator it = m_exclusionFilters.begin();
             std::vector<TestCaseFilter>::const_iterator itEnd = m_exclusionFilters.end();
             for(; it != itEnd; ++it )
@@ -3956,7 +3965,6 @@ namespace Catch {
             std::vector<TestCaseFilters> filterGroups = m_config.filters;
             if( filterGroups.empty() ) {
                 TestCaseFilters filterGroup( "" );
-                filterGroup.addFilter( TestCaseFilter( "./*", IfFilterMatches::ExcludeTests ) );
                 filterGroups.push_back( filterGroup );
             }
 
@@ -5003,6 +5011,36 @@ namespace Catch {
 
 namespace Catch {
 
+    namespace {
+        void extractTags( std::string& str, std::set<std::string>& tags ) {
+            std::string remainder;
+            std::size_t last = 0;
+            std::size_t begin = str.find_first_of( '[' );
+            while( begin != std::string::npos ) {
+                std::size_t end = str.find_first_of( ']', begin );
+                if( end != std::string::npos ) {
+                    std::string tag = str.substr( begin+1, end-begin-1 );
+                    tags.insert( tag );
+                    if( begin - last > 0 )
+                        remainder += str.substr( last, begin-last );
+                    last = end+1;
+                }
+                else if( begin != str.size()-1 ) {
+                    end = begin+1;
+                }
+                else {
+                    break;
+                }
+                begin = str.find_first_of( '[', end );
+            }
+            if( !tags.empty() ) {
+                if( last < str.size() )
+                    str = remainder + str.substr( last );
+                else
+                    str = remainder;
+            }
+        }
+    }
     TestCaseInfo::TestCaseInfo( ITestCase* testCase,
                                 const char* name,
                                 const char* description,
@@ -5010,27 +5048,37 @@ namespace Catch {
     :   m_test( testCase ),
         m_name( name ),
         m_description( description ),
-        m_lineInfo( lineInfo )
-    {}
+        m_lineInfo( lineInfo ),
+        m_isHidden( startsWith( name, "./" ) )
+    {
+        extractTags( m_description, m_tags );
+        if( hasTag( "hide" ) )
+            m_isHidden = true;
+    }
 
     TestCaseInfo::TestCaseInfo()
     :   m_test( NULL ),
         m_name(),
-        m_description()
+        m_description(),
+        m_isHidden( false )
     {}
 
     TestCaseInfo::TestCaseInfo( const TestCaseInfo& other, const std::string& name )
     :   m_test( other.m_test ),
         m_name( name ),
         m_description( other.m_description ),
-        m_lineInfo( other.m_lineInfo )
+        m_tags( other.m_tags ),
+        m_lineInfo( other.m_lineInfo ),
+        m_isHidden( other.m_isHidden )
     {}
 
     TestCaseInfo::TestCaseInfo( const TestCaseInfo& other )
     :   m_test( other.m_test ),
         m_name( other.m_name ),
         m_description( other.m_description ),
-        m_lineInfo( other.m_lineInfo )
+        m_tags( other.m_tags ),
+        m_lineInfo( other.m_lineInfo ),
+        m_isHidden( other.m_isHidden )
     {}
 
     void TestCaseInfo::invoke() const {
@@ -5050,7 +5098,14 @@ namespace Catch {
     }
 
     bool TestCaseInfo::isHidden() const {
-        return m_name.size() >= 2 && m_name[0] == '.' && m_name[1] == '/';
+        return m_isHidden;
+    }
+
+    bool TestCaseInfo::hasTag( const std::string& tag ) const {
+        return m_tags.find( tag ) != m_tags.end();
+    }
+    const std::set<std::string>& TestCaseInfo::tags() const {
+        return m_tags;
     }
 
     void TestCaseInfo::swap( TestCaseInfo& other ) {
