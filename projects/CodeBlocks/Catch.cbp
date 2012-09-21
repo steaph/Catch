@@ -117,6 +117,7 @@
 		<Unit filename="..\VS6\TestCatch\compile-10-most.bat" />
 		<Unit filename="..\VS6\TestCatch\compile-debug.bat" />
 		<Unit filename="..\VS6\TestCatch\compile.bat" />
+		<Unit filename="..\VS6\TestCatch\mk-help.bat" />
 		<Unit filename="..\VS6\Tutorial\compile.bat" />
 		<Unit filename="..\XCode3\OCTest\CatchOCTestCase.h" />
 		<Unit filename="..\XCode3\OCTest\TestObj.h" />
