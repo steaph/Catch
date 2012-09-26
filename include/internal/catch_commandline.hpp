@@ -188,10 +188,10 @@ namespace Catch {
                 m_optionNames.push_back( "--help" );
             }
             virtual std::string argsSynopsis() const {
-                return "[<option for help on>]";
+                return "[<option for help on> ...]";
             }
             virtual std::string optionSummary() const {
-                return "Shows this usage summary, or help on a specific option, if supplied";
+                return "Shows this usage summary, or help on a specific option, or options, if supplied";
             }
             virtual std::string optionDescription() const {
                 return "";
@@ -249,7 +249,7 @@ namespace Catch {
                     "    -t a/* ~a/b/* a/b/c    \tMatches all tests that start with 'a/', except those "
                                                  "that start with 'a/b/', except 'a/b/c', which is included";
             }
-                            
+
             virtual void parseIntoConfig( const Command& cmd, ConfigData& config ) {
                 std::string groupName;
                 for( std::size_t i = 0; i < cmd.argsCount(); ++i ) {
@@ -284,22 +284,22 @@ namespace Catch {
                 return
                 "!TBD";
             }
-            
+
             virtual void parseIntoConfig( const Command& cmd, ConfigData& config ) {
-//                std::string groupName;
-//                for( std::size_t i = 0; i < cmd.argsCount(); ++i ) {
-//                    if( i != 0 )
-//                        groupName += " ";
-//                    groupName += cmd[i];
-//                }
-//                TestCaseFilters filters( groupName );
-//                for( std::size_t i = 0; i < cmd.argsCount(); ++i )
-//                    filters.addFilter( TestCaseFilter( cmd[i] ) );
-//                config.filters.push_back( filters );
+                std::string groupName;
+                for( std::size_t i = 0; i < cmd.argsCount(); ++i ) {
+                    if( i != 0 )
+                        groupName += " ";
+                    groupName += cmd[i];
+                }
+                TestCaseFilters filters( groupName );
+                {for( std::size_t i = 0; i < cmd.argsCount(); ++i )
+                    filters.addTags( cmd[i] ); }
+                config.filters.push_back( filters );
             }
         };
 
-        
+
         class ListOptionParser : public OptionParser {
         public:
             ListOptionParser() : OptionParser( 0, 2 ) {
@@ -623,6 +623,7 @@ namespace Catch {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             add(Options::TestCaseOptionParser());   // Keep this one first
 
+            add(Options::TagOptionParser());
             add(Options::ListOptionParser());
             add(Options::ReporterOptionParser());
             add(Options::OutputOptionParser());
@@ -637,6 +638,7 @@ namespace Catch {
 #else
             add<Options::TestCaseOptionParser>();   // Keep this one first
 
+            add<Options::TagOptionParser>();
             add<Options::ListOptionParser>();
             add<Options::ReporterOptionParser>();
             add<Options::OutputOptionParser>();
