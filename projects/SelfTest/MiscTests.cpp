@@ -304,6 +304,15 @@ TEST_CASE( "first tag", "[tag1]" )
 TEST_CASE( "second tag", "[tag2]" )
 {
 }
+//
+//TEST_CASE( "spawn a new process", "[hide]" )
+//{
+//    // !TBD Work in progress
+//    char line[200];
+//    FILE* output = popen("./CatchSelfTest ./failing/matchers/StartsWith", "r");
+//    while ( fgets(line, 199, output) )
+//        std::cout << line;
+//}
 
 ANON_TEST_CASE()
 {
