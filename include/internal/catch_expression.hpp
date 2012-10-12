@@ -87,7 +87,7 @@ private:
     template<Internal::Operator Op, typename RhsT>
     ResultInfoBuilder& captureExpression( const RhsT& rhs ) {
         return m_result
-            .setResultType( Internal::compare<Op>( m_lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed )
+            .setResultType( Internal::Comparator<Op>::compare( m_lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed )
             .setRhs( Catch::toString( rhs ) )
             .setOp( Internal::OperatorTraits<Op>::getName() );
     }
