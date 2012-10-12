@@ -54,13 +54,9 @@ public:
 
 private:
     ResultData m_data;
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 public:
-#endif
     std::string m_lhs, m_rhs, m_op;
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 private:
-#endif
     bool m_isFalse;
 };
 

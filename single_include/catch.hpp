@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-10-12 21:14:34.125000
+ *  Generated: 2012-10-12 23:23:37.029000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -1083,13 +1083,9 @@ public:
 
 private:
     ResultData m_data;
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 public:
-#endif
     std::string m_lhs, m_rhs, m_op;
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 private:
-#endif
     bool m_isFalse;
 };
 
@@ -1203,7 +1199,7 @@ private:
     template<Internal::Operator Op, typename RhsT>
     ResultInfoBuilder& captureExpression( const RhsT& rhs ) {
         return m_result
-            .setResultType( Internal::compare<Op>( m_lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed )
+            .setResultType( Internal::Comparator<Op>::compare( m_lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed )
             .setRhs( Catch::toString( rhs ) )
             .setOp( Internal::OperatorTraits<Op>::getName() );
     }
