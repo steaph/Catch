@@ -12,33 +12,39 @@
 
 namespace Catch {
 
-    ResultInfoBuilder::ResultInfoBuilder(   const char* expr,
-                                            bool isNot,
-                                            const SourceLineInfo& lineInfo,
-                                            const char* macroName )
-    : ResultInfo( expr, ResultWas::Unknown, isNot, lineInfo, macroName, "" )
-    {}
-
     ResultInfoBuilder::ResultInfoBuilder() {}
 
     ResultInfoBuilder& ResultInfoBuilder::setResultType( ResultWas::OfType result ) {
-        // Flip bool results if isNot is set
-        if( m_isNot && result == ResultWas::Ok )
-            m_result = ResultWas::ExpressionFailed;
-        else if( m_isNot && result == ResultWas::ExpressionFailed )
-            m_result = ResultWas::Ok;
+        // Flip bool results if isFalse is set
+        if( m_isFalse && result == ResultWas::Ok )
+            m_data.resultType = ResultWas::ExpressionFailed;
+        else if( m_isFalse && result == ResultWas::ExpressionFailed )
+            m_data.resultType = ResultWas::Ok;
         else
-            m_result = result;
+            m_data.resultType = result;
+        return *this;
+    }
+    ResultInfoBuilder& ResultInfoBuilder::setCapturedExpression( const std::string& capturedExpression ) {
+        m_data.capturedExpression = capturedExpression;
+        return *this;
+    }
+    ResultInfoBuilder& ResultInfoBuilder::setIsFalse( bool isFalse ) {
+        m_isFalse = isFalse;
         return *this;
     }
 
     ResultInfoBuilder& ResultInfoBuilder::setMessage( const std::string& message ) {
-        m_message = message;
+        m_data.message = message;
         return *this;
     }
 
     ResultInfoBuilder& ResultInfoBuilder::setLineInfo( const SourceLineInfo& lineInfo ) {
-        m_lineInfo = lineInfo;
+        m_data.lineInfo = lineInfo;
+        return *this;
+    }
+
+    ResultInfoBuilder& ResultInfoBuilder::setMacroName( const std::string& macroName ) {
+        m_data.macroName = macroName;
         return *this;
     }
 
@@ -57,16 +63,38 @@ namespace Catch {
         return *this;
     }
 
-    ResultInfoBuilder& ResultInfoBuilder::setMacroName( const std::string& macroName ) {
-        m_macroName = macroName;
-        return *this;
+    ResultInfo ResultInfoBuilder::build() const
+    {
+        ResultData data = m_data;
+        data.reconstructedExpression = reconstructExpression();
+        if( m_isFalse ) {
+            if( m_op == "" ) {
+                data.capturedExpression = "!" + data.capturedExpression;
+                data.reconstructedExpression = "!" + data.reconstructedExpression;
+            }
+            else {
+                data.capturedExpression = "!(" + data.capturedExpression + ")";
+                data.reconstructedExpression = "!(" + data.reconstructedExpression + ")";
+            }
+        }
+        return ResultInfo( data );
     }
 
-    ResultInfoBuilder& ResultInfoBuilder::captureBoolExpression( bool result ) {
-        m_lhs = Catch::toString( result );
-        m_op = m_isNot ? "!" : "";
-        setResultType( result ? ResultWas::Ok : ResultWas::ExpressionFailed );
-        return *this;
+    std::string ResultInfoBuilder::reconstructExpression() const {
+        if( m_op == "" )
+            return m_lhs.empty() ? m_data.capturedExpression : m_op + m_lhs;
+        else if( m_op == "matches" )
+            return m_lhs + " " + m_rhs;
+        else if( m_op != "!" ) {
+            if( m_lhs.size() + m_rhs.size() < 30 )
+                return m_lhs + " " + m_op + " " + m_rhs;
+            else if( m_lhs.size() < 70 && m_rhs.size() < 70 )
+                return "\n\t" + m_lhs + "\n\t" + m_op + "\n\t" + m_rhs;
+            else
+                return "\n" + m_lhs + "\n" + m_op + "\n" + m_rhs + "\n\n";
+        }
+        else
+            return "{can't expand - use " + m_data.macroName + "_FALSE( " + m_data.capturedExpression.substr(1) + " ) instead of " + m_data.macroName + "( " + m_data.capturedExpression + " ) for better diagnostics}";
     }
 
 } // end namespace Catch

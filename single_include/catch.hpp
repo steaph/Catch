@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-10-04 18:36:51.832000
+ *  Generated: 2012-10-12 21:14:34.125000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -685,6 +685,10 @@ struct ResultWas { enum OfType {
 
 }; };
 
+inline bool isOk( ResultWas::OfType resultType ) {
+    return ( resultType & ResultWas::FailureBit ) == 0;
+}
+
 struct ResultAction { enum Value {
     None,
     Failed = 1, // Failure - but no debug break if Debug bit not set
@@ -697,9 +701,22 @@ struct ResultAction { enum Value {
 
 namespace Catch {
 
+    struct ResultData
+    {
+        ResultData() : resultType( ResultWas::Unknown ) {}
+
+        std::string macroName;
+        SourceLineInfo lineInfo;
+        std::string capturedExpression;
+        std::string reconstructedExpression;
+        std::string message;
+        ResultWas::OfType resultType;
+    };
+
     class ResultInfo {
     public:
         ResultInfo();
+        ResultInfo( const ResultData& data );
         ~ResultInfo();
 
         bool ok() const;
@@ -714,28 +731,12 @@ namespace Catch {
         std::size_t getLine() const;
         std::string getTestMacroName() const;
 
-    protected:
-        ResultInfo( const char* expr,
-                   ResultWas::OfType result,
-                   bool isNot,
-                   const SourceLineInfo& lineInfo,
-                   const char* macroName,
-                   const char* message );
-
-        std::string getExpandedExpressionInternal() const;
-        bool isNotExpression( const char* expr );
-
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
     public:
 #else
     protected:
 #endif
-        std::string m_macroName;
-        SourceLineInfo m_lineInfo;
-        std::string m_expr, m_lhs, m_rhs, m_op;
-        std::string m_message;
-        ResultWas::OfType m_result;
-        bool m_isNot;
+        ResultData m_data;
     };
 
 } // end namespace Catch
@@ -1051,12 +1052,14 @@ namespace Internal {
 
 struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
 
-class ResultInfoBuilder : public ResultInfo {
+class ResultInfoBuilder {
 public:
 
     ResultInfoBuilder();
 
     ResultInfoBuilder& setResultType( ResultWas::OfType result );
+    ResultInfoBuilder& setCapturedExpression( const std::string& capturedExpression );
+    ResultInfoBuilder& setIsFalse( bool isFalse );
     ResultInfoBuilder& setMessage( const std::string& message );
     ResultInfoBuilder& setLineInfo( const SourceLineInfo& lineInfo );
     ResultInfoBuilder& setLhs( const std::string& lhs );
@@ -1064,33 +1067,30 @@ public:
     ResultInfoBuilder& setOp( const std::string& op );
     ResultInfoBuilder& setMacroName( const std::string& macroName );
 
+    std::string reconstructExpression() const;
+
+    ResultInfo build() const;
+
+    // Disable attempts to use || and && in expressions (without parantheses)
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator || ( const RhsT& );
-
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator && ( const RhsT& );
 
+    bool getIsFalse() const {
+        return m_isFalse;
+    }
+
+private:
+    ResultData m_data;
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 public:
-#else
+#endif
+    std::string m_lhs, m_rhs, m_op;
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 private:
 #endif
-    ResultInfoBuilder(  const char* expr,
-                      bool isNot,
-                      const SourceLineInfo& lineInfo,
-                      const char* macroName );
-
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-private:
-
-    friend class ExpressionBuilder;
-    template<typename T> friend class Expression;
-
-    template<typename T> friend class PtrExpression;
-    template<Internal::Operator Op> friend class Internal::Apply;
-#endif
-
-    ResultInfoBuilder& captureBoolExpression( bool result );
+    bool m_isFalse;
 };
 
 namespace Internal {
@@ -1140,9 +1140,16 @@ class Expression {
 
 public:
     Expression( ResultInfoBuilder& result, T lhs )
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+// prevent  error C2354: initialization of reference member requires a temporary variable
     :   m_result( result ),
         m_lhs( lhs )
+    { (void) result.setLhs( Catch::toString( lhs ) ); }
+#else
+    :   m_result( result.setLhs( Catch::toString( lhs ) ) ),
+        m_lhs( lhs )
     {}
+#endif
 
     template<typename RhsT>
     ResultInfoBuilder& operator == ( const RhsT& rhs ) {
@@ -1183,7 +1190,7 @@ public:
     }
 
     operator ResultInfoBuilder& () {
-        return m_result.captureBoolExpression( m_lhs );
+        return m_result.setResultType( m_lhs ? ResultWas::Ok : ResultWas::ExpressionFailed );
     }
 
     template<typename RhsT>
@@ -1191,6 +1198,15 @@ public:
 
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator - ( const RhsT& );
+
+private:
+    template<Internal::Operator Op, typename RhsT>
+    ResultInfoBuilder& captureExpression( const RhsT& rhs ) {
+        return m_result
+            .setResultType( Internal::compare<Op>( m_lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed )
+            .setRhs( Catch::toString( rhs ) )
+            .setOp( Internal::OperatorTraits<Op>::getName() );
+    }
 
 private:
     ResultInfoBuilder& m_result;
@@ -1213,10 +1229,15 @@ public:
     ExpressionBuilder(  const SourceLineInfo& lineInfo,
                         const char* macroName,
                         const char* expr = "",
-                        bool isNot = false )
-    : m_result( expr, isNot, lineInfo, macroName ),
-      m_messageStream()
-    {}
+                        bool isFalse = false )
+    : m_messageStream()
+    {
+        m_result
+            .setCapturedExpression( expr )
+            .setIsFalse( isFalse )
+            .setLineInfo( lineInfo )
+            .setMacroName( macroName );
+    }
 
     template<typename T>
     Expression<const T&> operator->* ( const T & operand ) {
@@ -1239,13 +1260,14 @@ public:
     ExpressionBuilder& acceptMatcher(   const MatcherT& matcher,
                                         const ArgT& arg,
                                         const std::string& matcherCallAsString ) {
-        std::string matcherAsString = Catch::toString( matcher );
+        std::string matcherAsString = matcher.toString();
         if( matcherAsString == "{?}" )
             matcherAsString = matcherCallAsString;
-        m_result.setLhs( Catch::toString( arg ) );
-        m_result.setRhs( matcherAsString );
-        m_result.setOp( "matches" );
-        m_result.setResultType( matcher( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
+        m_result
+            .setLhs( Catch::toString( arg ) )
+            .setRhs( matcherAsString )
+            .setOp( "matches" )
+            .setResultType( matcher.match( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
         return *this;
     }
 
@@ -1253,13 +1275,14 @@ public:
     ExpressionBuilder& acceptMatcher(   const MatcherT& matcher,
                                         ArgT* arg,
                                         const std::string& matcherCallAsString ) {
-        std::string matcherAsString = Catch::toString( matcher );
+        std::string matcherAsString = matcher.toString();
         if( matcherAsString == "{?}" )
             matcherAsString = matcherCallAsString;
-        m_result.setLhs( Catch::toString( arg ) );
-        m_result.setRhs( matcherAsString );
-        m_result.setOp( "matches" );
-        m_result.setResultType( matcher( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
+        m_result
+            .setLhs( Catch::toString( arg ) )
+            .setRhs( matcherAsString )
+            .setOp( "matches" )
+            .setResultType( matcher.match( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
         return *this;
     }
 
@@ -1510,7 +1533,8 @@ public:
         return ResultInfoBuilder()
             .setResultType( ResultWas::Info )
             .setMessage( m_oss.str() )
-            .setMacroName( "SCOPED_INFO" );
+            .setMacroName( "SCOPED_INFO" )
+            .build();
     }
 
 private:
@@ -1532,9 +1556,9 @@ inline bool isTrue( bool value ){ return value; }
     }
 
 ///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_TEST( expr, isNot, stopOnFailure, macroName ) \
+#define INTERNAL_CATCH_TEST( expr, isFalse, stopOnFailure, macroName ) \
     do { try { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #expr, isNot )->*expr ), stopOnFailure, expr ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #expr, isFalse )->*expr ), stopOnFailure, expr ); \
     } catch( Catch::TestFailureException& ) { \
         throw; \
     } catch( ... ) { \
@@ -1543,13 +1567,13 @@ inline bool isTrue( bool value ){ return value; }
     } } while( Catch::isTrue( false ) )
 
 ///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_IF( expr, isNot, stopOnFailure, macroName ) \
-    INTERNAL_CATCH_TEST( expr, isNot, stopOnFailure, macroName ); \
+#define INTERNAL_CATCH_IF( expr, isFalse, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_TEST( expr, isFalse, stopOnFailure, macroName ); \
     if( Catch::getCurrentContext().getResultCapture().getLastResult()->ok() )
 
 ///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_ELSE( expr, isNot, stopOnFailure, macroName ) \
-    INTERNAL_CATCH_TEST( expr, isNot, stopOnFailure, macroName ); \
+#define INTERNAL_CATCH_ELSE( expr, isFalse, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_TEST( expr, isFalse, stopOnFailure, macroName ); \
     if( !Catch::getCurrentContext().getResultCapture().getLastResult()->ok() )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2734,7 +2758,7 @@ namespace Detail {
 
         std::string toString() const {
             std::ostringstream oss;
-            oss << "Approx( " << m_value << ")";
+            oss << "Approx( " << m_value << " )";
             return oss.str();
         }
 
@@ -2758,73 +2782,188 @@ inline std::string toString<Detail::Approx>( const Detail::Approx& value ) {
 namespace Catch {
 namespace Matchers {
     namespace Impl {
+
+    template<typename ExpressionT>
+    struct Matcher : SharedImpl<IShared>
+    {
+        virtual ~Matcher() {}
+        virtual Ptr<Matcher> clone() const = 0;
+        virtual bool match( const ExpressionT& expr ) const = 0;
+        virtual std::string toString() const = 0;
+    };
+
+    template<typename DerivedT, typename ExpressionT>
+    struct MatcherImpl : Matcher<ExpressionT> {
+
+        virtual Ptr<Matcher<ExpressionT> > clone() const {
+            return Ptr<Matcher<ExpressionT> >( new DerivedT( static_cast<const DerivedT&>( *this ) ) );
+        }
+    };
+
+    namespace Generic {
+
+        template<typename ExpressionT>
+        class AllOf : public MatcherImpl<AllOf<ExpressionT>, ExpressionT> {
+        public:
+
+            AllOf() {}
+            AllOf( const AllOf& other ) : m_matchers( other.m_matchers ) {}
+
+            AllOf& add( const Matcher<ExpressionT>& matcher ) {
+                m_matchers.push_back( matcher.clone() );
+                return *this;
+            }
+            virtual bool match( const ExpressionT& expr ) const
+            {
+                for( std::size_t i = 0; i < m_matchers.size(); ++i )
+                    if( !m_matchers[i]->match( expr ) )
+                        return false;
+                return true;
+            }
+            virtual std::string toString() const {
+                std::ostringstream oss;
+                oss << "( ";
+                for( std::size_t i = 0; i < m_matchers.size(); ++i ) {
+                    if( i != 0 )
+                        oss << " and ";
+                    oss << m_matchers[i]->toString();
+                }
+                oss << " )";
+                return oss.str();
+            }
+
+        private:
+            std::vector<Ptr<Matcher<ExpressionT> > > m_matchers;
+        };
+
+        template<typename ExpressionT>
+        class AnyOf : public MatcherImpl<AnyOf<ExpressionT>, ExpressionT> {
+        public:
+
+            AnyOf() {}
+            AnyOf( const AnyOf& other ) : m_matchers( other.m_matchers ) {}
+
+            AnyOf& add( const Matcher<ExpressionT>& matcher ) {
+                m_matchers.push_back( matcher.clone() );
+                return *this;
+            }
+            virtual bool match( const ExpressionT& expr ) const
+            {
+                for( std::size_t i = 0; i < m_matchers.size(); ++i )
+                    if( m_matchers[i]->match( expr ) )
+                        return true;
+                return false;
+            }
+            virtual std::string toString() const {
+                std::ostringstream oss;
+                oss << "( ";
+                for( std::size_t i = 0; i < m_matchers.size(); ++i ) {
+                    if( i != 0 )
+                        oss << " or ";
+                    oss << m_matchers[i]->toString();
+                }
+                oss << " )";
+                return oss.str();
+            }
+
+        private:
+            std::vector<Ptr<Matcher<ExpressionT> > > m_matchers;
+        };
+
+    }
+
     namespace StdString {
 
-        struct Equals {
+        struct Equals : MatcherImpl<Equals, std::string> {
             Equals( const std::string& str ) : m_str( str ){}
+            Equals( const Equals& other ) : m_str( other.m_str ){}
 
-            bool operator()( const std::string& str ) const
-            {
-                return str == m_str;
+            virtual ~Equals();
+
+            virtual bool match( const std::string& expr ) const {
+                return m_str == expr;
+            }
+            virtual std::string toString() const {
+                return "equals: \"" + m_str + "\"";
             }
 
-            friend std::ostream& operator<<( std::ostream& os, const Equals& matcher )
-            {
-                os << "equals: \"" << matcher.m_str << "\"";
-                return os;
-            }
             std::string m_str;
         };
 
-        struct Contains {
+        struct Contains : MatcherImpl<Contains, std::string> {
             Contains( const std::string& substr ) : m_substr( substr ){}
+            Contains( const Contains& other ) : m_substr( other.m_substr ){}
 
-            bool operator()( const std::string& str ) const
-            {
-                return str.find( m_substr ) != std::string::npos;
+            virtual ~Contains();
+
+            virtual bool match( const std::string& expr ) const {
+                return expr.find( m_substr ) != std::string::npos;
+            }
+            virtual std::string toString() const {
+                return "contains: \"" + m_substr + "\"";
             }
 
-            friend std::ostream& operator<<( std::ostream& os, const Contains& matcher )
-            {
-                os << "contains: \"" << matcher.m_substr << "\"";
-                return os;
-            }
             std::string m_substr;
         };
 
-        struct StartsWith {
+        struct StartsWith : MatcherImpl<StartsWith, std::string> {
             StartsWith( const std::string& substr ) : m_substr( substr ){}
+            StartsWith( const StartsWith& other ) : m_substr( other.m_substr ){}
 
-            bool operator()( const std::string& str ) const
-            {
-                return str.find( m_substr ) == 0;
+            virtual ~StartsWith();
+
+            virtual bool match( const std::string& expr ) const {
+                return expr.find( m_substr ) == 0;
+            }
+            virtual std::string toString() const {
+                return "starts with: \"" + m_substr + "\"";
             }
 
-            friend std::ostream& operator<<( std::ostream& os, const StartsWith& matcher )
-            {
-                os << "starts with: \"" << matcher.m_substr << "\"";
-                return os;
-            }
             std::string m_substr;
         };
 
-        struct EndsWith {
+        struct EndsWith : MatcherImpl<EndsWith, std::string> {
             EndsWith( const std::string& substr ) : m_substr( substr ){}
+            EndsWith( const EndsWith& other ) : m_substr( other.m_substr ){}
 
-            bool operator()( const std::string& str ) const
-            {
-                return str.find( m_substr ) == str.size() - m_substr.size();
+            virtual ~EndsWith();
+
+            virtual bool match( const std::string& expr ) const {
+                return expr.find( m_substr ) == expr.size() - m_substr.size();
+            }
+            virtual std::string toString() const {
+                return "ends with: \"" + m_substr + "\"";
             }
 
-            friend std::ostream& operator<<( std::ostream& os, const EndsWith& matcher )
-            {
-                os << "ends with: \"" << matcher.m_substr << "\"";
-                return os;
-            }
             std::string m_substr;
         };
     } // namespace StdString
     } // namespace Impl
+
+    // The following functions create the actual matcher objects.
+    // This allows the types to be inferred
+    template<typename ExpressionT>
+    inline Impl::Generic::AllOf<ExpressionT> AllOf( const Impl::Matcher<ExpressionT>& m1,
+                                                    const Impl::Matcher<ExpressionT>& m2 ) {
+        return Impl::Generic::AllOf<ExpressionT>().add( m1 ).add( m2 );
+    }
+    template<typename ExpressionT>
+    inline Impl::Generic::AllOf<ExpressionT> AllOf( const Impl::Matcher<ExpressionT>& m1,
+                                                    const Impl::Matcher<ExpressionT>& m2,
+                                                    const Impl::Matcher<ExpressionT>& m3 ) {
+        return Impl::Generic::AllOf<ExpressionT>().add( m1 ).add( m2 ).add( m3 );
+    }
+    template<typename ExpressionT>
+    inline Impl::Generic::AnyOf<ExpressionT> AnyOf( const Impl::Matcher<ExpressionT>& m1,
+                                                    const Impl::Matcher<ExpressionT>& m2 ) {
+        return Impl::Generic::AnyOf<ExpressionT>().add( m1 ).add( m2 );
+    }
+    template<typename ExpressionT>
+    inline Impl::Generic::AnyOf<ExpressionT> AnyOf( const Impl::Matcher<ExpressionT>& m1,
+                                                    const Impl::Matcher<ExpressionT>& m2,
+                                                    const Impl::Matcher<ExpressionT>& m3 ) {
+        return Impl::Generic::AnyOf<ExpressionT>().add( m1 ).add( m2 ).add( m3 );
+    }
 
     inline Impl::StdString::Equals      Equals( const std::string& str ){ return Impl::StdString::Equals( str ); }
     inline Impl::StdString::Contains    Contains( const std::string& substr ){ return Impl::StdString::Contains( substr ); }
@@ -4218,8 +4357,8 @@ namespace Catch {
     private:
 
         ResultAction::Value actOnCurrentResult() {
-            testEnded( m_currentResult );
-            m_lastResult = m_currentResult;
+            m_lastResult = m_currentResult.build();
+            testEnded( m_lastResult );
 
             m_currentResult = ResultInfoBuilder();
 
@@ -5141,103 +5280,54 @@ namespace Catch {
 
 namespace Catch {
 
-    ResultInfo::ResultInfo()
-    :   m_macroName(),
-        m_expr(),
-        m_lhs(),
-        m_rhs(),
-        m_op(),
-        m_message(),
-        m_result( ResultWas::Unknown ),
-        m_isNot( false )
-        {}
+    ResultInfo::ResultInfo() {}
 
-    ResultInfo::ResultInfo(const char* expr,
-                           ResultWas::OfType result,
-                           bool isNot,
-                           const SourceLineInfo& lineInfo,
-                           const char* macroName,
-                           const char* message )
-    :   m_macroName( macroName ),
-        m_lineInfo( lineInfo ),
-        m_expr( expr ),
-        m_lhs(),
-        m_rhs(),
-        m_op( isNotExpression( expr ) ? "!" : "" ),
-        m_message( message ),
-        m_result( result ),
-        m_isNot( isNot )
-        {
-            if( isNot )
-                m_expr = "!(" + m_expr + ")";
-        }
+    ResultInfo::ResultInfo( const ResultData& data ) : m_data( data ) {}
 
     ResultInfo::~ResultInfo() {}
 
     bool ResultInfo::ok() const {
-        return ( m_result & ResultWas::FailureBit ) != ResultWas::FailureBit;
+        return isOk( m_data.resultType );
     }
 
     ResultWas::OfType ResultInfo::getResultType() const {
-        return m_result;
+        return m_data.resultType;
     }
 
     bool ResultInfo::hasExpression() const {
-        return !m_expr.empty();
+        return !m_data.capturedExpression.empty();
     }
 
     bool ResultInfo::hasMessage() const {
-        return !m_message.empty();
+        return !m_data.message.empty();
     }
 
     std::string ResultInfo::getExpression() const {
-        return m_expr;
+        return m_data.capturedExpression;
     }
 
     bool ResultInfo::hasExpandedExpression() const {
-        return hasExpression() && getExpandedExpressionInternal() != m_expr;
+        return hasExpression() && getExpandedExpression() != getExpression();
     }
 
     std::string ResultInfo::getExpandedExpression() const {
-        return hasExpression() ? getExpandedExpressionInternal() : "";
+        return m_data.reconstructedExpression;
     }
 
     std::string ResultInfo::getMessage() const {
-        return m_message;
+        return m_data.message;
     }
 
     std::string ResultInfo::getFilename() const {
-        return m_lineInfo.file;
+        return m_data.lineInfo.file;
     }
 
     std::size_t ResultInfo::getLine() const {
-        return m_lineInfo.line;
+        return m_data.lineInfo.line;
     }
 
     std::string ResultInfo::getTestMacroName() const {
-        return m_macroName;
-    }
-
-    std::string ResultInfo::getExpandedExpressionInternal() const {
-        if( m_op == "" || m_isNot )
-            return m_lhs.empty() ? m_expr : m_op + m_lhs;
-        else if( m_op == "matches" )
-            return m_lhs + " " + m_rhs;
-        else if( m_op != "!" )
-        {
-            if( m_lhs.size() + m_rhs.size() < 30 )
-                return m_lhs + " " + m_op + " " + m_rhs;
-            else if( m_lhs.size() < 70 && m_rhs.size() < 70 )
-                return "\n\t" + m_lhs + "\n\t" + m_op + "\n\t" + m_rhs;
-            else
-                return "\n" + m_lhs + "\n" + m_op + "\n" + m_rhs + "\n\n";
-        }
-        else
-            return "{can't expand - use " + m_macroName + "_FALSE( " + m_expr.substr(1) + " ) instead of " + m_macroName + "( " + m_expr + " ) for better diagnostics}";
-    }
-
-    bool ResultInfo::isNotExpression( const char* expr ) {
-        return expr && expr[0] == '!';
+        return m_data.macroName;
     }
 
 } // end namespace Catch
@@ -5247,33 +5337,39 @@ namespace Catch {
 
 namespace Catch {
 
-    ResultInfoBuilder::ResultInfoBuilder(   const char* expr,
-                                            bool isNot,
-                                            const SourceLineInfo& lineInfo,
-                                            const char* macroName )
-    : ResultInfo( expr, ResultWas::Unknown, isNot, lineInfo, macroName, "" )
-    {}
-
     ResultInfoBuilder::ResultInfoBuilder() {}
 
     ResultInfoBuilder& ResultInfoBuilder::setResultType( ResultWas::OfType result ) {
-        // Flip bool results if isNot is set
-        if( m_isNot && result == ResultWas::Ok )
-            m_result = ResultWas::ExpressionFailed;
-        else if( m_isNot && result == ResultWas::ExpressionFailed )
-            m_result = ResultWas::Ok;
+        // Flip bool results if isFalse is set
+        if( m_isFalse && result == ResultWas::Ok )
+            m_data.resultType = ResultWas::ExpressionFailed;
+        else if( m_isFalse && result == ResultWas::ExpressionFailed )
+            m_data.resultType = ResultWas::Ok;
         else
-            m_result = result;
+            m_data.resultType = result;
+        return *this;
+    }
+    ResultInfoBuilder& ResultInfoBuilder::setCapturedExpression( const std::string& capturedExpression ) {
+        m_data.capturedExpression = capturedExpression;
+        return *this;
+    }
+    ResultInfoBuilder& ResultInfoBuilder::setIsFalse( bool isFalse ) {
+        m_isFalse = isFalse;
         return *this;
     }
 
     ResultInfoBuilder& ResultInfoBuilder::setMessage( const std::string& message ) {
-        m_message = message;
+        m_data.message = message;
         return *this;
     }
 
     ResultInfoBuilder& ResultInfoBuilder::setLineInfo( const SourceLineInfo& lineInfo ) {
-        m_lineInfo = lineInfo;
+        m_data.lineInfo = lineInfo;
+        return *this;
+    }
+
+    ResultInfoBuilder& ResultInfoBuilder::setMacroName( const std::string& macroName ) {
+        m_data.macroName = macroName;
         return *this;
     }
 
@@ -5292,16 +5388,38 @@ namespace Catch {
         return *this;
     }
 
-    ResultInfoBuilder& ResultInfoBuilder::setMacroName( const std::string& macroName ) {
-        m_macroName = macroName;
-        return *this;
+    ResultInfo ResultInfoBuilder::build() const
+    {
+        ResultData data = m_data;
+        data.reconstructedExpression = reconstructExpression();
+        if( m_isFalse ) {
+            if( m_op == "" ) {
+                data.capturedExpression = "!" + data.capturedExpression;
+                data.reconstructedExpression = "!" + data.reconstructedExpression;
+            }
+            else {
+                data.capturedExpression = "!(" + data.capturedExpression + ")";
+                data.reconstructedExpression = "!(" + data.reconstructedExpression + ")";
+            }
+        }
+        return ResultInfo( data );
     }
 
-    ResultInfoBuilder& ResultInfoBuilder::captureBoolExpression( bool result ) {
-        m_lhs = Catch::toString( result );
-        m_op = m_isNot ? "!" : "";
-        setResultType( result ? ResultWas::Ok : ResultWas::ExpressionFailed );
-        return *this;
+    std::string ResultInfoBuilder::reconstructExpression() const {
+        if( m_op == "" )
+            return m_lhs.empty() ? m_data.capturedExpression : m_op + m_lhs;
+        else if( m_op == "matches" )
+            return m_lhs + " " + m_rhs;
+        else if( m_op != "!" ) {
+            if( m_lhs.size() + m_rhs.size() < 30 )
+                return m_lhs + " " + m_op + " " + m_rhs;
+            else if( m_lhs.size() < 70 && m_rhs.size() < 70 )
+                return "\n\t" + m_lhs + "\n\t" + m_op + "\n\t" + m_rhs;
+            else
+                return "\n" + m_lhs + "\n" + m_op + "\n" + m_rhs + "\n\n";
+        }
+        else
+            return "{can't expand - use " + m_data.macroName + "_FALSE( " + m_data.capturedExpression.substr(1) + " ) instead of " + m_data.macroName + "( " + m_data.capturedExpression + " ) for better diagnostics}";
     }
 
 } // end namespace Catch
@@ -5659,6 +5777,10 @@ namespace Catch {
 
             if( resultInfo.hasExpandedExpression() ) {
                 m_config.stream << " for: ";
+                if( resultInfo.getExpandedExpression().size() > 40 )
+                    m_config.stream << "\n";
+                if( resultInfo.getExpandedExpression().size() < 70 )
+                    m_config.stream << "\t";
                 TextColour colour( TextColour::ReconstructedExpression );
                 m_config.stream << resultInfo.getExpandedExpression();
             }
@@ -6333,6 +6455,11 @@ namespace Catch {
     TagParser::~TagParser() {}
     TagExtracter::~TagExtracter() {}
     TagExpressionParser::~TagExpressionParser() {}
+
+    Matchers::Impl::StdString::Equals::~Equals() {}
+    Matchers::Impl::StdString::Contains::~Contains() {}
+    Matchers::Impl::StdString::StartsWith::~StartsWith() {}
+    Matchers::Impl::StdString::EndsWith::~EndsWith() {}
 
     void Config::dummy() {}
 

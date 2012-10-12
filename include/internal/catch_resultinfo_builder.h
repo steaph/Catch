@@ -23,12 +23,14 @@ namespace Internal {
 
 struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
 
-class ResultInfoBuilder : public ResultInfo {
+class ResultInfoBuilder {
 public:
 
     ResultInfoBuilder();
 
     ResultInfoBuilder& setResultType( ResultWas::OfType result );
+    ResultInfoBuilder& setCapturedExpression( const std::string& capturedExpression );
+    ResultInfoBuilder& setIsFalse( bool isFalse );
     ResultInfoBuilder& setMessage( const std::string& message );
     ResultInfoBuilder& setLineInfo( const SourceLineInfo& lineInfo );
     ResultInfoBuilder& setLhs( const std::string& lhs );
@@ -36,33 +38,30 @@ public:
     ResultInfoBuilder& setOp( const std::string& op );
     ResultInfoBuilder& setMacroName( const std::string& macroName );
 
+    std::string reconstructExpression() const;
+
+    ResultInfo build() const;
+
+    // Disable attempts to use || and && in expressions (without parantheses)
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator || ( const RhsT& );
-
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator && ( const RhsT& );
 
+    bool getIsFalse() const {
+        return m_isFalse;
+    }
+
+private:
+    ResultData m_data;
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 public:
-#else
+#endif
+    std::string m_lhs, m_rhs, m_op;
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 private:
 #endif
-    ResultInfoBuilder(  const char* expr,
-                      bool isNot,
-                      const SourceLineInfo& lineInfo,
-                      const char* macroName );
-
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-private:
-
-    friend class ExpressionBuilder;
-    template<typename T> friend class Expression;
-
-    template<typename T> friend class PtrExpression;
-    template<Internal::Operator Op> friend class Internal::Apply;
-#endif
-
-    ResultInfoBuilder& captureBoolExpression( bool result );
+    bool m_isFalse;
 };
 
 namespace Internal {

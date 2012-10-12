@@ -24,9 +24,16 @@ class Expression {
 
 public:
     Expression( ResultInfoBuilder& result, T lhs )
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+// prevent  error C2354: initialization of reference member requires a temporary variable
     :   m_result( result ),
         m_lhs( lhs )
+    { (void) result.setLhs( Catch::toString( lhs ) ); }
+#else
+    :   m_result( result.setLhs( Catch::toString( lhs ) ) ),
+        m_lhs( lhs )
     {}
+#endif
 
     template<typename RhsT>
     ResultInfoBuilder& operator == ( const RhsT& rhs ) {
@@ -67,7 +74,7 @@ public:
     }
 
     operator ResultInfoBuilder& () {
-        return m_result.captureBoolExpression( m_lhs );
+        return m_result.setResultType( m_lhs ? ResultWas::Ok : ResultWas::ExpressionFailed );
     }
 
     template<typename RhsT>
@@ -75,6 +82,15 @@ public:
 
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator - ( const RhsT& );
+
+private:
+    template<Internal::Operator Op, typename RhsT>
+    ResultInfoBuilder& captureExpression( const RhsT& rhs ) {
+        return m_result
+            .setResultType( Internal::compare<Op>( m_lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed )
+            .setRhs( Catch::toString( rhs ) )
+            .setOp( Internal::OperatorTraits<Op>::getName() );
+    }
 
 private:
     ResultInfoBuilder& m_result;

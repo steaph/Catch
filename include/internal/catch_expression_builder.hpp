@@ -25,10 +25,15 @@ public:
     ExpressionBuilder(  const SourceLineInfo& lineInfo,
                         const char* macroName,
                         const char* expr = "",
-                        bool isNot = false )
-    : m_result( expr, isNot, lineInfo, macroName ),
-      m_messageStream()
-    {}
+                        bool isFalse = false )
+    : m_messageStream()
+    {
+        m_result
+            .setCapturedExpression( expr )
+            .setIsFalse( isFalse )
+            .setLineInfo( lineInfo )
+            .setMacroName( macroName );
+    }
     
     template<typename T>
     Expression<const T&> operator->* ( const T & operand ) {
@@ -51,13 +56,14 @@ public:
     ExpressionBuilder& acceptMatcher(   const MatcherT& matcher,
                                         const ArgT& arg,
                                         const std::string& matcherCallAsString ) {
-        std::string matcherAsString = Catch::toString( matcher );
+        std::string matcherAsString = matcher.toString();
         if( matcherAsString == "{?}" )
             matcherAsString = matcherCallAsString;
-        m_result.setLhs( Catch::toString( arg ) );
-        m_result.setRhs( matcherAsString );
-        m_result.setOp( "matches" );
-        m_result.setResultType( matcher( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
+        m_result
+            .setLhs( Catch::toString( arg ) )
+            .setRhs( matcherAsString )
+            .setOp( "matches" )
+            .setResultType( matcher.match( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
         return *this;
     }
     
@@ -65,13 +71,14 @@ public:
     ExpressionBuilder& acceptMatcher(   const MatcherT& matcher,
                                         ArgT* arg,
                                         const std::string& matcherCallAsString ) {
-        std::string matcherAsString = Catch::toString( matcher );
+        std::string matcherAsString = matcher.toString();
         if( matcherAsString == "{?}" )
             matcherAsString = matcherCallAsString;
-        m_result.setLhs( Catch::toString( arg ) );
-        m_result.setRhs( matcherAsString );
-        m_result.setOp( "matches" );
-        m_result.setResultType( matcher( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
+        m_result
+            .setLhs( Catch::toString( arg ) )
+            .setRhs( matcherAsString )
+            .setOp( "matches" )
+            .setResultType( matcher.match( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
         return *this;
     }
     

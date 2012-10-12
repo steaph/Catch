@@ -13,9 +13,22 @@
 
 namespace Catch {
 
+    struct ResultData
+    {
+        ResultData() : resultType( ResultWas::Unknown ) {}
+
+        std::string macroName;
+        SourceLineInfo lineInfo;
+        std::string capturedExpression;
+        std::string reconstructedExpression;
+        std::string message;
+        ResultWas::OfType resultType;
+    };
+
     class ResultInfo {
     public:
-        ResultInfo();        
+        ResultInfo();
+        ResultInfo( const ResultData& data );
         ~ResultInfo();
 
         bool ok() const;
@@ -30,28 +43,12 @@ namespace Catch {
         std::size_t getLine() const;
         std::string getTestMacroName() const;
 
-    protected:
-        ResultInfo( const char* expr,
-                   ResultWas::OfType result,
-                   bool isNot,
-                   const SourceLineInfo& lineInfo,
-                   const char* macroName,
-                   const char* message );
-
-        std::string getExpandedExpressionInternal() const;
-        bool isNotExpression( const char* expr );
-
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
     public:
 #else
     protected:
 #endif
-        std::string m_macroName;
-        SourceLineInfo m_lineInfo;
-        std::string m_expr, m_lhs, m_rhs, m_op;
-        std::string m_message;
-        ResultWas::OfType m_result;
-        bool m_isNot;
+        ResultData m_data;
     };
 
 } // end namespace Catch

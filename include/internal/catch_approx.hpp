@@ -77,7 +77,7 @@ namespace Detail {
         
         std::string toString() const {
             std::ostringstream oss;
-            oss << "Approx( " << m_value << ")";
+            oss << "Approx( " << m_value << " )";
             return oss.str();
         }
         
