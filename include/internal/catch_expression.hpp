@@ -23,17 +23,18 @@ class Expression {
 	void operator = ( const Expression& );
 
 public:
-    Expression( AssertionResultBuilder& result, T lhs )
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-// prevent  error C2354: initialization of reference member requires a temporary variable
-    :   m_result( result ),
-        m_lhs( lhs )
-    { (void) result.setLhs( Catch::toString( lhs ) ); }
-#else
-    :   m_result( result.setLhs( Catch::toString( lhs ) ) ),
-        m_lhs( lhs )
-    {}
-#endif
+//    Expression( T lhs ) : m_lhs( lhs ) {
+//#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+//// prevent  error C2354: initialization of reference member requires a temporary variable
+//        m_result.setLhs( Catch::toString( lhs ) ); }
+//#else
+//        m_result.setLhs( Catch::toString( lhs ) );
+//    }
+//#endif
+    Expression( T lhs ) : m_lhs( lhs ) {
+        m_result.setLhs( Catch::toString( lhs ) );
+    }
+
     template<typename RhsT>
     AssertionResultBuilder& operator == ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
@@ -72,8 +73,10 @@ public:
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    operator AssertionResultBuilder& () {
-        return m_result.setResultType( m_lhs ? ResultWas::Ok : ResultWas::ExpressionFailed );
+    AssertionResultBuilder setIsFalse( bool isFalse ) {
+        return m_result
+            .setResultType( m_lhs ? ResultWas::Ok : ResultWas::ExpressionFailed )
+            .setIsFalse( isFalse );
     }
 
     template<typename RhsT>
@@ -92,7 +95,7 @@ private:
     }
 
 private:
-    AssertionResultBuilder& m_result;
+    AssertionResultBuilder m_result;
     T m_lhs;
 };
 
