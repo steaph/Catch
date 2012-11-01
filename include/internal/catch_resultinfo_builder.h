@@ -5,8 +5,8 @@
  *  Distributed under the Boost Software License, Version 1.0. (See accompanying
  *  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  */
-#ifndef TWOBLUECUBES_CATCH_RESULTINFO_BUILDER_H_INCLUDED
-#define TWOBLUECUBES_CATCH_RESULTINFO_BUILDER_H_INCLUDED
+#ifndef TWOBLUECUBES_CATCH_ASSERTIONRESULT_BUILDER_H_INCLUDED
+#define TWOBLUECUBES_CATCH_ASSERTIONRESULT_BUILDER_H_INCLUDED
 
 #include "catch_tostring.hpp"
 #include "catch_resultinfo.h"
@@ -23,24 +23,24 @@ namespace Internal {
 
 struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
 
-class ResultInfoBuilder {
+class AssertionResultBuilder {
 public:
 
-    ResultInfoBuilder();
+    AssertionResultBuilder();
 
-    ResultInfoBuilder& setResultType( ResultWas::OfType result );
-    ResultInfoBuilder& setCapturedExpression( const std::string& capturedExpression );
-    ResultInfoBuilder& setIsFalse( bool isFalse );
-    ResultInfoBuilder& setMessage( const std::string& message );
-    ResultInfoBuilder& setLineInfo( const SourceLineInfo& lineInfo );
-    ResultInfoBuilder& setLhs( const std::string& lhs );
-    ResultInfoBuilder& setRhs( const std::string& rhs );
-    ResultInfoBuilder& setOp( const std::string& op );
-    ResultInfoBuilder& setMacroName( const std::string& macroName );
+    AssertionResultBuilder& setResultType( ResultWas::OfType result );
+    AssertionResultBuilder& setCapturedExpression( const std::string& capturedExpression );
+    AssertionResultBuilder& setIsFalse( bool isFalse );
+    AssertionResultBuilder& setMessage( const std::string& message );
+    AssertionResultBuilder& setLineInfo( const SourceLineInfo& lineInfo );
+    AssertionResultBuilder& setLhs( const std::string& lhs );
+    AssertionResultBuilder& setRhs( const std::string& rhs );
+    AssertionResultBuilder& setOp( const std::string& op );
+    AssertionResultBuilder& setMacroName( const std::string& macroName );
 
     std::string reconstructExpression() const;
 
-    ResultInfo build() const;
+    AssertionResult build() const;
 
     // Disable attempts to use || and && in expressions (without parantheses)
     template<typename RhsT>
@@ -66,11 +66,11 @@ namespace Internal {
     class Apply
     {
     public:
-        Apply( ResultInfoBuilder & result )
+        Apply( AssertionResultBuilder & result )
         : m_result( result ) {}
 
         template<typename T1, typename T2>
-        ResultInfoBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
+        AssertionResultBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
             m_result.setResultType( Comparator<Op>::compare( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
             m_result.m_lhs = Catch::toString( lhs );
             m_result.m_rhs = Catch::toString( rhs );
@@ -80,18 +80,18 @@ namespace Internal {
 
         template<typename T>
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-        ResultInfoBuilder& captureExpression( const T*& lhs, const int& rhs ) {
+        AssertionResultBuilder& captureExpression( const T*& lhs, const int& rhs ) {
 #else
-        ResultInfoBuilder& captureExpression( const T*  lhs, const int& rhs ) {
+        AssertionResultBuilder& captureExpression( const T*  lhs, const int& rhs ) {
 #endif
             return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
         }
 
     private:
-        ResultInfoBuilder & m_result;
+        AssertionResultBuilder & m_result;
     };
 
 } // end namespace Internal
 } // end namespace Catch
 
-#endif // TWOBLUECUBES_CATCH_RESULTINFO_BUILDER_H_INCLUDED
+#endif // TWOBLUECUBES_CATCH_ASSERTIONRESULT_BUILDER_H_INCLUDED

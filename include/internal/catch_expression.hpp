@@ -23,7 +23,7 @@ class Expression {
 	void operator = ( const Expression& );
 
 public:
-    Expression( ResultInfoBuilder& result, T lhs )
+    Expression( AssertionResultBuilder& result, T lhs )
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 // prevent  error C2354: initialization of reference member requires a temporary variable
     :   m_result( result ),
@@ -34,46 +34,45 @@ public:
         m_lhs( lhs )
     {}
 #endif
-
     template<typename RhsT>
-    ResultInfoBuilder& operator == ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator == ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator != ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator != ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator < ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator < ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator > ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator > ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator <= ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator <= ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator >= ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator >= ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    ResultInfoBuilder& operator == ( bool rhs ) {
+    AssertionResultBuilder& operator == ( bool rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    ResultInfoBuilder& operator != ( bool rhs ) {
+    AssertionResultBuilder& operator != ( bool rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    operator ResultInfoBuilder& () {
+    operator AssertionResultBuilder& () {
         return m_result.setResultType( m_lhs ? ResultWas::Ok : ResultWas::ExpressionFailed );
     }
 
@@ -85,7 +84,7 @@ public:
 
 private:
     template<Internal::Operator Op, typename RhsT>
-    ResultInfoBuilder& captureExpression( const RhsT& rhs ) {
+    AssertionResultBuilder& captureExpression( const RhsT& rhs ) {
         return m_result
             .setResultType( Internal::Comparator<Op>::compare( m_lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed )
             .setRhs( Catch::toString( rhs ) )
@@ -93,7 +92,7 @@ private:
     }
 
 private:
-    ResultInfoBuilder& m_result;
+    AssertionResultBuilder& m_result;
     T m_lhs;
 };
 

@@ -1,5 +1,9 @@
 /*
+<<<<<<< HEAD
  *  Generated: 2012-10-31 20:57:54.003000
+=======
+ *  Generated: 2012-10-12 18:39:11.086583
+>>>>>>> d16955f63a4a128221da41602215b5592df39eb9
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
