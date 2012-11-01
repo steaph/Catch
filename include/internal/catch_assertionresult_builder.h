@@ -16,27 +16,29 @@
 
 namespace Catch {
 
-namespace Internal {
-    template<Operator Op>
-    class Apply;
-}
-
 struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
 
 class AssertionResultBuilder {
 public:
 
     AssertionResultBuilder();
+    AssertionResultBuilder( const AssertionResultBuilder& other );
+    AssertionResultBuilder& operator=(const AssertionResultBuilder& other );
 
     AssertionResultBuilder& setResultType( ResultWas::OfType result );
     AssertionResultBuilder& setCapturedExpression( const std::string& capturedExpression );
     AssertionResultBuilder& setIsFalse( bool isFalse );
-    AssertionResultBuilder& setMessage( const std::string& message );
     AssertionResultBuilder& setLineInfo( const SourceLineInfo& lineInfo );
     AssertionResultBuilder& setLhs( const std::string& lhs );
     AssertionResultBuilder& setRhs( const std::string& rhs );
     AssertionResultBuilder& setOp( const std::string& op );
     AssertionResultBuilder& setMacroName( const std::string& macroName );
+
+    template<typename T>
+    AssertionResultBuilder& operator << ( const T& value ) {
+        m_stream << value;
+        return *this;
+    }
 
     std::string reconstructExpression() const;
 
@@ -48,16 +50,17 @@ public:
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator && ( const RhsT& );
 
-    bool getIsFalse() const {
-        return m_isFalse;
-    }
-
 private:
     AssertionResultData m_data;
 public:
-    std::string m_lhs, m_rhs, m_op;
+    struct ExprComponents {
+        ExprComponents() : isFalse( false ) {}
+        bool isFalse;
+        std::string lhs, rhs, op;
+    } m_exprComponents;
+
 private:
-    bool m_isFalse;
+    std::ostringstream m_stream;
 };
 
 namespace Internal {
@@ -72,9 +75,9 @@ namespace Internal {
         template<typename T1, typename T2>
         AssertionResultBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
             m_result.setResultType( Comparator<Op>::compare( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
-            m_result.m_lhs = Catch::toString( lhs );
-            m_result.m_rhs = Catch::toString( rhs );
-            m_result.m_op = Internal::OperatorTraits<Op>::getName();
+            m_result.m_exprComponents.lhs = Catch::toString( lhs );
+            m_result.m_exprComponents.rhs = Catch::toString( rhs );
+            m_result.m_exprComponents.op = Internal::OperatorTraits<Op>::getName();
             return m_result;
         }
 
