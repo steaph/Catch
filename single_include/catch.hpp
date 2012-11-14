@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
- *  Generated: 2012-10-31 20:57:54.003000
-=======
- *  Generated: 2012-10-12 18:39:11.086583
->>>>>>> d16955f63a4a128221da41602215b5592df39eb9
+ *  Generated: 2012-11-14 21:31:53.635000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -153,6 +149,9 @@ namespace Catch {
         void swap( SourceLineInfo& other ){
             file.swap( other.file );
             std::swap( line, other.line );
+        }
+        bool empty() const {
+            return file.empty();
         }
 
         std::string function;
@@ -466,8 +465,8 @@ private:
 // #included from: catch_expression.hpp
 #define TWOBLUECUBES_CATCH_EXPRESSION_HPP_INCLUDED
 
-// #included from: catch_resultinfo_builder.h
-#define TWOBLUECUBES_CATCH_RESULTINFO_BUILDER_H_INCLUDED
+// #included from: catch_assertionresult_builder.h
+#define TWOBLUECUBES_CATCH_ASSERTIONRESULT_BUILDER_H_INCLUDED
 
 // #included from: catch_tostring.hpp
 #define TWOBLUECUBES_CATCH_TOSTRING_HPP_INCLUDED
@@ -662,8 +661,8 @@ inline std::string toString( std::nullptr_t ) {
 
 } // end namespace Catch
 
-// #included from: catch_resultinfo.h
-#define TWOBLUECUBES_CATCH_RESULTINFO_H_INCLUDED
+// #included from: catch_assertionresult.h
+#define TWOBLUECUBES_CATCH_ASSERTIONRESULT_H_INCLUDED
 
 #include <string>
 // #included from: catch_result_type.h
@@ -705,23 +704,37 @@ struct ResultAction { enum Value {
 
 namespace Catch {
 
-    struct ResultData
+    struct AssertionInfo
     {
-        ResultData() : resultType( ResultWas::Unknown ) {}
+        AssertionInfo() {}
+        AssertionInfo( const std::string& _macroName, const SourceLineInfo& _lineInfo, const std::string& _capturedExpression, bool _shouldNegate )
+        :   macroName( _macroName ),
+            lineInfo( _lineInfo ),
+            capturedExpression( _capturedExpression )
+        {
+            if( _shouldNegate )
+                capturedExpression = "!" + _capturedExpression;
+        }
 
         std::string macroName;
         SourceLineInfo lineInfo;
         std::string capturedExpression;
+    };
+
+    struct AssertionResultData
+    {
+        AssertionResultData() : resultType( ResultWas::Unknown ) {}
+
         std::string reconstructedExpression;
         std::string message;
         ResultWas::OfType resultType;
     };
 
-    class ResultInfo {
+    class AssertionResult {
     public:
-        ResultInfo();
-        ResultInfo( const ResultData& data );
-        ~ResultInfo();
+        AssertionResult();
+        AssertionResult( const AssertionInfo& info, const AssertionResultData& data );
+        ~AssertionResult();
 
         bool ok() const;
         ResultWas::OfType getResultType() const;
@@ -731,16 +744,12 @@ namespace Catch {
         bool hasExpandedExpression() const;
         std::string getExpandedExpression() const;
         std::string getMessage() const;
-        std::string getFilename() const;
-        std::size_t getLine() const;
+        SourceLineInfo getSourceInfo() const;
         std::string getTestMacroName() const;
 
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-    public:
-#else
     protected:
-#endif
-        ResultData m_data;
+        AssertionInfo m_info;
+        AssertionResultData m_resultData;
     };
 
 } // end namespace Catch
@@ -1049,31 +1058,32 @@ class ::Catch::Detail::Approx;
 
 namespace Catch {
 
-namespace Internal {
-    template<Operator Op>
-    class Apply;
-}
-
 struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
 
-class ResultInfoBuilder {
+class AssertionResultBuilder {
 public:
 
-    ResultInfoBuilder();
+    AssertionResultBuilder( ResultWas::OfType resultType = ResultWas::Unknown );
+    AssertionResultBuilder( const AssertionResultBuilder& other );
+    AssertionResultBuilder& operator=(const AssertionResultBuilder& other );
 
-    ResultInfoBuilder& setResultType( ResultWas::OfType result );
-    ResultInfoBuilder& setCapturedExpression( const std::string& capturedExpression );
-    ResultInfoBuilder& setIsFalse( bool isFalse );
-    ResultInfoBuilder& setMessage( const std::string& message );
-    ResultInfoBuilder& setLineInfo( const SourceLineInfo& lineInfo );
-    ResultInfoBuilder& setLhs( const std::string& lhs );
-    ResultInfoBuilder& setRhs( const std::string& rhs );
-    ResultInfoBuilder& setOp( const std::string& op );
-    ResultInfoBuilder& setMacroName( const std::string& macroName );
+    AssertionResultBuilder& setResultType( ResultWas::OfType result );
+    AssertionResultBuilder& setResultType( bool result );
+    AssertionResultBuilder& setLhs( const std::string& lhs );
+    AssertionResultBuilder& setRhs( const std::string& rhs );
+    AssertionResultBuilder& setOp( const std::string& op );
 
-    std::string reconstructExpression() const;
+    AssertionResultBuilder& negate( bool shouldNegate );
 
-    ResultInfo build() const;
+    template<typename T>
+    AssertionResultBuilder& operator << ( const T& value ) {
+        m_stream << value;
+        return *this;
+    }
+
+    std::string reconstructExpression( const AssertionInfo& info ) const;
+
+    AssertionResultData build( const AssertionInfo& info ) const;
 
     // Disable attempts to use || and && in expressions (without parantheses)
     template<typename RhsT>
@@ -1081,16 +1091,17 @@ public:
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator && ( const RhsT& );
 
-    bool getIsFalse() const {
-        return m_isFalse;
-    }
+private:
+    AssertionResultData m_data;
+public:
+    struct ExprComponents {
+        ExprComponents() : shouldNegate( false ) {}
+        bool shouldNegate;
+        std::string lhs, rhs, op;
+    } m_exprComponents;
 
 private:
-    ResultData m_data;
-public:
-    std::string m_lhs, m_rhs, m_op;
-private:
-    bool m_isFalse;
+    std::ostringstream m_stream;
 };
 
 namespace Internal {
@@ -1099,29 +1110,29 @@ namespace Internal {
     class Apply
     {
     public:
-        Apply( ResultInfoBuilder & result )
+        Apply( AssertionResultBuilder & result )
         : m_result( result ) {}
 
         template<typename T1, typename T2>
-        ResultInfoBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
+        AssertionResultBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
             m_result.setResultType( Comparator<Op>::compare( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
-            m_result.m_lhs = Catch::toString( lhs );
-            m_result.m_rhs = Catch::toString( rhs );
-            m_result.m_op = Internal::OperatorTraits<Op>::getName();
+            m_result.m_exprComponents.lhs = Catch::toString( lhs );
+            m_result.m_exprComponents.rhs = Catch::toString( rhs );
+            m_result.m_exprComponents.op = Internal::OperatorTraits<Op>::getName();
             return m_result;
         }
 
         template<typename T>
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-        ResultInfoBuilder& captureExpression( const T*& lhs, const int& rhs ) {
+        AssertionResultBuilder& captureExpression( const T*& lhs, const int& rhs ) {
 #else
-        ResultInfoBuilder& captureExpression( const T*  lhs, const int& rhs ) {
+        AssertionResultBuilder& captureExpression( const T*  lhs, const int& rhs ) {
 #endif
             return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
         }
 
     private:
-        ResultInfoBuilder & m_result;
+        AssertionResultBuilder & m_result;
     };
 
 } // end namespace Internal
@@ -1134,63 +1145,63 @@ namespace Internal {
 
 namespace Catch {
 
+    template<typename T>
+    inline void setResultIfBoolean( AssertionResultBuilder&, const T& )
+{
+}
+    inline void setResultIfBoolean( AssertionResultBuilder& result, bool value ) {
+        result.setResultType( value );
+    }
+
 template<typename T>
 class Expression {
 	void operator = ( const Expression& );
 
 public:
-    Expression( ResultInfoBuilder& result, T lhs )
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-// prevent  error C2354: initialization of reference member requires a temporary variable
-    :   m_result( result ),
-        m_lhs( lhs )
-    { (void) result.setLhs( Catch::toString( lhs ) ); }
-#else
-    :   m_result( result.setLhs( Catch::toString( lhs ) ) ),
-        m_lhs( lhs )
-    {}
-#endif
+    Expression( T lhs ) : m_lhs( lhs ) {
+        setResultIfBoolean( m_result.setLhs( Catch::toString( lhs ) ), lhs );
+    }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator == ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator == ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator != ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator != ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator < ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator < ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator > ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator > ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator <= ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator <= ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ResultInfoBuilder& operator >= ( const RhsT& rhs ) {
+    AssertionResultBuilder& operator >= ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    ResultInfoBuilder& operator == ( bool rhs ) {
+    AssertionResultBuilder& operator == ( bool rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    ResultInfoBuilder& operator != ( bool rhs ) {
+    AssertionResultBuilder& operator != ( bool rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    operator ResultInfoBuilder& () {
-        return m_result.setResultType( m_lhs ? ResultWas::Ok : ResultWas::ExpressionFailed );
+    AssertionResultBuilder negate( bool shouldNegate ) {
+        return m_result.negate( shouldNegate );
     }
 
     template<typename RhsT>
@@ -1200,16 +1211,7 @@ public:
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator - ( const RhsT& );
 
 private:
-    template<Internal::Operator Op, typename RhsT>
-    ResultInfoBuilder& captureExpression( const RhsT& rhs ) {
-        return m_result
-            .setResultType( Internal::Comparator<Op>::compare( m_lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed )
-            .setRhs( Catch::toString( rhs ) )
-            .setOp( Internal::OperatorTraits<Op>::getName() );
-    }
-
-private:
-    ResultInfoBuilder& m_result;
+    AssertionResultBuilder m_result;
     T m_lhs;
 };
 
@@ -1219,86 +1221,19 @@ private:
 #pragma warning( pop )
 #endif
 
-#include <sstream>
-
 namespace Catch {
 
 class ExpressionBuilder {
 public:
 
-    ExpressionBuilder(  const SourceLineInfo& lineInfo,
-                        const char* macroName,
-                        const char* expr = "",
-                        bool isFalse = false )
-    : m_messageStream()
-    {
-        m_result
-            .setCapturedExpression( expr )
-            .setIsFalse( isFalse )
-            .setLineInfo( lineInfo )
-            .setMacroName( macroName );
-    }
-
     template<typename T>
     Expression<const T&> operator->* ( const T & operand ) {
-        Expression<const T&> expr( m_result, operand );
-        return expr;
+        return Expression<const T&>( operand );
     }
 
     Expression<bool> operator->* ( bool value ) {
-        Expression<bool> expr( m_result, value );
-        return expr;
+        return Expression<bool>( value );
     }
-
-    template<typename T>
-    ExpressionBuilder& operator << ( const T & value ) {
-        m_messageStream << Catch::toString( value );
-        return *this;
-    }
-
-    template<typename MatcherT, typename ArgT>
-    ExpressionBuilder& acceptMatcher(   const MatcherT& matcher,
-                                        const ArgT& arg,
-                                        const std::string& matcherCallAsString ) {
-        std::string matcherAsString = matcher.toString();
-        if( matcherAsString == "{?}" )
-            matcherAsString = matcherCallAsString;
-        m_result
-            .setLhs( Catch::toString( arg ) )
-            .setRhs( matcherAsString )
-            .setOp( "matches" )
-            .setResultType( matcher.match( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
-        return *this;
-    }
-
-    template<typename MatcherT, typename ArgT>
-    ExpressionBuilder& acceptMatcher(   const MatcherT& matcher,
-                                        ArgT* arg,
-                                        const std::string& matcherCallAsString ) {
-        std::string matcherAsString = matcher.toString();
-        if( matcherAsString == "{?}" )
-            matcherAsString = matcherCallAsString;
-        m_result
-            .setLhs( Catch::toString( arg ) )
-            .setRhs( matcherAsString )
-            .setOp( "matches" )
-            .setResultType( matcher.match( arg ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
-        return *this;
-    }
-
-    ExpressionBuilder& setResultType( ResultWas::OfType resultType ) {
-        m_result.setResultType( resultType );
-        return *this;
-    }
-
-    operator ResultInfoBuilder&() {
-        m_result.setMessage( m_messageStream.str() );
-        return m_result;
-    }
-
-private:
-    ResultInfoBuilder m_result;
-    std::ostringstream m_messageStream;
 };
 
 } // end namespace Catch
@@ -1371,14 +1306,15 @@ namespace Catch {
 
     class TestCaseInfo;
     class ScopedInfo;
-    class ResultInfoBuilder;
-    class ResultInfo;
+    class AssertionResultBuilder;
+    class AssertionResult;
+    struct AssertionInfo;
 
     struct IResultCapture {
 
         virtual ~IResultCapture();
 
-        virtual void testEnded( const ResultInfo& result ) = 0;
+        virtual void testEnded( const AssertionResult& result ) = 0;
         virtual bool sectionStarted(    const std::string& name,
                                         const std::string& description,
                                         const SourceLineInfo& lineInfo,
@@ -1388,13 +1324,11 @@ namespace Catch {
         virtual void popScopedInfo( ScopedInfo* scopedInfo ) = 0;
         virtual bool shouldDebugBreak() const = 0;
 
-        virtual ResultAction::Value acceptResult( bool result ) = 0;
-        virtual ResultAction::Value acceptResult( ResultWas::OfType result ) = 0;
-        virtual ResultAction::Value acceptExpression( const ResultInfoBuilder& resultInfo ) = 0;
-        virtual void acceptMessage( const std::string& msg ) = 0;
+        virtual void acceptAssertionInfo( const AssertionInfo& assertionInfo ) = 0;
+        virtual ResultAction::Value acceptExpression( const AssertionResultBuilder& assertionResult ) = 0;
 
         virtual std::string getCurrentTestName() const = 0;
-        virtual const ResultInfo* getLastResult() const = 0;
+        virtual const AssertionResult* getLastResult() const = 0;
     };
 }
 
@@ -1507,349 +1441,6 @@ inline void writeToDebugConsole( const std::string& text ) {
 }
 #endif // CATCH_PLATFORM_WINDOWS
 
-#include <ostream>
-
-namespace Catch {
-
-struct TestFailureException{};
-
-class ScopedInfo {
-public:
-    ScopedInfo() : m_oss() {
-        getCurrentContext().getResultCapture().pushScopedInfo( this );
-    }
-
-    ~ScopedInfo() {
-        getCurrentContext().getResultCapture().popScopedInfo( this );
-    }
-
-    template<typename T>
-    ScopedInfo& operator << ( const T& value ) {
-        m_oss << value;
-        return *this;
-    }
-
-    ResultInfo getInfo () const {
-        return ResultInfoBuilder()
-            .setResultType( ResultWas::Info )
-            .setMessage( m_oss.str() )
-            .setMacroName( "SCOPED_INFO" )
-            .build();
-    }
-
-private:
-    std::ostringstream m_oss;
-};
-
-// This is just here to avoid compiler warnings with macro constants
-inline bool isTrue( bool value ){ return value; }
-
-} // end namespace Catch
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_ACCEPT_EXPR( expr, stopOnFailure, originalExpr ) \
-    if( Catch::ResultAction::Value internal_catch_action = Catch::getCurrentContext().getResultCapture().acceptExpression( expr )  ) { \
-        if( internal_catch_action & Catch::ResultAction::Debug ) BreakIntoDebugger(); \
-        if( internal_catch_action & Catch::ResultAction::Abort ) throw Catch::TestFailureException(); \
-        if( Catch::isTrue( stopOnFailure ) ) throw Catch::TestFailureException(); \
-        if( Catch::isTrue( false ) ){ bool this_is_here_to_invoke_warnings = ( originalExpr ); Catch::isTrue( this_is_here_to_invoke_warnings ); } \
-    }
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_TEST( expr, isFalse, stopOnFailure, macroName ) \
-    do { try { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #expr, isFalse )->*expr ), stopOnFailure, expr ); \
-    } catch( Catch::TestFailureException& ) { \
-        throw; \
-    } catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #expr ) << Catch::getRegistryHub().getExceptionTranslatorRegistry().translateActiveException() ).setResultType( Catch::ResultWas::ThrewException ), false, expr ); \
-        throw; \
-    } } while( Catch::isTrue( false ) )
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_IF( expr, isFalse, stopOnFailure, macroName ) \
-    INTERNAL_CATCH_TEST( expr, isFalse, stopOnFailure, macroName ); \
-    if( Catch::getCurrentContext().getResultCapture().getLastResult()->ok() )
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_ELSE( expr, isFalse, stopOnFailure, macroName ) \
-    INTERNAL_CATCH_TEST( expr, isFalse, stopOnFailure, macroName ); \
-    if( !Catch::getCurrentContext().getResultCapture().getLastResult()->ok() )
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_NO_THROW( expr, stopOnFailure, macroName ) \
-    try { \
-        expr; \
-        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #expr ).setResultType( Catch::ResultWas::Ok ), stopOnFailure, false ); \
-    } \
-    catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #expr ) << Catch::getRegistryHub().getExceptionTranslatorRegistry().translateActiveException() ).setResultType( Catch::ResultWas::ThrewException ), stopOnFailure, false ); \
-    }
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_THROWS( expr, exceptionType, stopOnFailure, macroName ) \
-    try { \
-        if( Catch::getCurrentContext().getConfig()->allowThrows() ) { \
-            expr; \
-            INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #expr ).setResultType( Catch::ResultWas::DidntThrowException ), stopOnFailure, false ); \
-        } \
-    } \
-    catch( Catch::TestFailureException& ) { \
-        throw; \
-    } \
-    catch( exceptionType ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #expr ).setResultType( Catch::ResultWas::Ok ), stopOnFailure, false ); \
-    }
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_THROWS_AS( expr, exceptionType, stopOnFailure, macroName ) \
-    INTERNAL_CATCH_THROWS( expr, exceptionType, stopOnFailure, macroName ) \
-    catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #expr ) << Catch::getRegistryHub().getExceptionTranslatorRegistry() ).setResultType( Catch::ResultWas::ThrewException ), stopOnFailure, false ); \
-    }
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_MSG( reason, resultType, stopOnFailure, macroName ) \
-    Catch::getCurrentContext().getResultCapture().acceptExpression( ( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName ) << reason ).setResultType( resultType ) );
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_SCOPED_INFO( log ) \
-    Catch::ScopedInfo INTERNAL_CATCH_UNIQUE_NAME( info ); \
-    INTERNAL_CATCH_UNIQUE_NAME( info ) << log
-
-///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CHECK_THAT( arg, matcher, stopOnFailure, macroName ) \
-    do { try { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #arg " " #matcher, false ).acceptMatcher( ::Catch::Matchers::matcher, arg, #matcher ) ), stopOnFailure, false ); \
-    } catch( Catch::TestFailureException& ) { \
-        throw; \
-    } catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder( CATCH_INTERNAL_LINEINFO, macroName, #arg " " #matcher ) << Catch::getRegistryHub().getExceptionTranslatorRegistry().translateActiveException() ).setResultType( Catch::ResultWas::ThrewException ), false, false ); \
-        throw; \
-    }}while( Catch::isTrue( false ) )
-
-// #included from: internal/catch_section.hpp
-#define TWOBLUECUBES_CATCH_SECTION_HPP_INCLUDED
-
-#include <string>
-
-namespace Catch {
-
-    class Section {
-    public:
-        Section(    const std::string& name,
-                    const std::string& description,
-                    const SourceLineInfo& lineInfo )
-        :   m_name( name ),
-            m_sectionIncluded( getCurrentContext().getResultCapture().sectionStarted( name, description, lineInfo, m_assertions ) )
-        {}
-
-        ~Section() {
-            if( m_sectionIncluded )
-                getCurrentContext().getResultCapture().sectionEnded( m_name, m_assertions );
-        }
-
-        // This indicates whether the section should be executed or not
-        operator bool() {
-            return m_sectionIncluded;
-        }
-
-    private:
-
-        std::string m_name;
-        Counts m_assertions;
-        bool m_sectionIncluded;
-    };
-
-} // end namespace Catch
-
-#define INTERNAL_CATCH_SECTION( name, desc ) \
-    if( Catch::Section INTERNAL_CATCH_UNIQUE_NAME( catch_internal_Section ) = Catch::Section( name, desc, CATCH_INTERNAL_LINEINFO ) )
-
-// #included from: internal/catch_generators.hpp
-#define TWOBLUECUBES_CATCH_GENERATORS_HPP_INCLUDED
-
-#include <iterator>
-#include <vector>
-#include <string>
-#include <stdlib.h>
-
-namespace Catch {
-
-template<typename T>
-struct IGenerator {
-    virtual ~IGenerator() {}
-    virtual T getValue( std::size_t index ) const = 0;
-    virtual std::size_t size () const = 0;
-};
-
-template<typename T>
-class BetweenGenerator : public IGenerator<T> {
-public:
-    BetweenGenerator( T from, T to ) : m_from( from ), m_to( to ){}
-
-    virtual T getValue( std::size_t index ) const {
-        return m_from+static_cast<T>( index );
-    }
-
-    virtual std::size_t size() const {
-        return static_cast<std::size_t>( 1+m_to-m_from );
-    }
-
-private:
-
-    T m_from;
-    T m_to;
-};
-
-template<typename T>
-class ValuesGenerator : public IGenerator<T> {
-public:
-    ValuesGenerator(){}
-
-    void add( T value ) {
-        m_values.push_back( value );
-    }
-
-    virtual T getValue( std::size_t index ) const {
-        return m_values[index];
-    }
-
-    virtual std::size_t size() const {
-        return m_values.size();
-    }
-
-private:
-    std::vector<T> m_values;
-};
-
-template<typename T>
-class CompositeGenerator {
-public:
-    CompositeGenerator() : m_totalSize( 0 ) {}
-
-	// *** Move semantics, similar to auto_ptr ***
-    CompositeGenerator( CompositeGenerator& other )
-    :   m_fileInfo( other.m_fileInfo ),
-        m_totalSize( 0 )
-    {
-		move( other );
-    }
-
-    CompositeGenerator& setFileInfo( const char* fileInfo ) {
-        m_fileInfo = fileInfo;
-        return *this;
-    }
-
-    ~CompositeGenerator() {
-        deleteAll( m_composed );
-    }
-
-    operator T () const {
-        size_t overallIndex = getCurrentContext().getGeneratorIndex( m_fileInfo, m_totalSize );
-
-        typename std::vector<const IGenerator<T>*>::const_iterator it = m_composed.begin();
-        typename std::vector<const IGenerator<T>*>::const_iterator itEnd = m_composed.end();
-        for( size_t index = 0; it != itEnd; ++it )
-        {
-            const IGenerator<T>* generator = *it;
-            if( overallIndex >= index && overallIndex < index + generator->size() )
-            {
-                return generator->getValue( overallIndex-index );
-            }
-            index += generator->size();
-        }
-        CATCH_INTERNAL_ERROR( "Indexed past end of generated range" );
-		return T(); // Suppress spurious "not all control paths return a value" warning in Visual Studio - if you know how to fix this please do so
-    }
-
-    void add( const IGenerator<T>* generator ) {
-        m_totalSize += generator->size();
-        m_composed.push_back( generator );
-    }
-
-    CompositeGenerator& then( CompositeGenerator& other ) {
-        move( other );
-        return *this;
-    }
-
-    CompositeGenerator& then( T value ) {
-        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
-        valuesGen->add( value );
-        add( valuesGen );
-        return *this;
-    }
-
-private:
-
-    void move( CompositeGenerator& other ) {
-        std::copy( other.m_composed.begin(), other.m_composed.end(), std::back_inserter( m_composed ) );
-        m_totalSize += other.m_totalSize;
-        other.m_composed.clear();
-    }
-
-    std::vector<const IGenerator<T>*> m_composed;
-    std::string m_fileInfo;
-    size_t m_totalSize;
-};
-
-namespace Generators
-{
-    template<typename T>
-    CompositeGenerator<T> between( T from, T to ) {
-        CompositeGenerator<T> generators;
-        generators.add( new BetweenGenerator<T>( from, to ) );
-        return generators;
-    }
-
-    template<typename T>
-    CompositeGenerator<T> values( T val1, T val2 ) {
-        CompositeGenerator<T> generators;
-        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
-        valuesGen->add( val1 );
-        valuesGen->add( val2 );
-        generators.add( valuesGen );
-        return generators;
-    }
-
-    template<typename T>
-    CompositeGenerator<T> values( T val1, T val2, T val3 ){
-        CompositeGenerator<T> generators;
-        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
-        valuesGen->add( val1 );
-        valuesGen->add( val2 );
-        valuesGen->add( val3 );
-        generators.add( valuesGen );
-        return generators;
-    }
-
-    template<typename T>
-    CompositeGenerator<T> values( T val1, T val2, T val3, T val4 ) {
-        CompositeGenerator<T> generators;
-        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
-        valuesGen->add( val1 );
-        valuesGen->add( val2 );
-        valuesGen->add( val3 );
-        valuesGen->add( val4 );
-        generators.add( valuesGen );
-        return generators;
-    }
-
-} // end namespace Generators
-
-using namespace Generators;
-
-} // end namespace Catch
-
-#define INTERNAL_CATCH_LINESTR2( line ) #line
-#define INTERNAL_CATCH_LINESTR( line ) INTERNAL_CATCH_LINESTR2( line )
-
-#define INTERNAL_CATCH_GENERATE( expr ) expr.setFileInfo( __FILE__ "(" INTERNAL_CATCH_LINESTR( __LINE__ ) ")" )
-
-// #included from: internal/catch_interfaces_exception.h
-#define TWOBLUECUBES_CATCH_INTERFACES_EXCEPTION_H_INCLUDED
-
-#include <string>
 // #included from: catch_interfaces_registry_hub.h
 #define TWOBLUECUBES_CATCH_INTERFACES_REGISTRY_HUB_H_INCLUDED
 
@@ -2541,23 +2132,37 @@ namespace Catch
     };
 
     class TestCaseInfo;
-    class ResultInfo;
+    class AssertionResult;
 
     struct IReporter : IShared {
         virtual ~IReporter();
+
         virtual bool shouldRedirectStdout() const = 0;
+
         virtual void StartTesting() = 0;
         virtual void EndTesting( const Totals& totals ) = 0;
+
         virtual void StartGroup( const std::string& groupName ) = 0;
         virtual void EndGroup( const std::string& groupName, const Totals& totals ) = 0;
+
+        virtual void StartTestCase( const TestCaseInfo& testInfo ) = 0;
+        // TestCaseResult
+        virtual void EndTestCase( const TestCaseInfo& testInfo, const Totals& totals, const std::string& stdOut, const std::string& stdErr ) = 0;
+
+        // SectionInfo
         virtual void StartSection( const std::string& sectionName, const std::string& description ) = 0;
+        // Section Result
+        virtual void EndSection( const std::string& sectionName, const Counts& assertions ) = 0;
+
+        // - merge into SectionResult ?
         virtual void NoAssertionsInSection( const std::string& sectionName ) = 0;
         virtual void NoAssertionsInTestCase( const std::string& testName ) = 0;
-        virtual void EndSection( const std::string& sectionName, const Counts& assertions ) = 0;
-        virtual void StartTestCase( const TestCaseInfo& testInfo ) = 0;
+
+        // - merge into SectionResult, TestCaseResult, GroupResult & TestRunResult
         virtual void Aborted() = 0;
-        virtual void EndTestCase( const TestCaseInfo& testInfo, const Totals& totals, const std::string& stdOut, const std::string& stdErr ) = 0;
-        virtual void Result( const ResultInfo& result ) = 0;
+
+        // AssertionReslt
+        virtual void Result( const AssertionResult& result ) = 0;
     };
 
     struct IReporterFactory {
@@ -2609,8 +2214,388 @@ namespace Catch {
     IRegistryHub& getRegistryHub();
     IMutableRegistryHub& getMutableRegistryHub();
     void cleanUp();
+    std::string translateActiveException();
+
 }
 
+#include <ostream>
+
+namespace Catch {
+
+    inline IResultCapture& getResultCapture() {
+        return getCurrentContext().getResultCapture();
+    }
+
+    template<typename MatcherT>
+    AssertionResultBuilder assertionBuilderFromMatcher( const MatcherT& matcher,
+                                                        const std::string& matcherCallAsString ) {
+        std::string matcherAsString = matcher.toString();
+        if( matcherAsString == "{?}" )
+            matcherAsString = matcherCallAsString;
+        return AssertionResultBuilder()
+            .setRhs( matcherAsString )
+            .setOp( "matches" );
+    }
+
+    template<typename MatcherT, typename ArgT>
+    AssertionResultBuilder assertionBuilderFromMatcher( const MatcherT& matcher,
+                                                        const ArgT& arg,
+                                                        const std::string& matcherCallAsString ) {
+        return assertionBuilderFromMatcher( matcher, matcherCallAsString )
+            .setLhs( Catch::toString( arg ) )
+            .setResultType( matcher.match( arg ) );
+    }
+
+    template<typename MatcherT, typename ArgT>
+    AssertionResultBuilder assertionBuilderFromMatcher( const MatcherT& matcher,
+                                                        ArgT* arg,
+                                                        const std::string& matcherCallAsString ) {
+        return assertionBuilderFromMatcher( matcher, matcherCallAsString )
+            .setLhs( Catch::toString( arg ) )
+            .setResultType( matcher.match( arg ) );
+    }
+
+struct TestFailureException{};
+
+class ScopedInfo {
+public:
+    ScopedInfo() : m_resultBuilder( ResultWas::Info ) {
+        getResultCapture().pushScopedInfo( this );
+    }
+    ~ScopedInfo() {
+        getResultCapture().popScopedInfo( this );
+    }
+    template<typename T>
+    ScopedInfo& operator << ( const T& value ) {
+        m_resultBuilder << value;
+        return *this;
+    }
+    AssertionResultData getInfo () const {
+        return m_resultBuilder.build( AssertionInfo() ); // !TBD
+    }
+
+private:
+    AssertionResultBuilder m_resultBuilder;
+};
+
+// This is just here to avoid compiler warnings with macro constants and boolean literals
+inline bool isTrue( bool value ){ return value; }
+
+} // end namespace Catch
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_ACCEPT_EXPR( evaluatedExpr, stopOnFailure, originalExpr ) \
+    if( Catch::ResultAction::Value internal_catch_action = Catch::getResultCapture().acceptExpression( evaluatedExpr )  ) { \
+        if( internal_catch_action & Catch::ResultAction::Debug ) BreakIntoDebugger(); \
+        if( internal_catch_action & Catch::ResultAction::Abort ) throw Catch::TestFailureException(); \
+        if( Catch::isTrue( stopOnFailure ) ) throw Catch::TestFailureException(); \
+        if( Catch::isTrue( false ) ){ bool this_is_here_to_invoke_warnings = ( originalExpr ); Catch::isTrue( this_is_here_to_invoke_warnings ); } \
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_ACCEPT_INFO( expr, macroName, shouldNegate ) \
+    Catch::getResultCapture().acceptAssertionInfo( Catch::AssertionInfo( macroName, CATCH_INTERNAL_LINEINFO, expr, shouldNegate ) );
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_TEST( expr, shouldNegate, stopOnFailure, macroName ) \
+    do { try { \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, shouldNegate ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder()->*expr ).negate( shouldNegate ), stopOnFailure, expr ); \
+    } catch( Catch::TestFailureException& ) { \
+        throw; \
+    } catch( ... ) { \
+        INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), false, expr ); \
+        throw; \
+    } } while( Catch::isTrue( false ) )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_IF( expr, shouldNegate, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_TEST( expr, shouldNegate, stopOnFailure, macroName ); \
+    if( Catch::getResultCapture().getLastResult()->ok() )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_ELSE( expr, shouldNegate, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_TEST( expr, shouldNegate, stopOnFailure, macroName ); \
+    if( !Catch::getResultCapture().getLastResult()->ok() )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_NO_THROW( expr, stopOnFailure, macroName ) \
+    try { \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
+        expr; \
+        INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
+    } \
+    catch( ... ) { \
+        INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), stopOnFailure, false ); \
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_THROWS( expr, exceptionType, stopOnFailure, macroName ) \
+    try { \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
+        if( Catch::getCurrentContext().getConfig()->allowThrows() ) { \
+            expr; \
+            INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::DidntThrowException ), stopOnFailure, false ); \
+        } \
+    } \
+    catch( Catch::TestFailureException& ) { \
+        throw; \
+    } \
+    catch( exceptionType ) { \
+        INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_THROWS_AS( expr, exceptionType, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_THROWS( expr, exceptionType, stopOnFailure, macroName ) \
+    catch( ... ) { \
+        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::AssertionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), stopOnFailure, false ); \
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_MSG( reason, resultType, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( resultType ) << reason, stopOnFailure, true );
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_SCOPED_INFO( log, macroName ) \
+    INTERNAL_CATCH_ACCEPT_INFO( "", macroName, false ); \
+    Catch::ScopedInfo INTERNAL_CATCH_UNIQUE_NAME( info ); \
+    INTERNAL_CATCH_UNIQUE_NAME( info ) << log
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CHECK_THAT( arg, matcher, stopOnFailure, macroName ) \
+    do { try { \
+        INTERNAL_CATCH_ACCEPT_INFO( #arg " " #matcher, macroName, false ) \
+        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::assertionBuilderFromMatcher( ::Catch::Matchers::matcher, arg, #matcher ) ), stopOnFailure, false ); \
+    } catch( Catch::TestFailureException& ) { \
+        throw; \
+    } catch( ... ) { \
+        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::AssertionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), false, false ); \
+        throw; \
+    }}while( Catch::isTrue( false ) )
+
+// #included from: internal/catch_section.hpp
+#define TWOBLUECUBES_CATCH_SECTION_HPP_INCLUDED
+
+#include <string>
+
+namespace Catch {
+
+    class Section {
+    public:
+        Section(    const std::string& name,
+                    const std::string& description,
+                    const SourceLineInfo& lineInfo )
+        :   m_name( name ),
+            m_sectionIncluded( getCurrentContext().getResultCapture().sectionStarted( name, description, lineInfo, m_assertions ) )
+        {}
+
+        ~Section() {
+            if( m_sectionIncluded )
+                getCurrentContext().getResultCapture().sectionEnded( m_name, m_assertions );
+        }
+
+        // This indicates whether the section should be executed or not
+        operator bool() {
+            return m_sectionIncluded;
+        }
+
+    private:
+
+        std::string m_name;
+        Counts m_assertions;
+        bool m_sectionIncluded;
+    };
+
+} // end namespace Catch
+
+#define INTERNAL_CATCH_SECTION( name, desc ) \
+    if( Catch::Section INTERNAL_CATCH_UNIQUE_NAME( catch_internal_Section ) = Catch::Section( name, desc, CATCH_INTERNAL_LINEINFO ) )
+
+// #included from: internal/catch_generators.hpp
+#define TWOBLUECUBES_CATCH_GENERATORS_HPP_INCLUDED
+
+#include <iterator>
+#include <vector>
+#include <string>
+#include <stdlib.h>
+
+namespace Catch {
+
+template<typename T>
+struct IGenerator {
+    virtual ~IGenerator() {}
+    virtual T getValue( std::size_t index ) const = 0;
+    virtual std::size_t size () const = 0;
+};
+
+template<typename T>
+class BetweenGenerator : public IGenerator<T> {
+public:
+    BetweenGenerator( T from, T to ) : m_from( from ), m_to( to ){}
+
+    virtual T getValue( std::size_t index ) const {
+        return m_from+static_cast<T>( index );
+    }
+
+    virtual std::size_t size() const {
+        return static_cast<std::size_t>( 1+m_to-m_from );
+    }
+
+private:
+
+    T m_from;
+    T m_to;
+};
+
+template<typename T>
+class ValuesGenerator : public IGenerator<T> {
+public:
+    ValuesGenerator(){}
+
+    void add( T value ) {
+        m_values.push_back( value );
+    }
+
+    virtual T getValue( std::size_t index ) const {
+        return m_values[index];
+    }
+
+    virtual std::size_t size() const {
+        return m_values.size();
+    }
+
+private:
+    std::vector<T> m_values;
+};
+
+template<typename T>
+class CompositeGenerator {
+public:
+    CompositeGenerator() : m_totalSize( 0 ) {}
+
+	// *** Move semantics, similar to auto_ptr ***
+    CompositeGenerator( CompositeGenerator& other )
+    :   m_fileInfo( other.m_fileInfo ),
+        m_totalSize( 0 )
+    {
+		move( other );
+    }
+
+    CompositeGenerator& setFileInfo( const char* fileInfo ) {
+        m_fileInfo = fileInfo;
+        return *this;
+    }
+
+    ~CompositeGenerator() {
+        deleteAll( m_composed );
+    }
+
+    operator T () const {
+        size_t overallIndex = getCurrentContext().getGeneratorIndex( m_fileInfo, m_totalSize );
+
+        typename std::vector<const IGenerator<T>*>::const_iterator it = m_composed.begin();
+        typename std::vector<const IGenerator<T>*>::const_iterator itEnd = m_composed.end();
+        for( size_t index = 0; it != itEnd; ++it )
+        {
+            const IGenerator<T>* generator = *it;
+            if( overallIndex >= index && overallIndex < index + generator->size() )
+            {
+                return generator->getValue( overallIndex-index );
+            }
+            index += generator->size();
+        }
+        CATCH_INTERNAL_ERROR( "Indexed past end of generated range" );
+		return T(); // Suppress spurious "not all control paths return a value" warning in Visual Studio - if you know how to fix this please do so
+    }
+
+    void add( const IGenerator<T>* generator ) {
+        m_totalSize += generator->size();
+        m_composed.push_back( generator );
+    }
+
+    CompositeGenerator& then( CompositeGenerator& other ) {
+        move( other );
+        return *this;
+    }
+
+    CompositeGenerator& then( T value ) {
+        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
+        valuesGen->add( value );
+        add( valuesGen );
+        return *this;
+    }
+
+private:
+
+    void move( CompositeGenerator& other ) {
+        std::copy( other.m_composed.begin(), other.m_composed.end(), std::back_inserter( m_composed ) );
+        m_totalSize += other.m_totalSize;
+        other.m_composed.clear();
+    }
+
+    std::vector<const IGenerator<T>*> m_composed;
+    std::string m_fileInfo;
+    size_t m_totalSize;
+};
+
+namespace Generators
+{
+    template<typename T>
+    CompositeGenerator<T> between( T from, T to ) {
+        CompositeGenerator<T> generators;
+        generators.add( new BetweenGenerator<T>( from, to ) );
+        return generators;
+    }
+
+    template<typename T>
+    CompositeGenerator<T> values( T val1, T val2 ) {
+        CompositeGenerator<T> generators;
+        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
+        valuesGen->add( val1 );
+        valuesGen->add( val2 );
+        generators.add( valuesGen );
+        return generators;
+    }
+
+    template<typename T>
+    CompositeGenerator<T> values( T val1, T val2, T val3 ){
+        CompositeGenerator<T> generators;
+        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
+        valuesGen->add( val1 );
+        valuesGen->add( val2 );
+        valuesGen->add( val3 );
+        generators.add( valuesGen );
+        return generators;
+    }
+
+    template<typename T>
+    CompositeGenerator<T> values( T val1, T val2, T val3, T val4 ) {
+        CompositeGenerator<T> generators;
+        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
+        valuesGen->add( val1 );
+        valuesGen->add( val2 );
+        valuesGen->add( val3 );
+        valuesGen->add( val4 );
+        generators.add( valuesGen );
+        return generators;
+    }
+
+} // end namespace Generators
+
+using namespace Generators;
+
+} // end namespace Catch
+
+#define INTERNAL_CATCH_LINESTR2( line ) #line
+#define INTERNAL_CATCH_LINESTR( line ) INTERNAL_CATCH_LINESTR2( line )
+
+#define INTERNAL_CATCH_GENERATE( expr ) expr.setFileInfo( __FILE__ "(" INTERNAL_CATCH_LINESTR( __LINE__ ) ")" )
+
+// #included from: internal/catch_interfaces_exception.h
+#define TWOBLUECUBES_CATCH_INTERFACES_EXCEPTION_H_INCLUDED
+
+#include <string>
 
 namespace Catch {
 
@@ -4232,7 +4217,7 @@ namespace Catch {
 
             do {
                 do {
-                    m_currentResult.setLineInfo( m_runningTest->getTestCaseInfo().getLineInfo() );
+                    m_assertionInfo.lineInfo = m_runningTest->getTestCaseInfo().getLineInfo();
                     runCurrentTest( redirectedCout, redirectedCerr );
                 }
                 while( m_runningTest->hasUntestedSections() && !aborting() );
@@ -4254,25 +4239,16 @@ namespace Catch {
 
     private: // IResultCapture
 
-        virtual ResultAction::Value acceptResult( bool result ) {
-            return acceptResult( result ? ResultWas::Ok : ResultWas::ExpressionFailed );
+        virtual void acceptAssertionInfo( const AssertionInfo& assertionInfo ) {
+            m_assertionInfo = assertionInfo;
         }
 
-        virtual ResultAction::Value acceptResult( ResultWas::OfType result ) {
-            m_currentResult.setResultType( result );
+        virtual ResultAction::Value acceptExpression( const AssertionResultBuilder& assertionResult ) {
+            m_currentResult = assertionResult;
             return actOnCurrentResult();
         }
 
-        virtual ResultAction::Value acceptExpression( const ResultInfoBuilder& resultInfo ) {
-            m_currentResult = resultInfo;
-            return actOnCurrentResult();
-        }
-
-        virtual void acceptMessage( const std::string& msg ) {
-            m_currentResult.setMessage( msg );
-        }
-
-        virtual void testEnded( const ResultInfo& result ) {
+        virtual void testEnded( const AssertionResult& result ) {
             if( result.getResultType() == ResultWas::Ok ) {
                 m_totals.assertions.passed++;
             }
@@ -4283,11 +4259,11 @@ namespace Catch {
                     std::vector<ScopedInfo*>::const_iterator it = m_scopedInfos.begin();
                     std::vector<ScopedInfo*>::const_iterator itEnd = m_scopedInfos.end();
                     for(; it != itEnd; ++it )
-                        m_reporter->Result( (*it)->getInfo() );
+                        m_reporter->Result( AssertionResult( m_assertionInfo, (*it)->getInfo() ) );
                 }
                 {
-                    std::vector<ResultInfo>::const_iterator it = m_info.begin();
-                    std::vector<ResultInfo>::const_iterator itEnd = m_info.end();
+                    std::vector<AssertionResult>::const_iterator it = m_info.begin();
+                    std::vector<AssertionResult>::const_iterator itEnd = m_info.end();
                     for(; it != itEnd; ++it )
                         m_reporter->Result( *it );
                 }
@@ -4313,7 +4289,7 @@ namespace Catch {
             if( !m_runningTest->addSection( oss.str() ) )
                 return false;
 
-            m_currentResult.setLineInfo( lineInfo );
+            m_assertionInfo.lineInfo = lineInfo;
             m_reporter->StartSection( name, description );
             assertions = m_totals.assertions;
 
@@ -4352,7 +4328,7 @@ namespace Catch {
                 : "";
         }
 
-        virtual const ResultInfo* getLastResult() const {
+        virtual const AssertionResult* getLastResult() const {
             return &m_lastResult;
         }
 
@@ -4365,10 +4341,11 @@ namespace Catch {
     private:
 
         ResultAction::Value actOnCurrentResult() {
-            m_lastResult = m_currentResult.build();
+            m_lastResult = AssertionResult( m_assertionInfo, m_currentResult.build( m_assertionInfo ) );
             testEnded( m_lastResult );
 
-            m_currentResult = ResultInfoBuilder();
+            m_currentResult = AssertionResultBuilder();
+            m_assertionInfo = AssertionInfo();
 
             ResultAction::Value action = ResultAction::None;
 
@@ -4407,8 +4384,10 @@ namespace Catch {
                 // This just means the test was aborted due to failure
             }
             catch(...) {
-                acceptMessage( getRegistryHub().getExceptionTranslatorRegistry().translateActiveException() );
-                acceptResult( ResultWas::ThrewException );
+                m_currentResult
+                    .setResultType( ResultWas::ThrewException )
+                    << translateActiveException();
+                actOnCurrentResult();
             }
             m_info.clear();
         }
@@ -4416,17 +4395,18 @@ namespace Catch {
     private:
         IMutableContext& m_context;
         RunningTest* m_runningTest;
-        ResultInfoBuilder m_currentResult;
-        ResultInfo m_lastResult;
+        AssertionResultBuilder m_currentResult;
+        AssertionResult m_lastResult;
 
         const Config& m_config;
         Totals m_totals;
         Ptr<IReporter> m_reporter;
         std::vector<ScopedInfo*> m_scopedInfos;
-        std::vector<ResultInfo> m_info;
+        std::vector<AssertionResult> m_info;
         IRunner* m_prevRunner;
         IResultCapture* m_prevResultCapture;
         const IConfig* m_prevConfig;
+        AssertionInfo m_assertionInfo;
     };
 
 } // end namespace Catch
@@ -4965,6 +4945,9 @@ namespace Catch {
         getTheRegistryHub() = NULL;
         cleanUpContext();
     }
+    std::string translateActiveException() {
+        return getRegistryHub().getExceptionTranslatorRegistry().translateActiveException();
+    }
 
 } // end namespace Catch
 
@@ -5283,151 +5266,145 @@ namespace Catch {
 
 } // end namespace Catch
 
-// #included from: catch_resultinfo.hpp
-#define TWOBLUECUBES_CATCH_RESULTINFO_HPP_INCLUDED
+// #included from: catch_assertionresult.hpp
+#define TWOBLUECUBES_CATCH_ASSERTIONRESULT_HPP_INCLUDED
 
 namespace Catch {
 
-    ResultInfo::ResultInfo() {}
+    AssertionResult::AssertionResult() {}
 
-    ResultInfo::ResultInfo( const ResultData& data ) : m_data( data ) {}
+    AssertionResult::AssertionResult( const AssertionInfo& info, const AssertionResultData& data )
+    :   m_info( info ),
+        m_resultData( data )
+    {}
 
-    ResultInfo::~ResultInfo() {}
+    AssertionResult::~AssertionResult() {}
 
-    bool ResultInfo::ok() const {
-        return isOk( m_data.resultType );
+    bool AssertionResult::ok() const {
+        return isOk( m_resultData.resultType );
     }
 
-    ResultWas::OfType ResultInfo::getResultType() const {
-        return m_data.resultType;
+    ResultWas::OfType AssertionResult::getResultType() const {
+        return m_resultData.resultType;
     }
 
-    bool ResultInfo::hasExpression() const {
-        return !m_data.capturedExpression.empty();
+    bool AssertionResult::hasExpression() const {
+        return !m_info.capturedExpression.empty();
     }
 
-    bool ResultInfo::hasMessage() const {
-        return !m_data.message.empty();
+    bool AssertionResult::hasMessage() const {
+        return !m_resultData.message.empty();
     }
 
-    std::string ResultInfo::getExpression() const {
-        return m_data.capturedExpression;
+    std::string AssertionResult::getExpression() const {
+        return m_info.capturedExpression;
     }
 
-    bool ResultInfo::hasExpandedExpression() const {
+    bool AssertionResult::hasExpandedExpression() const {
         return hasExpression() && getExpandedExpression() != getExpression();
     }
 
-    std::string ResultInfo::getExpandedExpression() const {
-        return m_data.reconstructedExpression;
+    std::string AssertionResult::getExpandedExpression() const {
+        return m_resultData.reconstructedExpression;
     }
 
-    std::string ResultInfo::getMessage() const {
-        return m_data.message;
+    std::string AssertionResult::getMessage() const {
+        return m_resultData.message;
+    }
+    SourceLineInfo AssertionResult::getSourceInfo() const {
+        return m_info.lineInfo;
     }
 
-    std::string ResultInfo::getFilename() const {
-        return m_data.lineInfo.file;
-    }
-
-    std::size_t ResultInfo::getLine() const {
-        return m_data.lineInfo.line;
-    }
-
-    std::string ResultInfo::getTestMacroName() const {
-        return m_data.macroName;
+    std::string AssertionResult::getTestMacroName() const {
+        return m_info.macroName;
     }
 
 } // end namespace Catch
 
-// #included from: catch_resultinfo_builder.hpp
-#define TWOBLUECUBES_CATCH_RESULTINFO_BUILDER_HPP_INCLUDED
+// #included from: catch_assertionresult_builder.hpp
+#define TWOBLUECUBES_CATCH_ASSERTIONRESULT_BUILDER_HPP_INCLUDED
+
+#include <assert.h>
 
 namespace Catch {
 
-    ResultInfoBuilder::ResultInfoBuilder() {}
-
-    ResultInfoBuilder& ResultInfoBuilder::setResultType( ResultWas::OfType result ) {
-        // Flip bool results if isFalse is set
-        if( m_isFalse && result == ResultWas::Ok )
-            m_data.resultType = ResultWas::ExpressionFailed;
-        else if( m_isFalse && result == ResultWas::ExpressionFailed )
-            m_data.resultType = ResultWas::Ok;
-        else
-            m_data.resultType = result;
-        return *this;
+    AssertionResultBuilder::AssertionResultBuilder( ResultWas::OfType resultType ) {
+        m_data.resultType = resultType;
     }
-    ResultInfoBuilder& ResultInfoBuilder::setCapturedExpression( const std::string& capturedExpression ) {
-        m_data.capturedExpression = capturedExpression;
-        return *this;
-    }
-    ResultInfoBuilder& ResultInfoBuilder::setIsFalse( bool isFalse ) {
-        m_isFalse = isFalse;
-        return *this;
-    }
-
-    ResultInfoBuilder& ResultInfoBuilder::setMessage( const std::string& message ) {
-        m_data.message = message;
-        return *this;
-    }
-
-    ResultInfoBuilder& ResultInfoBuilder::setLineInfo( const SourceLineInfo& lineInfo ) {
-        m_data.lineInfo = lineInfo;
-        return *this;
-    }
-
-    ResultInfoBuilder& ResultInfoBuilder::setMacroName( const std::string& macroName ) {
-        m_data.macroName = macroName;
-        return *this;
-    }
-
-    ResultInfoBuilder& ResultInfoBuilder::setLhs( const std::string& lhs ) {
-        m_lhs = lhs;
-        return *this;
-    }
-
-    ResultInfoBuilder& ResultInfoBuilder::setRhs( const std::string& rhs ) {
-        m_rhs = rhs;
-        return *this;
-    }
-
-    ResultInfoBuilder& ResultInfoBuilder::setOp( const std::string& op ) {
-        m_op = op;
-        return *this;
-    }
-
-    ResultInfo ResultInfoBuilder::build() const
+    AssertionResultBuilder::AssertionResultBuilder( const AssertionResultBuilder& other )
+    :   m_data( other.m_data ),
+        m_exprComponents( other.m_exprComponents )
     {
-        ResultData data = m_data;
-        data.reconstructedExpression = reconstructExpression();
-        if( m_isFalse ) {
-            if( m_op == "" ) {
-                data.capturedExpression = "!" + data.capturedExpression;
-                data.reconstructedExpression = "!" + data.reconstructedExpression;
-            }
-            else {
-                data.capturedExpression = "!(" + data.capturedExpression + ")";
-                data.reconstructedExpression = "!(" + data.reconstructedExpression + ")";
-            }
-        }
-        return ResultInfo( data );
+        m_stream << other.m_stream.str();
     }
+    AssertionResultBuilder& AssertionResultBuilder::operator=(const AssertionResultBuilder& other ) {
+        m_data = other.m_data;
+        m_exprComponents = other.m_exprComponents;
+        m_stream.clear();
+        m_stream << other.m_stream.str();
+        return *this;
+    }
+    AssertionResultBuilder& AssertionResultBuilder::setResultType( ResultWas::OfType result ) {
+        m_data.resultType = result;
+        return *this;
+    }
+    AssertionResultBuilder& AssertionResultBuilder::setResultType( bool result ) {
+        m_data.resultType = result ? ResultWas::Ok : ResultWas::ExpressionFailed;
+        return *this;
+    }
+    AssertionResultBuilder& AssertionResultBuilder::negate( bool shouldNegate ) {
+        m_exprComponents.shouldNegate = shouldNegate;
+        return *this;
+    }
+    AssertionResultBuilder& AssertionResultBuilder::setLhs( const std::string& lhs ) {
+        m_exprComponents.lhs = lhs;
+        return *this;
+    }
+    AssertionResultBuilder& AssertionResultBuilder::setRhs( const std::string& rhs ) {
+        m_exprComponents.rhs = rhs;
+        return *this;
+    }
+    AssertionResultBuilder& AssertionResultBuilder::setOp( const std::string& op ) {
+        m_exprComponents.op = op;
+        return *this;
+    }
+    AssertionResultData AssertionResultBuilder::build( const AssertionInfo& info ) const
+    {
+        assert( m_data.resultType != ResultWas::Unknown );
 
-    std::string ResultInfoBuilder::reconstructExpression() const {
-        if( m_op == "" )
-            return m_lhs.empty() ? m_data.capturedExpression : m_op + m_lhs;
-        else if( m_op == "matches" )
-            return m_lhs + " " + m_rhs;
-        else if( m_op != "!" ) {
-            if( m_lhs.size() + m_rhs.size() < 30 )
-                return m_lhs + " " + m_op + " " + m_rhs;
-            else if( m_lhs.size() < 70 && m_rhs.size() < 70 )
-                return "\n\t" + m_lhs + "\n\t" + m_op + "\n\t" + m_rhs;
+        AssertionResultData data = m_data;
+
+        // Flip bool results if shouldNegate is set
+        if( m_exprComponents.shouldNegate && data.resultType == ResultWas::Ok )
+            data.resultType = ResultWas::ExpressionFailed;
+        else if( m_exprComponents.shouldNegate && data.resultType == ResultWas::ExpressionFailed )
+            data.resultType = ResultWas::Ok;
+
+        data.message = m_stream.str();
+        data.reconstructedExpression = reconstructExpression( info );
+        if( m_exprComponents.shouldNegate ) {
+            if( m_exprComponents.op == "" )
+                data.reconstructedExpression = "!" + data.reconstructedExpression;
             else
-                return "\n" + m_lhs + "\n" + m_op + "\n" + m_rhs + "\n\n";
+                data.reconstructedExpression = "!(" + data.reconstructedExpression + ")";
+        }
+        return data;
+    }
+    std::string AssertionResultBuilder::reconstructExpression( const AssertionInfo& info ) const {
+        if( m_exprComponents.op == "" )
+            return m_exprComponents.lhs.empty() ? info.capturedExpression : m_exprComponents.op + m_exprComponents.lhs;
+        else if( m_exprComponents.op == "matches" )
+            return m_exprComponents.lhs + " " + m_exprComponents.rhs;
+        else if( m_exprComponents.op != "!" ) {
+            if( m_exprComponents.lhs.size() + m_exprComponents.rhs.size() < 30 )
+                return m_exprComponents.lhs + " " + m_exprComponents.op + " " + m_exprComponents.rhs;
+            else if( m_exprComponents.lhs.size() < 70 && m_exprComponents.rhs.size() < 70 )
+                return "\n\t" + m_exprComponents.lhs + "\n\t" + m_exprComponents.op + "\n\t" + m_exprComponents.rhs;
+            else
+                return "\n" + m_exprComponents.lhs + "\n" + m_exprComponents.op + "\n" + m_exprComponents.rhs + "\n\n";
         }
         else
-            return "{can't expand - use " + m_data.macroName + "_FALSE( " + m_data.capturedExpression.substr(1) + " ) instead of " + m_data.macroName + "( " + m_data.capturedExpression + " ) for better diagnostics}";
+            return "{can't expand - use " + info.macroName + "_FALSE( " + info.capturedExpression.substr(1) + " ) instead of " + info.macroName + "( " + info.capturedExpression + " ) for better diagnostics}";
     }
 
 } // end namespace Catch
@@ -5710,21 +5687,21 @@ namespace Catch {
             m_sectionSpans.pop_back();
         }
 
-        virtual void Result( const ResultInfo& resultInfo ) {
-            if( !m_config.includeSuccessfulResults && resultInfo.getResultType() == ResultWas::Ok )
+        virtual void Result( const AssertionResult& assertionResult ) {
+            if( !m_config.includeSuccessfulResults && assertionResult.getResultType() == ResultWas::Ok )
                 return;
 
             startSpansLazily();
 
-            if( !resultInfo.getFilename().empty() ) {
+            if( !assertionResult.getSourceInfo().empty() ) {
                 TextColour colour( TextColour::FileName );
-                m_config.stream << SourceLineInfo( resultInfo.getFilename(), resultInfo.getLine() );
+                m_config.stream << assertionResult.getSourceInfo();
             }
 
-            if( resultInfo.hasExpression() ) {
+            if( assertionResult.hasExpression() ) {
                 TextColour colour( TextColour::OriginalExpression );
-                m_config.stream << resultInfo.getExpression();
-                if( resultInfo.ok() ) {
+                m_config.stream << assertionResult.getExpression();
+                if( assertionResult.ok() ) {
                     TextColour successColour( TextColour::Success );
                     m_config.stream << " succeeded";
                 }
@@ -5733,36 +5710,36 @@ namespace Catch {
                     m_config.stream << " failed";
                 }
             }
-            switch( resultInfo.getResultType() ) {
+            switch( assertionResult.getResultType() ) {
                 case ResultWas::ThrewException:
                 {
                     TextColour colour( TextColour::Error );
-                    if( resultInfo.hasExpression() )
+                    if( assertionResult.hasExpression() )
                         m_config.stream << " with unexpected";
                     else
                         m_config.stream << "Unexpected";
-                    m_config.stream << " exception with message: '" << resultInfo.getMessage() << "'";
+                    m_config.stream << " exception with message: '" << assertionResult.getMessage() << "'";
                 }
                     break;
                 case ResultWas::DidntThrowException:
                 {
                     TextColour colour( TextColour::Error );
-                    if( resultInfo.hasExpression() )
+                    if( assertionResult.hasExpression() )
                         m_config.stream << " because no exception was thrown where one was expected";
                     else
                         m_config.stream << "No exception thrown where one was expected";
                 }
                     break;
                 case ResultWas::Info:
-                    streamVariableLengthText( "info", resultInfo.getMessage() );
+                    streamVariableLengthText( "info", assertionResult.getMessage() );
                     break;
                 case ResultWas::Warning:
-                    m_config.stream << "warning:\n'" << resultInfo.getMessage() << "'";
+                    m_config.stream << "warning:\n'" << assertionResult.getMessage() << "'";
                     break;
                 case ResultWas::ExplicitFailure:
                 {
                     TextColour colour( TextColour::Error );
-                    m_config.stream << "failed with message: '" << resultInfo.getMessage() << "'";
+                    m_config.stream << "failed with message: '" << assertionResult.getMessage() << "'";
                 }
                     break;
                 case ResultWas::Unknown: // These cases are here to prevent compiler warnings
@@ -5770,8 +5747,8 @@ namespace Catch {
                 case ResultWas::FailureBit:
                 case ResultWas::ExpressionFailed:
                 case ResultWas::Exception:
-                    if( !resultInfo.hasExpression() ) {
-                        if( resultInfo.ok() ) {
+                    if( !assertionResult.hasExpression() ) {
+                        if( assertionResult.ok() ) {
                             TextColour colour( TextColour::Success );
                             m_config.stream << " succeeded";
                         }
@@ -5783,14 +5760,14 @@ namespace Catch {
                     break;
             }
 
-            if( resultInfo.hasExpandedExpression() ) {
+            if( assertionResult.hasExpandedExpression() ) {
                 m_config.stream << " for: ";
-                if( resultInfo.getExpandedExpression().size() > 40 )
+                if( assertionResult.getExpandedExpression().size() > 40 )
                     m_config.stream << "\n";
-                if( resultInfo.getExpandedExpression().size() < 70 )
+                if( assertionResult.getExpandedExpression().size() < 70 )
                     m_config.stream << "\t";
                 TextColour colour( TextColour::ReconstructedExpression );
-                m_config.stream << resultInfo.getExpandedExpression();
+                m_config.stream << assertionResult.getExpandedExpression();
             }
             m_config.stream << std::endl;
         }
@@ -6153,42 +6130,42 @@ namespace Catch {
             m_currentTestSuccess = true;
         }
 
-        virtual void Result( const Catch::ResultInfo& resultInfo ) {
-            if( !m_config.includeSuccessfulResults && resultInfo.getResultType() == ResultWas::Ok )
+        virtual void Result( const Catch::AssertionResult& assertionResult ) {
+            if( !m_config.includeSuccessfulResults && assertionResult.getResultType() == ResultWas::Ok )
                 return;
 
-            if( resultInfo.hasExpression() ) {
+            if( assertionResult.hasExpression() ) {
                 m_xml.startElement( "Expression" )
-                    .writeAttribute( "success", resultInfo.ok() )
-                    .writeAttribute( "filename", resultInfo.getFilename() )
-                    .writeAttribute( "line", resultInfo.getLine() );
+                    .writeAttribute( "success", assertionResult.ok() )
+                    .writeAttribute( "filename", assertionResult.getSourceInfo().file )
+                    .writeAttribute( "line", assertionResult.getSourceInfo().line );
 
                 m_xml.scopedElement( "Original" )
-                    .writeText( resultInfo.getExpression() );
+                    .writeText( assertionResult.getExpression() );
                 m_xml.scopedElement( "Expanded" )
-                    .writeText( resultInfo.getExpandedExpression() );
-                m_currentTestSuccess &= resultInfo.ok();
+                    .writeText( assertionResult.getExpandedExpression() );
+                m_currentTestSuccess &= assertionResult.ok();
             }
 
-            switch( resultInfo.getResultType() ) {
+            switch( assertionResult.getResultType() ) {
                 case ResultWas::ThrewException:
                     m_xml.scopedElement( "Exception" )
-                        .writeAttribute( "filename", resultInfo.getFilename() )
-                        .writeAttribute( "line", resultInfo.getLine() )
-                        .writeText( resultInfo.getMessage() );
+                        .writeAttribute( "filename", assertionResult.getSourceInfo().file )
+                        .writeAttribute( "line", assertionResult.getSourceInfo().line )
+                        .writeText( assertionResult.getMessage() );
                     m_currentTestSuccess = false;
                     break;
                 case ResultWas::Info:
                     m_xml.scopedElement( "Info" )
-                        .writeText( resultInfo.getMessage() );
+                        .writeText( assertionResult.getMessage() );
                     break;
                 case ResultWas::Warning:
                     m_xml.scopedElement( "Warning" )
-                        .writeText( resultInfo.getMessage() );
+                        .writeText( assertionResult.getMessage() );
                     break;
                 case ResultWas::ExplicitFailure:
                     m_xml.scopedElement( "Failure" )
-                        .writeText( resultInfo.getMessage() );
+                        .writeText( assertionResult.getMessage() );
                     m_currentTestSuccess = false;
                     break;
                 case ResultWas::Unknown:
@@ -6199,7 +6176,7 @@ namespace Catch {
                 case ResultWas::DidntThrowException:
                     break;
             }
-            if( resultInfo.hasExpression() )
+            if( assertionResult.hasExpression() )
                 m_xml.endElement();
         }
 
@@ -6307,19 +6284,19 @@ namespace Catch {
             m_currentStats->m_testCaseStats.push_back( TestCaseStats( testInfo.getName() ) );
         }
 
-        virtual void Result( const Catch::ResultInfo& resultInfo ) {
-            if( resultInfo.getResultType() != ResultWas::Ok || m_config.includeSuccessfulResults ) {
+        virtual void Result( const Catch::AssertionResult& assertionResult ) {
+            if( assertionResult.getResultType() != ResultWas::Ok || m_config.includeSuccessfulResults ) {
                 TestCaseStats& testCaseStats = m_currentStats->m_testCaseStats.back();
                 TestStats stats;
                 std::ostringstream oss;
-                if( !resultInfo.getMessage().empty() )
-                    oss << resultInfo.getMessage() << " at ";
-                oss << SourceLineInfo( resultInfo.getFilename(), resultInfo.getLine() );
+                if( !assertionResult.getMessage().empty() )
+                    oss << assertionResult.getMessage() << " at ";
+                oss << assertionResult.getSourceInfo();
                 stats.m_content = oss.str();
-                stats.m_message = resultInfo.getExpandedExpression();
-                stats.m_resultType = resultInfo.getTestMacroName();
+                stats.m_message = assertionResult.getExpandedExpression();
+                stats.m_resultType = assertionResult.getTestMacroName();
 
-                switch( resultInfo.getResultType() ) {
+                switch( assertionResult.getResultType() ) {
                     case ResultWas::ThrewException:
                         stats.m_element = "error";
                         m_currentStats->m_errorsCount++;
@@ -6544,9 +6521,9 @@ int main (int argc, char * const argv[]) {
 #define CATCH_WARN( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Warning, false, "CATCH_WARN" )
 #define CATCH_FAIL( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::ExplicitFailure, true, "CATCH_FAIL" )
 #define CATCH_SUCCEED( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Ok, false, "CATCH_SUCCEED" )
-#define CATCH_SCOPED_INFO( msg ) INTERNAL_CATCH_SCOPED_INFO( msg )
+#define CATCH_SCOPED_INFO( msg ) INTERNAL_CATCH_SCOPED_INFO( msg, "CATCH_SCOPED_INFO" )
 #define CATCH_CAPTURE( msg ) INTERNAL_CATCH_MSG( #msg " := " << msg, Catch::ResultWas::Info, false, "CATCH_CAPTURE" )
-#define CATCH_SCOPED_CAPTURE( msg ) INTERNAL_CATCH_SCOPED_INFO( #msg " := " << msg )
+#define CATCH_SCOPED_CAPTURE( msg ) INTERNAL_CATCH_SCOPED_INFO( #msg " := " << msg, "CATCH_SCOPED_CAPTURE" )
 
 #define CATCH_SECTION( name, description ) INTERNAL_CATCH_SECTION( name, description )
 
@@ -6589,9 +6566,9 @@ int main (int argc, char * const argv[]) {
 #define WARN( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Warning, false, "WARN" )
 #define FAIL( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::ExplicitFailure, true, "FAIL" )
 #define SUCCEED( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Ok, false, "SUCCEED" )
-#define SCOPED_INFO( msg ) INTERNAL_CATCH_SCOPED_INFO( msg )
+#define SCOPED_INFO( msg ) INTERNAL_CATCH_SCOPED_INFO( msg, "SCOPED_INFO" )
 #define CAPTURE( msg ) INTERNAL_CATCH_MSG( #msg " := " << msg, Catch::ResultWas::Info, false, "CAPTURE" )
-#define SCOPED_CAPTURE( msg ) INTERNAL_CATCH_SCOPED_INFO( #msg " := " << msg )
+#define SCOPED_CAPTURE( msg ) INTERNAL_CATCH_SCOPED_INFO( #msg " := " << msg, "SCOPED_CAPTURE" )
 
 #define SECTION( name, description ) INTERNAL_CATCH_SECTION( name, description )
 

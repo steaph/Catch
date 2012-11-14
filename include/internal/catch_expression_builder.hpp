@@ -12,7 +12,7 @@
 #include "catch_assertionresult_builder.h"
 
 namespace Catch {
-    
+
 class ExpressionBuilder {
 public:
 

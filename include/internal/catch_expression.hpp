@@ -18,21 +18,21 @@
 
 namespace Catch {
 
+    template<typename T>
+    inline void setResultIfBoolean( AssertionResultBuilder&, const T& )
+{
+}
+    inline void setResultIfBoolean( AssertionResultBuilder& result, bool value ) {
+        result.setResultType( value );
+    }
+
 template<typename T>
 class Expression {
 	void operator = ( const Expression& );
 
 public:
-//    Expression( T lhs ) : m_lhs( lhs ) {
-//#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-//// prevent  error C2354: initialization of reference member requires a temporary variable
-//        m_result.setLhs( Catch::toString( lhs ) ); }
-//#else
-//        m_result.setLhs( Catch::toString( lhs ) );
-//    }
-//#endif
     Expression( T lhs ) : m_lhs( lhs ) {
-        m_result.setLhs( Catch::toString( lhs ) );
+        setResultIfBoolean( m_result.setLhs( Catch::toString( lhs ) ), lhs );
     }
 
     template<typename RhsT>
@@ -73,10 +73,8 @@ public:
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    AssertionResultBuilder setIsFalse( bool isFalse ) {
-        return m_result
-            .setResultType( m_lhs ? ResultWas::Ok : ResultWas::ExpressionFailed )
-            .setIsFalse( isFalse );
+    AssertionResultBuilder negate( bool shouldNegate ) {
+        return m_result.negate( shouldNegate );
     }
 
     template<typename RhsT>
@@ -84,15 +82,6 @@ public:
 
     template<typename RhsT>
     STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator - ( const RhsT& );
-
-private:
-    template<Internal::Operator Op, typename RhsT>
-    AssertionResultBuilder& captureExpression( const RhsT& rhs ) {
-        return m_result
-            .setResultType( Internal::Comparator<Op>::compare( m_lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed )
-            .setRhs( Catch::toString( rhs ) )
-            .setOp( Internal::OperatorTraits<Op>::getName() );
-    }
 
 private:
     AssertionResultBuilder m_result;
