@@ -43,6 +43,7 @@
 		<Unit filename="..\..\include\internal\catch_exception_translator_registry.hpp" />
 		<Unit filename="..\..\include\internal\catch_expression.hpp" />
 		<Unit filename="..\..\include\internal\catch_expression_builder.hpp" />
+		<Unit filename="..\..\include\internal\catch_expression_decomposer.hpp" />
 		<Unit filename="..\..\include\internal\catch_generators.hpp" />
 		<Unit filename="..\..\include\internal\catch_generators_impl.hpp" />
 		<Unit filename="..\..\include\internal\catch_impl.hpp" />

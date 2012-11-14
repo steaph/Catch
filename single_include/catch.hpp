@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-11-14 21:31:53.635000
+ *  Generated: 2012-11-14 21:43:58.197000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -459,10 +459,10 @@ private:
 // #included from: internal/catch_capture.hpp
 #define TWOBLUECUBES_CATCH_CAPTURE_HPP_INCLUDED
 
-// #included from: catch_expression_builder.hpp
-#define TWOBLUECUBES_CATCH_EXPRESSION_BUILDER_HPP_INCLUDED
+// #included from: catch_expression_decomposer.hpp
+#define TWOBLUECUBES_CATCH_EXPRESSION_DECOMPOSER_HPP_INCLUDED
 
-// #included from: catch_expression.hpp
+// #included from: catch_expression_lhs.hpp
 #define TWOBLUECUBES_CATCH_EXPRESSION_HPP_INCLUDED
 
 // #included from: catch_assertionresult_builder.h
@@ -1154,11 +1154,11 @@ namespace Catch {
     }
 
 template<typename T>
-class Expression {
-	void operator = ( const Expression& );
+class ExpressionLhs {
+	void operator = ( const ExpressionLhs& );
 
 public:
-    Expression( T lhs ) : m_lhs( lhs ) {
+    ExpressionLhs( T lhs ) : m_lhs( lhs ) {
         setResultIfBoolean( m_result.setLhs( Catch::toString( lhs ) ), lhs );
     }
 
@@ -1223,16 +1223,16 @@ private:
 
 namespace Catch {
 
-class ExpressionBuilder {
+class ExpressionDecomposer {
 public:
 
     template<typename T>
-    Expression<const T&> operator->* ( const T & operand ) {
-        return Expression<const T&>( operand );
+    ExpressionLhs<const T&> operator->* ( const T & operand ) {
+        return ExpressionLhs<const T&>( operand );
     }
 
-    Expression<bool> operator->* ( bool value ) {
-        return Expression<bool>( value );
+    ExpressionLhs<bool> operator->* ( bool value ) {
+        return ExpressionLhs<bool>( value );
     }
 };
 
@@ -2300,7 +2300,7 @@ inline bool isTrue( bool value ){ return value; }
 #define INTERNAL_CATCH_TEST( expr, shouldNegate, stopOnFailure, macroName ) \
     do { try { \
         INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, shouldNegate ); \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionBuilder()->*expr ).negate( shouldNegate ), stopOnFailure, expr ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionDecomposer()->*expr ).negate( shouldNegate ), stopOnFailure, expr ); \
     } catch( Catch::TestFailureException& ) { \
         throw; \
     } catch( ... ) { \
