@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-11-14 22:33:02.781000
+ *  Generated: 2012-11-14 22:37:57.835000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -1058,6 +1058,8 @@ class ::Catch::Detail::Approx;
 
 namespace Catch {
 
+// Wraps the (stringised versions of) the lhs, operator and rhs of an expression - as well as
+// the result of evaluating it. This is used to build an AssertionResult object
 class ExpressionResultBuilder {
 public:
 
@@ -1081,7 +1083,7 @@ public:
 
     std::string reconstructExpression( const AssertionInfo& info ) const;
 
-    AssertionResultData build( const AssertionInfo& info ) const;
+    AssertionResult buildResult( const AssertionInfo& info ) const;
 
 private:
     AssertionResultData m_data;
@@ -1144,6 +1146,8 @@ namespace Catch {
         result.setResultType( value );
     }
 
+// Wraps the LHS of an expression and captures the operator and RHS (if any) - wrapping them all
+// in an ExpressionResultBuilder object
 template<typename T>
 class ExpressionLhs {
 	void operator = ( const ExpressionLhs& );
@@ -1191,7 +1195,7 @@ public:
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    ExpressionResultBuilder negate( bool shouldNegate ) {
+    ExpressionResultBuilder& negate( bool shouldNegate ) {
         return m_result.negate( shouldNegate );
     }
 
@@ -1224,6 +1228,7 @@ private:
 
 namespace Catch {
 
+// Captures the LHS of the expression and wraps it in an Expression Lhs object
 class ExpressionDecomposer {
 public:
 
@@ -2271,8 +2276,8 @@ public:
         m_resultBuilder << value;
         return *this;
     }
-    AssertionResultData getInfo () const {
-        return m_resultBuilder.build( AssertionInfo() ); // !TBD
+    AssertionResult buildResult( const AssertionInfo& assertionInfo ) const {
+        return m_resultBuilder.buildResult( assertionInfo );
     }
 
 private:
@@ -4260,19 +4265,19 @@ namespace Catch {
                     std::vector<ScopedInfo*>::const_iterator it = m_scopedInfos.begin();
                     std::vector<ScopedInfo*>::const_iterator itEnd = m_scopedInfos.end();
                     for(; it != itEnd; ++it )
-                        m_reporter->Result( AssertionResult( m_assertionInfo, (*it)->getInfo() ) );
+                        m_reporter->Result( (*it)->buildResult( m_assertionInfo ) );
                 }
                 {
-                    std::vector<AssertionResult>::const_iterator it = m_info.begin();
-                    std::vector<AssertionResult>::const_iterator itEnd = m_info.end();
+                    std::vector<AssertionResult>::const_iterator it = m_assertionResults.begin();
+                    std::vector<AssertionResult>::const_iterator itEnd = m_assertionResults.end();
                     for(; it != itEnd; ++it )
                         m_reporter->Result( *it );
                 }
-                m_info.clear();
+                m_assertionResults.clear();
             }
 
             if( result.getResultType() == ResultWas::Info )
-                m_info.push_back( result );
+                m_assertionResults.push_back( result );
             else
                 m_reporter->Result( result );
         }
@@ -4342,7 +4347,7 @@ namespace Catch {
     private:
 
         ResultAction::Value actOnCurrentResult() {
-            m_lastResult = AssertionResult( m_assertionInfo, m_currentResult.build( m_assertionInfo ) );
+            m_lastResult = m_currentResult.buildResult( m_assertionInfo );
             testEnded( m_lastResult );
 
             m_currentResult = ExpressionResultBuilder();
@@ -4390,7 +4395,7 @@ namespace Catch {
                     << translateActiveException();
                 actOnCurrentResult();
             }
-            m_info.clear();
+            m_assertionResults.clear();
         }
 
     private:
@@ -4403,7 +4408,7 @@ namespace Catch {
         Totals m_totals;
         Ptr<IReporter> m_reporter;
         std::vector<ScopedInfo*> m_scopedInfos;
-        std::vector<AssertionResult> m_info;
+        std::vector<AssertionResult> m_assertionResults;
         IRunner* m_prevRunner;
         IResultCapture* m_prevResultCapture;
         const IConfig* m_prevConfig;
@@ -5341,7 +5346,7 @@ namespace Catch {
     ExpressionResultBuilder& ExpressionResultBuilder::operator=(const ExpressionResultBuilder& other ) {
         m_data = other.m_data;
         m_exprComponents = other.m_exprComponents;
-        m_stream.clear();
+        m_stream.str("");
         m_stream << other.m_stream.str();
         return *this;
     }
@@ -5369,7 +5374,7 @@ namespace Catch {
         m_exprComponents.op = op;
         return *this;
     }
-    AssertionResultData ExpressionResultBuilder::build( const AssertionInfo& info ) const
+    AssertionResult ExpressionResultBuilder::buildResult( const AssertionInfo& info ) const
     {
         assert( m_data.resultType != ResultWas::Unknown );
 
@@ -5389,7 +5394,7 @@ namespace Catch {
             else
                 data.reconstructedExpression = "!(" + data.reconstructedExpression + ")";
         }
-        return data;
+        return AssertionResult( info, data );
     }
     std::string ExpressionResultBuilder::reconstructExpression( const AssertionInfo& info ) const {
         if( m_exprComponents.op == "" )
@@ -5735,7 +5740,7 @@ namespace Catch {
                     streamVariableLengthText( "info", assertionResult.getMessage() );
                     break;
                 case ResultWas::Warning:
-                    m_config.stream << "warning:\n'" << assertionResult.getMessage() << "'";
+                    streamVariableLengthText( "warning", assertionResult.getMessage() );
                     break;
                 case ResultWas::ExplicitFailure:
                 {
@@ -5838,7 +5843,7 @@ namespace Catch {
         void streamVariableLengthText( const std::string& prefix, const std::string& text ) {
             std::string trimmed = trim( text );
             if( trimmed.find_first_of( "\r\n" ) == std::string::npos ) {
-                m_config.stream << "[" << prefix << ": " << trimmed << "]\n";
+                m_config.stream << "[" << prefix << ": " << trimmed << "]";
             }
             else {
                 m_config.stream << "\n[" << prefix << "] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n" << trimmed
