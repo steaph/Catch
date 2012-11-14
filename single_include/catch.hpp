@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-11-14 21:43:58.197000
+ *  Generated: 2012-11-14 22:33:02.781000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -463,9 +463,9 @@ private:
 #define TWOBLUECUBES_CATCH_EXPRESSION_DECOMPOSER_HPP_INCLUDED
 
 // #included from: catch_expression_lhs.hpp
-#define TWOBLUECUBES_CATCH_EXPRESSION_HPP_INCLUDED
+#define TWOBLUECUBES_CATCH_EXPRESSION_LHS_HPP_INCLUDED
 
-// #included from: catch_assertionresult_builder.h
+// #included from: catch_expressionresult_builder.h
 #define TWOBLUECUBES_CATCH_ASSERTIONRESULT_BUILDER_H_INCLUDED
 
 // #included from: catch_tostring.hpp
@@ -1058,25 +1058,23 @@ class ::Catch::Detail::Approx;
 
 namespace Catch {
 
-struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
-
-class AssertionResultBuilder {
+class ExpressionResultBuilder {
 public:
 
-    AssertionResultBuilder( ResultWas::OfType resultType = ResultWas::Unknown );
-    AssertionResultBuilder( const AssertionResultBuilder& other );
-    AssertionResultBuilder& operator=(const AssertionResultBuilder& other );
+    ExpressionResultBuilder( ResultWas::OfType resultType = ResultWas::Unknown );
+    ExpressionResultBuilder( const ExpressionResultBuilder& other );
+    ExpressionResultBuilder& operator=(const ExpressionResultBuilder& other );
 
-    AssertionResultBuilder& setResultType( ResultWas::OfType result );
-    AssertionResultBuilder& setResultType( bool result );
-    AssertionResultBuilder& setLhs( const std::string& lhs );
-    AssertionResultBuilder& setRhs( const std::string& rhs );
-    AssertionResultBuilder& setOp( const std::string& op );
+    ExpressionResultBuilder& setResultType( ResultWas::OfType result );
+    ExpressionResultBuilder& setResultType( bool result );
+    ExpressionResultBuilder& setLhs( const std::string& lhs );
+    ExpressionResultBuilder& setRhs( const std::string& rhs );
+    ExpressionResultBuilder& setOp( const std::string& op );
 
-    AssertionResultBuilder& negate( bool shouldNegate );
+    ExpressionResultBuilder& negate( bool shouldNegate );
 
     template<typename T>
-    AssertionResultBuilder& operator << ( const T& value ) {
+    ExpressionResultBuilder& operator << ( const T& value ) {
         m_stream << value;
         return *this;
     }
@@ -1084,12 +1082,6 @@ public:
     std::string reconstructExpression( const AssertionInfo& info ) const;
 
     AssertionResultData build( const AssertionInfo& info ) const;
-
-    // Disable attempts to use || and && in expressions (without parantheses)
-    template<typename RhsT>
-    STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator || ( const RhsT& );
-    template<typename RhsT>
-    STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator && ( const RhsT& );
 
 private:
     AssertionResultData m_data;
@@ -1099,7 +1091,6 @@ public:
         bool shouldNegate;
         std::string lhs, rhs, op;
     } m_exprComponents;
-
 private:
     std::ostringstream m_stream;
 };
@@ -1110,11 +1101,11 @@ namespace Internal {
     class Apply
     {
     public:
-        Apply( AssertionResultBuilder & result )
+        Apply( ExpressionResultBuilder & result )
         : m_result( result ) {}
 
         template<typename T1, typename T2>
-        AssertionResultBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
+        ExpressionResultBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
             m_result.setResultType( Comparator<Op>::compare( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
             m_result.m_exprComponents.lhs = Catch::toString( lhs );
             m_result.m_exprComponents.rhs = Catch::toString( rhs );
@@ -1124,15 +1115,15 @@ namespace Internal {
 
         template<typename T>
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-        AssertionResultBuilder& captureExpression( const T*& lhs, const int& rhs ) {
+        ExpressionResultBuilder& captureExpression( const T*& lhs, const int& rhs ) {
 #else
-        AssertionResultBuilder& captureExpression( const T*  lhs, const int& rhs ) {
+        ExpressionResultBuilder& captureExpression( const T*  lhs, const int& rhs ) {
 #endif
             return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
         }
 
     private:
-        AssertionResultBuilder & m_result;
+        ExpressionResultBuilder & m_result;
     };
 
 } // end namespace Internal
@@ -1145,11 +1136,11 @@ namespace Internal {
 
 namespace Catch {
 
+    struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
+
     template<typename T>
-    inline void setResultIfBoolean( AssertionResultBuilder&, const T& )
-{
-}
-    inline void setResultIfBoolean( AssertionResultBuilder& result, bool value ) {
+    inline void setResultIfBoolean( ExpressionResultBuilder&, const T& ) {}
+    inline void setResultIfBoolean( ExpressionResultBuilder& result, bool value ) {
         result.setResultType( value );
     }
 
@@ -1163,55 +1154,65 @@ public:
     }
 
     template<typename RhsT>
-    AssertionResultBuilder& operator == ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator == ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    AssertionResultBuilder& operator != ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator != ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    AssertionResultBuilder& operator < ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator < ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    AssertionResultBuilder& operator > ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator > ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    AssertionResultBuilder& operator <= ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator <= ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    AssertionResultBuilder& operator >= ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator >= ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    AssertionResultBuilder& operator == ( bool rhs ) {
+    ExpressionResultBuilder& operator == ( bool rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    AssertionResultBuilder& operator != ( bool rhs ) {
+    ExpressionResultBuilder& operator != ( bool rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
-    AssertionResultBuilder negate( bool shouldNegate ) {
+    ExpressionResultBuilder negate( bool shouldNegate ) {
         return m_result.negate( shouldNegate );
     }
 
-    template<typename RhsT>
-    STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator + ( const RhsT& );
-
-    template<typename RhsT>
-    STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator - ( const RhsT& );
+    // Only simple binary expressions are allowed on the LHS.
+    // If more complex compositions are required then place the sub expression in parentheses
+    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator + ( const RhsT& );
+    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator - ( const RhsT& );
+    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator / ( const RhsT& );
+    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator * ( const RhsT& );
 
 private:
-    AssertionResultBuilder m_result;
+    template<Internal::Operator Op, typename RhsT>
+    ExpressionResultBuilder& captureExpression( const RhsT& rhs ) {
+        return m_result
+            .setResultType( Internal::Comparator<Op>::compare( m_lhs, rhs ) )
+            .setRhs( Catch::toString( rhs ) )
+            .setOp( Internal::OperatorTraits<Op>::getName() );
+    }
+
+private:
+    ExpressionResultBuilder m_result;
     T m_lhs;
 };
 
@@ -1306,7 +1307,7 @@ namespace Catch {
 
     class TestCaseInfo;
     class ScopedInfo;
-    class AssertionResultBuilder;
+    class ExpressionResultBuilder;
     class AssertionResult;
     struct AssertionInfo;
 
@@ -1325,7 +1326,7 @@ namespace Catch {
         virtual bool shouldDebugBreak() const = 0;
 
         virtual void acceptAssertionInfo( const AssertionInfo& assertionInfo ) = 0;
-        virtual ResultAction::Value acceptExpression( const AssertionResultBuilder& assertionResult ) = 0;
+        virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult ) = 0;
 
         virtual std::string getCurrentTestName() const = 0;
         virtual const AssertionResult* getLastResult() const = 0;
@@ -2227,30 +2228,30 @@ namespace Catch {
     }
 
     template<typename MatcherT>
-    AssertionResultBuilder assertionBuilderFromMatcher( const MatcherT& matcher,
-                                                        const std::string& matcherCallAsString ) {
+    ExpressionResultBuilder expressionResultBuilderFromMatcher( const MatcherT& matcher,
+                                                                const std::string& matcherCallAsString ) {
         std::string matcherAsString = matcher.toString();
         if( matcherAsString == "{?}" )
             matcherAsString = matcherCallAsString;
-        return AssertionResultBuilder()
+        return ExpressionResultBuilder()
             .setRhs( matcherAsString )
             .setOp( "matches" );
     }
 
     template<typename MatcherT, typename ArgT>
-    AssertionResultBuilder assertionBuilderFromMatcher( const MatcherT& matcher,
-                                                        const ArgT& arg,
-                                                        const std::string& matcherCallAsString ) {
-        return assertionBuilderFromMatcher( matcher, matcherCallAsString )
+    ExpressionResultBuilder expressionResultBuilderFromMatcher( const MatcherT& matcher,
+                                                                const ArgT& arg,
+                                                                const std::string& matcherCallAsString ) {
+        return expressionResultBuilderFromMatcher( matcher, matcherCallAsString )
             .setLhs( Catch::toString( arg ) )
             .setResultType( matcher.match( arg ) );
     }
 
     template<typename MatcherT, typename ArgT>
-    AssertionResultBuilder assertionBuilderFromMatcher( const MatcherT& matcher,
-                                                        ArgT* arg,
-                                                        const std::string& matcherCallAsString ) {
-        return assertionBuilderFromMatcher( matcher, matcherCallAsString )
+    ExpressionResultBuilder expressionResultBuilderFromMatcher( const MatcherT& matcher,
+                                                                ArgT* arg,
+                                                                const std::string& matcherCallAsString ) {
+        return expressionResultBuilderFromMatcher( matcher, matcherCallAsString )
             .setLhs( Catch::toString( arg ) )
             .setResultType( matcher.match( arg ) );
     }
@@ -2275,7 +2276,7 @@ public:
     }
 
 private:
-    AssertionResultBuilder m_resultBuilder;
+    ExpressionResultBuilder m_resultBuilder;
 };
 
 // This is just here to avoid compiler warnings with macro constants and boolean literals
@@ -2304,7 +2305,7 @@ inline bool isTrue( bool value ){ return value; }
     } catch( Catch::TestFailureException& ) { \
         throw; \
     } catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), false, expr ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), false, expr ); \
         throw; \
     } } while( Catch::isTrue( false ) )
 
@@ -2323,10 +2324,10 @@ inline bool isTrue( bool value ){ return value; }
     try { \
         INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
         expr; \
-        INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
     } \
     catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), stopOnFailure, false ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), stopOnFailure, false ); \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2335,26 +2336,26 @@ inline bool isTrue( bool value ){ return value; }
         INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
         if( Catch::getCurrentContext().getConfig()->allowThrows() ) { \
             expr; \
-            INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::DidntThrowException ), stopOnFailure, false ); \
+            INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::DidntThrowException ), stopOnFailure, false ); \
         } \
     } \
     catch( Catch::TestFailureException& ) { \
         throw; \
     } \
     catch( exceptionType ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_THROWS_AS( expr, exceptionType, stopOnFailure, macroName ) \
     INTERNAL_CATCH_THROWS( expr, exceptionType, stopOnFailure, macroName ) \
     catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::AssertionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), stopOnFailure, false ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), stopOnFailure, false ); \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_MSG( reason, resultType, stopOnFailure, macroName ) \
-    INTERNAL_CATCH_ACCEPT_EXPR( Catch::AssertionResultBuilder( resultType ) << reason, stopOnFailure, true );
+    INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( resultType ) << reason, stopOnFailure, true );
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_SCOPED_INFO( log, macroName ) \
@@ -2366,11 +2367,11 @@ inline bool isTrue( bool value ){ return value; }
 #define INTERNAL_CHECK_THAT( arg, matcher, stopOnFailure, macroName ) \
     do { try { \
         INTERNAL_CATCH_ACCEPT_INFO( #arg " " #matcher, macroName, false ) \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::assertionBuilderFromMatcher( ::Catch::Matchers::matcher, arg, #matcher ) ), stopOnFailure, false ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::expressionResultBuilderFromMatcher( ::Catch::Matchers::matcher, arg, #matcher ) ), stopOnFailure, false ); \
     } catch( Catch::TestFailureException& ) { \
         throw; \
     } catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::AssertionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), false, false ); \
+        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), false, false ); \
         throw; \
     }}while( Catch::isTrue( false ) )
 
@@ -4243,7 +4244,7 @@ namespace Catch {
             m_assertionInfo = assertionInfo;
         }
 
-        virtual ResultAction::Value acceptExpression( const AssertionResultBuilder& assertionResult ) {
+        virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult ) {
             m_currentResult = assertionResult;
             return actOnCurrentResult();
         }
@@ -4344,7 +4345,7 @@ namespace Catch {
             m_lastResult = AssertionResult( m_assertionInfo, m_currentResult.build( m_assertionInfo ) );
             testEnded( m_lastResult );
 
-            m_currentResult = AssertionResultBuilder();
+            m_currentResult = ExpressionResultBuilder();
             m_assertionInfo = AssertionInfo();
 
             ResultAction::Value action = ResultAction::None;
@@ -4395,7 +4396,7 @@ namespace Catch {
     private:
         IMutableContext& m_context;
         RunningTest* m_runningTest;
-        AssertionResultBuilder m_currentResult;
+        ExpressionResultBuilder m_currentResult;
         AssertionResult m_lastResult;
 
         const Config& m_config;
@@ -5321,54 +5322,54 @@ namespace Catch {
 
 } // end namespace Catch
 
-// #included from: catch_assertionresult_builder.hpp
-#define TWOBLUECUBES_CATCH_ASSERTIONRESULT_BUILDER_HPP_INCLUDED
+// #included from: catch_expressionresult_builder.hpp
+#define TWOBLUECUBES_CATCH_EXPRESSIONRESULT_BUILDER_HPP_INCLUDED
 
 #include <assert.h>
 
 namespace Catch {
 
-    AssertionResultBuilder::AssertionResultBuilder( ResultWas::OfType resultType ) {
+    ExpressionResultBuilder::ExpressionResultBuilder( ResultWas::OfType resultType ) {
         m_data.resultType = resultType;
     }
-    AssertionResultBuilder::AssertionResultBuilder( const AssertionResultBuilder& other )
+    ExpressionResultBuilder::ExpressionResultBuilder( const ExpressionResultBuilder& other )
     :   m_data( other.m_data ),
         m_exprComponents( other.m_exprComponents )
     {
         m_stream << other.m_stream.str();
     }
-    AssertionResultBuilder& AssertionResultBuilder::operator=(const AssertionResultBuilder& other ) {
+    ExpressionResultBuilder& ExpressionResultBuilder::operator=(const ExpressionResultBuilder& other ) {
         m_data = other.m_data;
         m_exprComponents = other.m_exprComponents;
         m_stream.clear();
         m_stream << other.m_stream.str();
         return *this;
     }
-    AssertionResultBuilder& AssertionResultBuilder::setResultType( ResultWas::OfType result ) {
+    ExpressionResultBuilder& ExpressionResultBuilder::setResultType( ResultWas::OfType result ) {
         m_data.resultType = result;
         return *this;
     }
-    AssertionResultBuilder& AssertionResultBuilder::setResultType( bool result ) {
+    ExpressionResultBuilder& ExpressionResultBuilder::setResultType( bool result ) {
         m_data.resultType = result ? ResultWas::Ok : ResultWas::ExpressionFailed;
         return *this;
     }
-    AssertionResultBuilder& AssertionResultBuilder::negate( bool shouldNegate ) {
+    ExpressionResultBuilder& ExpressionResultBuilder::negate( bool shouldNegate ) {
         m_exprComponents.shouldNegate = shouldNegate;
         return *this;
     }
-    AssertionResultBuilder& AssertionResultBuilder::setLhs( const std::string& lhs ) {
+    ExpressionResultBuilder& ExpressionResultBuilder::setLhs( const std::string& lhs ) {
         m_exprComponents.lhs = lhs;
         return *this;
     }
-    AssertionResultBuilder& AssertionResultBuilder::setRhs( const std::string& rhs ) {
+    ExpressionResultBuilder& ExpressionResultBuilder::setRhs( const std::string& rhs ) {
         m_exprComponents.rhs = rhs;
         return *this;
     }
-    AssertionResultBuilder& AssertionResultBuilder::setOp( const std::string& op ) {
+    ExpressionResultBuilder& ExpressionResultBuilder::setOp( const std::string& op ) {
         m_exprComponents.op = op;
         return *this;
     }
-    AssertionResultData AssertionResultBuilder::build( const AssertionInfo& info ) const
+    AssertionResultData ExpressionResultBuilder::build( const AssertionInfo& info ) const
     {
         assert( m_data.resultType != ResultWas::Unknown );
 
@@ -5390,7 +5391,7 @@ namespace Catch {
         }
         return data;
     }
-    std::string AssertionResultBuilder::reconstructExpression( const AssertionInfo& info ) const {
+    std::string ExpressionResultBuilder::reconstructExpression( const AssertionInfo& info ) const {
         if( m_exprComponents.op == "" )
             return m_exprComponents.lhs.empty() ? info.capturedExpression : m_exprComponents.op + m_exprComponents.lhs;
         else if( m_exprComponents.op == "matches" )

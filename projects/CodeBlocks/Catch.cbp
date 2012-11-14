@@ -27,8 +27,6 @@
 		<Unit filename="..\..\include\internal\catch_approx.hpp" />
 		<Unit filename="..\..\include\internal\catch_assertionresult.h" />
 		<Unit filename="..\..\include\internal\catch_assertionresult.hpp" />
-		<Unit filename="..\..\include\internal\catch_assertionresult_builder.h" />
-		<Unit filename="..\..\include\internal\catch_assertionresult_builder.hpp" />
 		<Unit filename="..\..\include\internal\catch_capture.hpp" />
 		<Unit filename="..\..\include\internal\catch_commandline.hpp" />
 		<Unit filename="..\..\include\internal\catch_common.h" />
@@ -41,9 +39,11 @@
 		<Unit filename="..\..\include\internal\catch_default_main.hpp" />
 		<Unit filename="..\..\include\internal\catch_evaluate.hpp" />
 		<Unit filename="..\..\include\internal\catch_exception_translator_registry.hpp" />
-		<Unit filename="..\..\include\internal\catch_expression.hpp" />
 		<Unit filename="..\..\include\internal\catch_expression_builder.hpp" />
 		<Unit filename="..\..\include\internal\catch_expression_decomposer.hpp" />
+		<Unit filename="..\..\include\internal\catch_expression_lhs.hpp" />
+		<Unit filename="..\..\include\internal\catch_expressionresult_builder.h" />
+		<Unit filename="..\..\include\internal\catch_expressionresult_builder.hpp" />
 		<Unit filename="..\..\include\internal\catch_generators.hpp" />
 		<Unit filename="..\..\include\internal\catch_generators_impl.hpp" />
 		<Unit filename="..\..\include\internal\catch_impl.hpp" />
