@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
- *  Generated: 2012-11-14 22:41:36.149000
-=======
- *  Generated: 2012-10-28 20:56:33.944771
->>>>>>> 134e45b3ade922e5cbdb2df6b81830fbd93fe448
+ *  Generated: 2012-11-15 22:52:50.136000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -1210,12 +1206,8 @@ private:
     template<Internal::Operator Op, typename RhsT>
     ExpressionResultBuilder& captureExpression( const RhsT& rhs ) {
         return m_result
-<<<<<<< HEAD
             .setResultType( Internal::Comparator<Op>::compare( m_lhs, rhs ) )
-=======
-            .setResultType( Internal::compare<Op>( m_lhs, rhs ) )
             .setLhs( Catch::toString( m_lhs ) )
->>>>>>> 134e45b3ade922e5cbdb2df6b81830fbd93fe448
             .setRhs( Catch::toString( rhs ) )
             .setOp( Internal::OperatorTraits<Op>::getName() );
     }
@@ -1336,7 +1328,7 @@ namespace Catch {
         virtual bool shouldDebugBreak() const = 0;
 
         virtual void acceptAssertionInfo( const AssertionInfo& assertionInfo ) = 0;
-        virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult ) = 0;
+        virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult, const AssertionInfo& assertionInfo ) = 0;
 
         virtual std::string getCurrentTestName() const = 0;
         virtual const AssertionResult* getLastResult() const = 0;
@@ -2295,8 +2287,11 @@ inline bool isTrue( bool value ){ return value; }
 } // end namespace Catch
 
 ///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_ASSERTIONINFO_NAME INTERNAL_CATCH_UNIQUE_NAME( __assertionInfo )
+
+///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_ACCEPT_EXPR( evaluatedExpr, stopOnFailure, originalExpr ) \
-    if( Catch::ResultAction::Value internal_catch_action = Catch::getResultCapture().acceptExpression( evaluatedExpr )  ) { \
+    if( Catch::ResultAction::Value internal_catch_action = Catch::getResultCapture().acceptExpression( evaluatedExpr, INTERNAL_CATCH_ASSERTIONINFO_NAME )  ) { \
         if( internal_catch_action & Catch::ResultAction::Debug ) BreakIntoDebugger(); \
         if( internal_catch_action & Catch::ResultAction::Abort ) throw Catch::TestFailureException(); \
         if( Catch::isTrue( stopOnFailure ) ) throw Catch::TestFailureException(); \
@@ -2305,19 +2300,22 @@ inline bool isTrue( bool value ){ return value; }
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_ACCEPT_INFO( expr, macroName, shouldNegate ) \
-    Catch::getResultCapture().acceptAssertionInfo( Catch::AssertionInfo( macroName, CATCH_INTERNAL_LINEINFO, expr, shouldNegate ) );
+    Catch::AssertionInfo INTERNAL_CATCH_ASSERTIONINFO_NAME( macroName, CATCH_INTERNAL_LINEINFO, expr, shouldNegate );
+// !TBD    Catch::getResultCapture().acceptAssertionInfo( INTERNAL_CATCH_ASSERTIONINFO_NAME )
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_TEST( expr, shouldNegate, stopOnFailure, macroName ) \
-    do { try { \
+    do { \
         INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, shouldNegate ); \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionDecomposer()->*expr ).negate( shouldNegate ), stopOnFailure, expr ); \
-    } catch( Catch::TestFailureException& ) { \
-        throw; \
-    } catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), false, expr ); \
-        throw; \
-    } } while( Catch::isTrue( false ) )
+        try { \
+            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionDecomposer()->*expr ).negate( shouldNegate ), stopOnFailure, expr ); \
+        } catch( Catch::TestFailureException& ) { \
+            throw; \
+        } catch( ... ) { \
+            INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), false, expr ); \
+            throw; \
+        } \
+    } while( Catch::isTrue( false ) )
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_IF( expr, shouldNegate, stopOnFailure, macroName ) \
@@ -2331,19 +2329,20 @@ inline bool isTrue( bool value ){ return value; }
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_NO_THROW( expr, stopOnFailure, macroName ) \
-    try { \
+    do { \
         INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
-        expr; \
-        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
-    } \
-    catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), stopOnFailure, false ); \
-    }
+        try { \
+            expr; \
+            INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
+        } \
+        catch( ... ) { \
+            INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), stopOnFailure, false ); \
+        } \
+} while( Catch::isTrue( false ) )
 
 ///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_THROWS( expr, exceptionType, stopOnFailure, macroName ) \
+#define INTERNAL_CATCH_THROWS_IMPL( expr, exceptionType, stopOnFailure ) \
     try { \
-        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
         if( Catch::getCurrentContext().getConfig()->allowThrows() ) { \
             expr; \
             INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::DidntThrowException ), stopOnFailure, false ); \
@@ -2357,14 +2356,25 @@ inline bool isTrue( bool value ){ return value; }
     }
 
 ///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_THROWS( expr, exceptionType, stopOnFailure, macroName ) \
+    do { \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
+        INTERNAL_CATCH_THROWS_IMPL( expr, exceptionType, stopOnFailure ) \
+    } while( Catch::isTrue( false ) )
+
+///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_THROWS_AS( expr, exceptionType, stopOnFailure, macroName ) \
-    INTERNAL_CATCH_THROWS( expr, exceptionType, stopOnFailure, macroName ) \
-    catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), stopOnFailure, false ); \
-    }
+    do { \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
+        INTERNAL_CATCH_THROWS_IMPL( expr, exceptionType, stopOnFailure ) \
+        catch( ... ) { \
+            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), stopOnFailure, false ); \
+        } \
+    } while( Catch::isTrue( false ) )
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_MSG( reason, resultType, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_ACCEPT_INFO( "", macroName, false ); \
     INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( resultType ) << reason, stopOnFailure, true );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2375,15 +2385,17 @@ inline bool isTrue( bool value ){ return value; }
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CHECK_THAT( arg, matcher, stopOnFailure, macroName ) \
-    do { try { \
-        INTERNAL_CATCH_ACCEPT_INFO( #arg " " #matcher, macroName, false ) \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::expressionResultBuilderFromMatcher( ::Catch::Matchers::matcher, arg, #matcher ) ), stopOnFailure, false ); \
-    } catch( Catch::TestFailureException& ) { \
-        throw; \
-    } catch( ... ) { \
-        INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), false, false ); \
-        throw; \
-    }}while( Catch::isTrue( false ) )
+    do { \
+        INTERNAL_CATCH_ACCEPT_INFO( #arg " " #matcher, macroName, false ); \
+        try { \
+            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::expressionResultBuilderFromMatcher( ::Catch::Matchers::matcher, arg, #matcher ) ), stopOnFailure, false ); \
+        } catch( Catch::TestFailureException& ) { \
+            throw; \
+        } catch( ... ) { \
+            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), false, false ); \
+            throw; \
+        } \
+    } while( Catch::isTrue( false ) )
 
 // #included from: internal/catch_section.hpp
 #define TWOBLUECUBES_CATCH_SECTION_HPP_INCLUDED
@@ -4254,7 +4266,8 @@ namespace Catch {
             m_assertionInfo = assertionInfo;
         }
 
-        virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult ) {
+        virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult, const AssertionInfo& assertionInfo ) {
+            m_assertionInfo = assertionInfo;
             m_currentResult = assertionResult;
             return actOnCurrentResult();
         }
@@ -5121,11 +5134,56 @@ namespace Catch {
 
 } // end namespace Catch
 
-#ifdef CATCH_PLATFORM_WINDOWS
+namespace Catch {
+
+#if defined( CATCH_CONFIG_USE_POSIX_COLOUR_CODES )
+
+    // use POSIX console terminal codes
+    // Implementation contributed by Adam Strzelecki (http://github.com/nanoant)
+    // https://github.com/philsquared/Catch/pull/131
+
+    TextColour::TextColour( Colours colour ) {
+        if( colour )
+            set( colour );
+    }
+
+    TextColour::~TextColour() {
+        set( TextColour::None );
+    }
+
+    void TextColour::set( Colours colour ) {
+        if( isatty( fileno(stdout) ) ) {
+            switch( colour ) {
+                case TextColour::FileName:
+                    std::cout << "\e[1m";    // bold
+                    break;
+                case TextColour::ResultError:
+                    std::cout << "\e[1;31m"; // bright red
+                    break;
+                case TextColour::ResultSuccess:
+                    std::cout << "\e[1;32m"; // bright green
+                    break;
+                case TextColour::Error:
+                    std::cout << "\e[0;31m"; // dark red
+                    break;
+                case TextColour::Success:
+                    std::cout << "\e[0;32m"; // dark green
+                    break;
+                case TextColour::OriginalExpression:
+                    std::cout << "\e[0;36m"; // cyan
+                    break;
+                case TextColour::ReconstructedExpression:
+                    std::cout << "\e[0;33m"; // yellow
+                    break;
+                case TextColour::None:
+                    std::cout << "\e[0m"; // reset
+            }
+        }
+    }
+
+#elif defined ( CATCH_PLATFORM_WINDOWS )
 
 #include <windows.h>
-
-namespace Catch {
 
     namespace {
 
@@ -5190,18 +5248,15 @@ namespace Catch {
         m_impl->set( colour );
     }
 
-} // end namespace Catch
-
 #else
 
-namespace Catch {
     TextColour::TextColour( Colours ){}
     TextColour::~TextColour(){}
     void TextColour::set( Colours ){}
 
-} // end namespace Catch
-
 #endif
+
+} // end namespace Catch
 
 // #included from: catch_generators_impl.hpp
 #define TWOBLUECUBES_CATCH_GENERATORS_IMPL_HPP_INCLUDED
@@ -5773,10 +5828,11 @@ namespace Catch {
 
             if( assertionResult.hasExpandedExpression() ) {
                 m_config.stream << " for: ";
-                if( assertionResult.getExpandedExpression().size() > 40 )
+                if( assertionResult.getExpandedExpression().size() > 40 ) {
                     m_config.stream << "\n";
-                if( assertionResult.getExpandedExpression().size() < 70 )
-                    m_config.stream << "\t";
+                    if( assertionResult.getExpandedExpression().size() < 70 )
+                        m_config.stream << "\t";
+                }
                 TextColour colour( TextColour::ReconstructedExpression );
                 m_config.stream << assertionResult.getExpandedExpression();
             }
