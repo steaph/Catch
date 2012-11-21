@@ -115,9 +115,9 @@ inline bool resetFlag( int flags, int bitOrBitsToReset ) { return static_cast<Re
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_TEST( expr, resultDisposition, macroName ) \
     do { \
-        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, testFlag( resultDisposition, Catch::ResultDisposition::NegateResult ) ); \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, Catch::testFlag( resultDisposition, Catch::ResultDisposition::NegateResult ) ); \
         try { \
-            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionDecomposer()->*expr ).negate( testFlag( resultDisposition, Catch::ResultDisposition::NegateResult ) ), resultDisposition, expr ); \
+            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionDecomposer()->*expr ).negate( Catch::testFlag( resultDisposition, Catch::ResultDisposition::NegateResult ) ), resultDisposition, expr ); \
         } catch( Catch::TestFailureException& ) { \
             throw; \
         } catch( ... ) { \
