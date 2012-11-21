@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-11-21 20:52:02.982000
+ *  Generated: 2012-11-21 21:58:31.427000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -1139,7 +1139,11 @@ class ExpressionLhs {
 	void operator = ( const ExpressionLhs& );
 
 public:
+#if defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 )
     ExpressionLhs( T lhs ) : m_lhs( lhs ) {}
+#else
+    ExpressionLhs( const T& lhs ) : m_lhs( lhs ) {}
+#endif
 
     template<typename RhsT>
     ExpressionResultBuilder& operator == ( const RhsT& rhs ) {

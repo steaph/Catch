@@ -27,7 +27,11 @@ class ExpressionLhs {
 	void operator = ( const ExpressionLhs& );
 
 public:
+#if defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 )
     ExpressionLhs( T lhs ) : m_lhs( lhs ) {}
+#else
+    ExpressionLhs( const T& lhs ) : m_lhs( lhs ) {}
+#endif
 
     template<typename RhsT>
     ExpressionResultBuilder& operator == ( const RhsT& rhs ) {
