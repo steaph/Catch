@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-11-21 21:58:31.427000
+ *  Generated: 2012-11-21 22:00:02.979000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -1579,12 +1579,12 @@ namespace Catch {
     class Tag {
     public:
         Tag()
-        : m_isNegated( false )
+        :   m_isNegated( false )
         {}
 
         Tag( const std::string& name, bool isNegated )
         :   m_name( name ),
-        m_isNegated( isNegated )
+            m_isNegated( isNegated )
         {}
 
         std::string getName() const {
@@ -3487,7 +3487,14 @@ namespace Catch {
             // subsequently wrapped lines
             virtual std::string optionDescription() const {
                 return
-                "!TBD";
+                "This option allows one or more tags or tag patterns to be specified.\n"
+                "Each tag is enclosed in square brackets. A series of tags form an AND expression "
+                "wheras a comma seperated sequence forms an OR expression. e.g.:\n\n"
+                "    -g [one][two],[three]\n\n"
+                "This matches all tests tagged [one] and [two], as well as all tests tagged [three].\n\n"
+                "Tags can be negated with the ~ character. This removes matching tests from the set. e.g.:\n\n"
+                "    -g [one]~[two]\n\n"
+                "matches all tests tagged [one], except those also tagged [two]";
             }
 
             virtual void parseIntoConfig( const Command& cmd, ConfigData& config ) {
