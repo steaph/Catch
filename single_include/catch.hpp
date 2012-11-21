@@ -1,6 +1,10 @@
 /*
  *  CATCH v0.9 build 2 (integration branch)
+<<<<<<< HEAD
  *  Generated: 2012-11-21 22:29:11.503000
+=======
+ *  Generated: 2012-11-16 08:44:53.410120
+>>>>>>> ef60d54671981f86b0c94bd597f8acf8382b4ba2
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -6447,7 +6451,10 @@ namespace Catch {
         virtual void StartTesting(){}
 
         virtual void StartGroup( const std::string& groupName ) {
-            m_statsForSuites.push_back( Stats( groupName ) );
+            if( groupName.empty() )
+                m_statsForSuites.push_back( Stats( "all tests" ) );
+            else
+                m_statsForSuites.push_back( Stats( groupName ) );
             m_currentStats = &m_statsForSuites.back();
         }
 
@@ -6555,8 +6562,6 @@ namespace Catch {
             std::vector<TestCaseStats>::const_iterator it = stats.m_testCaseStats.begin();
             std::vector<TestCaseStats>::const_iterator itEnd = stats.m_testCaseStats.end();
             for(; it != itEnd; ++it ) {
-                xml.writeBlankLine();
-                xml.writeComment( "Test case" );
 
                 XmlWriter::ScopedElement e = xml.scopedElement( "testcase" );
                 xml.writeAttribute( "classname", it->m_className );
