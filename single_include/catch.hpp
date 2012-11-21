@@ -1,5 +1,5 @@
 /*
- *  Generated: 2012-11-15 22:54:15.218000
+ *  Generated: 2012-11-21 20:48:42.093000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -122,7 +122,7 @@ namespace Catch {
         friend std::ostream& operator << ( std::ostream& os, const pluralise& pluraliser ) {
             os << pluraliser.m_count << " " << pluraliser.m_label;
             if( pluraliser.m_count != 1 )
-            os << "s";
+                os << "s";
             return os;
         }
 
@@ -137,24 +137,14 @@ namespace Catch {
         :   file( _file ),
             line( _line )
         {}
-        SourceLineInfo( const std::string& _function, const std::string& _file, std::size_t _line )
-        :   function( _function ),
-            file( _file ),
-            line( _line )
-        {}
         SourceLineInfo( const SourceLineInfo& other )
         :   file( other.file ),
             line( other.line )
         {}
-        void swap( SourceLineInfo& other ){
-            file.swap( other.file );
-            std::swap( line, other.line );
-        }
         bool empty() const {
             return file.empty();
         }
 
-        std::string function;
         std::string file;
         std::size_t line;
     };
@@ -410,13 +400,15 @@ struct AutoReg {
 
     template<typename C>
     AutoReg(    void (C::*method)(),
+                const char* className,
                 const char* name,
                 const char* description,
                 const SourceLineInfo& lineInfo ) {
-        registerTestCase( new MethodTestCase<C>( method ), name, description, lineInfo );
+        registerTestCase( new MethodTestCase<C>( method ), className, name, description, lineInfo );
     }
 
     void registerTestCase(  ITestCase* testCase,
+                            const char* className,
                             const char* name,
                             const char* description,
                             const SourceLineInfo& lineInfo );
@@ -444,7 +436,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_METHOD_AS_TEST_CASE( QualifiedMethod, Name, Desc ) \
-    namespace{ Catch::AutoReg INTERNAL_CATCH_UNIQUE_NAME( autoRegistrar )( &QualifiedMethod, Name, Desc, CATCH_INTERNAL_LINEINFO ); }
+    namespace{ Catch::AutoReg INTERNAL_CATCH_UNIQUE_NAME( autoRegistrar )( &QualifiedMethod, "&" #QualifiedMethod, Name, Desc, CATCH_INTERNAL_LINEINFO ); }
 
 ///////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE_METHOD( ClassName, TestName, Desc )\
@@ -452,7 +444,7 @@ private:
         struct INTERNAL_CATCH_UNIQUE_NAME( TestCaseMethod_catch_internal_ ) : ClassName{ \
             void test(); \
         }; \
-        Catch::AutoReg INTERNAL_CATCH_UNIQUE_NAME( autoRegistrar ) ( &INTERNAL_CATCH_UNIQUE_NAME( TestCaseMethod_catch_internal_ )::test, TestName, Desc, CATCH_INTERNAL_LINEINFO ); \
+        Catch::AutoReg INTERNAL_CATCH_UNIQUE_NAME( autoRegistrar ) ( &INTERNAL_CATCH_UNIQUE_NAME( TestCaseMethod_catch_internal_ )::test, #ClassName, TestName, Desc, CATCH_INTERNAL_LINEINFO ); \
     } \
     void INTERNAL_CATCH_UNIQUE_NAME( TestCaseMethod_catch_internal_ )::test()
 
@@ -707,7 +699,7 @@ namespace Catch {
     struct AssertionInfo
     {
         AssertionInfo() {}
-        AssertionInfo( const std::string& _macroName, const SourceLineInfo& _lineInfo, const std::string& _capturedExpression, bool _shouldNegate )
+        AssertionInfo( const std::string& _macroName, const SourceLineInfo& _lineInfo, const std::string& _capturedExpression = "", bool _shouldNegate = false )
         :   macroName( _macroName ),
             lineInfo( _lineInfo ),
             capturedExpression( _capturedExpression )
@@ -1327,7 +1319,6 @@ namespace Catch {
         virtual void popScopedInfo( ScopedInfo* scopedInfo ) = 0;
         virtual bool shouldDebugBreak() const = 0;
 
-        virtual void acceptAssertionInfo( const AssertionInfo& assertionInfo ) = 0;
         virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult, const AssertionInfo& assertionInfo ) = 0;
 
         virtual std::string getCurrentTestName() const = 0;
@@ -1471,14 +1462,17 @@ namespace Catch {
         TestCaseInfo();
 
         TestCaseInfo(   ITestCase* testCase,
-                        const char* name,
-                        const char* description,
+                        const std::string& className,
+                        const std::string& name,
+                        const std::string& description,
                         const SourceLineInfo& lineInfo );
 
         TestCaseInfo( const TestCaseInfo& other, const std::string& name );
         TestCaseInfo( const TestCaseInfo& other );
 
         void invoke() const;
+
+        const std::string& getClassName() const;
         const std::string& getName() const;
         const std::string& getDescription() const;
         const SourceLineInfo& getLineInfo() const;
@@ -1494,6 +1488,7 @@ namespace Catch {
 
     private:
         Ptr<ITestCase> m_test;
+        std::string m_className;
         std::string m_name;
         std::string m_description;
         std::set<std::string> m_tags;
@@ -1571,8 +1566,6 @@ namespace Catch {
             m_remainder += c;
         }
 
-        // Suppress assignment operator to avoid warnings from MSVC saying that
-        // it can't be implicitly synthesized.
         TagExtracter& operator=(const TagExtracter&);
 
         std::set<std::string>& m_tags;
@@ -1678,8 +1671,6 @@ namespace Catch {
                 m_exp.m_tagSets.push_back( m_currentTagSet );
         }
 
-        // Suppress assignment operator to avoid warnings from MSVC saying that
-        // it can't be implicitly synthesized.
         TagExpressionParser& operator=(const TagExpressionParser&);
 
         bool m_isNegated;
@@ -2301,7 +2292,6 @@ inline bool isTrue( bool value ){ return value; }
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_ACCEPT_INFO( expr, macroName, shouldNegate ) \
     Catch::AssertionInfo INTERNAL_CATCH_ASSERTIONINFO_NAME( macroName, CATCH_INTERNAL_LINEINFO, expr, shouldNegate );
-// !TBD    Catch::getResultCapture().acceptAssertionInfo( INTERNAL_CATCH_ASSERTIONINFO_NAME )
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_TEST( expr, shouldNegate, stopOnFailure, macroName ) \
@@ -4240,7 +4230,6 @@ namespace Catch {
 
             do {
                 do {
-                    m_assertionInfo.lineInfo = m_runningTest->getTestCaseInfo().getLineInfo();
                     runCurrentTest( redirectedCout, redirectedCerr );
                 }
                 while( m_runningTest->hasUntestedSections() && !aborting() );
@@ -4262,14 +4251,9 @@ namespace Catch {
 
     private: // IResultCapture
 
-        virtual void acceptAssertionInfo( const AssertionInfo& assertionInfo ) {
-            m_assertionInfo = assertionInfo;
-        }
-
         virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult, const AssertionInfo& assertionInfo ) {
-            m_assertionInfo = assertionInfo;
-            m_currentResult = assertionResult;
-            return actOnCurrentResult();
+            m_lastAssertionInfo = assertionInfo;
+            return actOnCurrentResult( assertionResult.buildResult( assertionInfo ) );
         }
 
         virtual void testEnded( const AssertionResult& result ) {
@@ -4283,7 +4267,7 @@ namespace Catch {
                     std::vector<ScopedInfo*>::const_iterator it = m_scopedInfos.begin();
                     std::vector<ScopedInfo*>::const_iterator itEnd = m_scopedInfos.end();
                     for(; it != itEnd; ++it )
-                        m_reporter->Result( (*it)->buildResult( m_assertionInfo ) );
+                        m_reporter->Result( (*it)->buildResult( m_lastAssertionInfo ) );
                 }
                 {
                     std::vector<AssertionResult>::const_iterator it = m_assertionResults.begin();
@@ -4313,7 +4297,8 @@ namespace Catch {
             if( !m_runningTest->addSection( oss.str() ) )
                 return false;
 
-            m_assertionInfo.lineInfo = lineInfo;
+            m_lastAssertionInfo.lineInfo = lineInfo;
+
             m_reporter->StartSection( name, description );
             assertions = m_totals.assertions;
 
@@ -4364,12 +4349,9 @@ namespace Catch {
 
     private:
 
-        ResultAction::Value actOnCurrentResult() {
-            m_lastResult = m_currentResult.buildResult( m_assertionInfo );
+        ResultAction::Value actOnCurrentResult( const AssertionResult& result ) {
+            m_lastResult = result;
             testEnded( m_lastResult );
-
-            m_currentResult = ExpressionResultBuilder();
-            m_assertionInfo = AssertionInfo();
 
             ResultAction::Value action = ResultAction::None;
 
@@ -4385,6 +4367,7 @@ namespace Catch {
 
         void runCurrentTest( std::string& redirectedCout, std::string& redirectedCerr ) {
             try {
+                m_lastAssertionInfo = AssertionInfo( "TEST_CASE", m_runningTest->getTestCaseInfo().getLineInfo() );
                 m_runningTest->reset();
                 Counts prevAssertions = m_totals.assertions;
                 if( m_reporter->shouldRedirectStdout() ) {
@@ -4408,10 +4391,9 @@ namespace Catch {
                 // This just means the test was aborted due to failure
             }
             catch(...) {
-                m_currentResult
-                    .setResultType( ResultWas::ThrewException )
-                    << translateActiveException();
-                actOnCurrentResult();
+                ExpressionResultBuilder exResult( ResultWas::ThrewException );
+                exResult << translateActiveException();
+                actOnCurrentResult( exResult.buildResult( m_lastAssertionInfo )  );
             }
             m_assertionResults.clear();
         }
@@ -4419,7 +4401,6 @@ namespace Catch {
     private:
         IMutableContext& m_context;
         RunningTest* m_runningTest;
-        ExpressionResultBuilder m_currentResult;
         AssertionResult m_lastResult;
 
         const Config& m_config;
@@ -4430,7 +4411,7 @@ namespace Catch {
         IRunner* m_prevRunner;
         IResultCapture* m_prevResultCapture;
         const IConfig* m_prevConfig;
-        AssertionInfo m_assertionInfo;
+        AssertionInfo m_lastAssertionInfo;
     };
 
 } // end namespace Catch
@@ -4787,22 +4768,37 @@ namespace Catch {
         TestFunction m_fun;
     };
 
+    inline std::string extractClassName( const std::string& classOrQualifiedMethodName ) {
+        std::string className = classOrQualifiedMethodName;
+        if( className[0] == '&' )
+        {
+            std::size_t lastColons = className.rfind( "::" );
+            std::size_t penultimateColons = className.rfind( "::", lastColons-1 );
+            if( penultimateColons == std::string::npos )
+                penultimateColons = 1;
+            className = className.substr( penultimateColons, lastColons-penultimateColons );
+        }
+        return className;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
 
     AutoReg::AutoReg(   TestFunction function,
                         const char* name,
                         const char* description,
                         const SourceLineInfo& lineInfo ) {
-        registerTestCase( new FreeFunctionTestCase( function ), name, description, lineInfo );
+        registerTestCase( new FreeFunctionTestCase( function ), "global", name, description, lineInfo );
     }
 
     AutoReg::~AutoReg() {}
 
     void AutoReg::registerTestCase( ITestCase* testCase,
+                                    const char* classOrQualifiedMethodName,
                                     const char* name,
                                     const char* description,
                                     const SourceLineInfo& lineInfo ) {
-        getMutableRegistryHub().registerTest( TestCaseInfo( testCase, name, description, lineInfo ) );
+
+        getMutableRegistryHub().registerTest( TestCaseInfo( testCase, extractClassName( classOrQualifiedMethodName ), name, description, lineInfo ) );
     }
 
 } // end namespace Catch
@@ -4986,8 +4982,6 @@ namespace Catch {
     :   m_lineInfo( lineInfo ) {
         std::ostringstream oss;
         oss << lineInfo << "function ";
-        if( !lineInfo.function.empty() )
-            oss << lineInfo.function << " ";
         oss << "not implemented";
         m_what = oss.str();
     }
@@ -5159,7 +5153,7 @@ namespace Catch {
         if( isatty( fileno(stdout) ) ) {
             switch( colour ) {
                 case TextColour::FileName:
-                    std::cout << colourEscape << "[0m";    // white
+                    std::cout << colourEscape << "[0m";    // white/ normal
                     break;
                 case TextColour::ResultError:
                     std::cout << colourEscape << "[1;31m"; // bold red
@@ -5180,7 +5174,7 @@ namespace Catch {
                     std::cout << colourEscape << "[0;33m"; // yellow
                     break;
                 case TextColour::None:
-                    std::cout << colourEscape << "[0m"; // reset to white
+                    std::cout << colourEscape << "[0m"; // reset
             }
         }
     }
@@ -5493,10 +5487,12 @@ namespace Catch {
 namespace Catch {
 
     TestCaseInfo::TestCaseInfo( ITestCase* testCase,
-                                const char* name,
-                                const char* description,
+                                const std::string& className,
+                                const std::string& name,
+                                const std::string& description,
                                 const SourceLineInfo& lineInfo )
     :   m_test( testCase ),
+        m_className( className ),
         m_name( name ),
         m_description( description ),
         m_lineInfo( lineInfo ),
@@ -5509,6 +5505,7 @@ namespace Catch {
 
     TestCaseInfo::TestCaseInfo()
     :   m_test( NULL ),
+        m_className(),
         m_name(),
         m_description(),
         m_isHidden( false )
@@ -5516,6 +5513,7 @@ namespace Catch {
 
     TestCaseInfo::TestCaseInfo( const TestCaseInfo& other, const std::string& name )
     :   m_test( other.m_test ),
+        m_className( other.m_className ),
         m_name( name ),
         m_description( other.m_description ),
         m_tags( other.m_tags ),
@@ -5525,6 +5523,7 @@ namespace Catch {
 
     TestCaseInfo::TestCaseInfo( const TestCaseInfo& other )
     :   m_test( other.m_test ),
+        m_className( other.m_className ),
         m_name( other.m_name ),
         m_description( other.m_description ),
         m_tags( other.m_tags ),
@@ -5536,14 +5535,15 @@ namespace Catch {
         m_test->invoke();
     }
 
+    const std::string& TestCaseInfo::getClassName() const {
+        return m_className;
+    }
     const std::string& TestCaseInfo::getName() const {
         return m_name;
     }
-
     const std::string& TestCaseInfo::getDescription() const {
         return m_description;
     }
-
     const SourceLineInfo& TestCaseInfo::getLineInfo() const {
         return m_lineInfo;
     }
@@ -5566,13 +5566,16 @@ namespace Catch {
 
     void TestCaseInfo::swap( TestCaseInfo& other ) {
         m_test.swap( other.m_test );
+        m_className.swap( other.m_className );
         m_name.swap( other.m_name );
         m_description.swap( other.m_description );
-        m_lineInfo.swap( other.m_lineInfo );
+        std::swap( m_lineInfo, other.m_lineInfo );
     }
 
     bool TestCaseInfo::operator == ( const TestCaseInfo& other ) const {
-        return m_test.get() == other.m_test.get() && m_name == other.m_name;
+        return  m_test.get() == other.m_test.get() &&
+                m_name == other.m_name &&
+                m_className == other.m_className;
     }
 
     bool TestCaseInfo::operator < ( const TestCaseInfo& other ) const {
@@ -6298,7 +6301,10 @@ namespace Catch {
 
         struct TestCaseStats {
 
-            TestCaseStats( const std::string& name = std::string() ) :m_name( name ){}
+            TestCaseStats( const std::string& className, const std::string& name )
+            :   m_className( className ),
+                m_name( name )
+            {}
 
             double      m_timeInSeconds;
             std::string m_status;
@@ -6366,7 +6372,7 @@ namespace Catch {
         virtual void EndSection( const std::string&, const Counts& ) {}
 
         virtual void StartTestCase( const Catch::TestCaseInfo& testInfo ) {
-            m_currentStats->m_testCaseStats.push_back( TestCaseStats( testInfo.getName() ) );
+            m_currentStats->m_testCaseStats.push_back( TestCaseStats( testInfo.getClassName(), testInfo.getName() ) );
         }
 
         virtual void Result( const Catch::AssertionResult& assertionResult ) {
