@@ -21,6 +21,11 @@
 		<Compiler>
 			<Add option="/W3" />
 		</Compiler>
+		<Unit filename="..\..\.gitattributes" />
+		<Unit filename="..\..\.gitignore" />
+		<Unit filename="..\..\LICENSE_1_0.txt" />
+		<Unit filename="..\..\README" />
+		<Unit filename="..\..\generateSingleHeader.py" />
 		<Unit filename="..\..\include\catch.hpp" />
 		<Unit filename="..\..\include\catch_runner.hpp" />
 		<Unit filename="..\..\include\catch_with_main.hpp" />
