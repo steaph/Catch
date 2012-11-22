@@ -45,7 +45,7 @@ namespace Catch {
 		NonCopyable() {}
 		virtual ~NonCopyable();
 	};
-    
+
     class SafeBool {
     public:
         typedef void (SafeBool::*type)() const;
@@ -56,7 +56,7 @@ namespace Catch {
     private:
         void trueValue() const {}
     };
-  
+
     template<typename ContainerT>
     inline void deleteAll( ContainerT& container ) {
         typename ContainerT::const_iterator it = container.begin();
@@ -75,12 +75,12 @@ namespace Catch {
             delete it->second;
         }
     }
-    
+
     template<typename ContainerT, typename Function>
     inline void forEach( ContainerT& container, Function function ) {
         std::for_each( container.begin(), container.end(), function );
     }
-    
+
     template<typename ContainerT, typename Function>
     inline void forEach( const ContainerT& container, Function function ) {
         std::for_each( container.begin(), container.end(), function );
@@ -114,7 +114,7 @@ namespace Catch {
     };
 
     struct SourceLineInfo {
-    
+
         SourceLineInfo() : line( 0 ){}
         SourceLineInfo( const std::string& _file, std::size_t _line )
         :   file( _file ),
@@ -127,20 +127,20 @@ namespace Catch {
         bool empty() const {
             return file.empty();
         }
-        
+
         std::string file;
-        std::size_t line;        
+        std::size_t line;
     };
-    
+
     inline std::ostream& operator << ( std::ostream& os, const SourceLineInfo& info ) {
 #ifndef __GNUG__
         os << info.file << "(" << info.line << "): ";
-#else                
-        os << info.file << ":" << info.line << ": ";            
-#endif            
+#else
+        os << info.file << ":" << info.line << ": ";
+#endif
         return os;
     }
-    
+
     CATCH_ATTRIBUTE_NORETURN
     inline void throwLogicError( const std::string& message, const SourceLineInfo& locationInfo ) {
         std::ostringstream oss;

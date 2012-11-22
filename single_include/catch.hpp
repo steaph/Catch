@@ -1,10 +1,14 @@
 /*
+<<<<<<< HEAD
  *  CATCH v0.9 build 2 (integration branch)
 <<<<<<< HEAD
  *  Generated: 2012-11-21 22:29:11.503000
 =======
  *  Generated: 2012-11-16 08:44:53.410120
 >>>>>>> ef60d54671981f86b0c94bd597f8acf8382b4ba2
+=======
+ *  Generated: 2012-10-31 18:04:01.157950
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -146,6 +150,9 @@ namespace Catch {
         :   file( other.file ),
             line( other.line )
         {}
+        bool empty() const {
+            return file.empty();
+        }
         bool empty() const {
             return file.empty();
         }
@@ -723,15 +730,29 @@ namespace Catch {
     struct AssertionInfo
     {
         AssertionInfo() {}
+<<<<<<< HEAD
         AssertionInfo(  const std::string& _macroName,
                         const SourceLineInfo& _lineInfo,
                         const std::string& _capturedExpression,
                         ResultDisposition::Flags _resultDisposition );
+=======
+        AssertionInfo( const std::string& _macroName, const SourceLineInfo& _lineInfo, const std::string& _capturedExpression, bool _shouldNegate )
+        :   macroName( _macroName ),
+            lineInfo( _lineInfo ),
+            capturedExpression( _capturedExpression )
+        {
+            if( _shouldNegate )
+                capturedExpression = "!" + _capturedExpression;
+        }
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
 
         std::string macroName;
         SourceLineInfo lineInfo;
         std::string capturedExpression;
+<<<<<<< HEAD
         ResultDisposition::Flags resultDisposition;
+=======
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     };
 
     struct AssertionResultData
@@ -1087,7 +1108,11 @@ public:
     ExpressionResultBuilder& setRhs( const std::string& rhs );
     ExpressionResultBuilder& setOp( const std::string& op );
 
+<<<<<<< HEAD
     ExpressionResultBuilder& endExpression( ResultDisposition::Flags resultDisposition );
+=======
+    ExpressionResultBuilder& negate( bool shouldNegate );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
 
     template<typename T>
     ExpressionResultBuilder& operator << ( const T& value ) {
@@ -1101,13 +1126,19 @@ public:
 
 private:
     AssertionResultData m_data;
+<<<<<<< HEAD
 public:
+=======
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     struct ExprComponents {
         ExprComponents() : shouldNegate( false ) {}
         bool shouldNegate;
         std::string lhs, rhs, op;
     } m_exprComponents;
+<<<<<<< HEAD
 private:
+=======
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     std::ostringstream m_stream;
 };
 
@@ -1161,6 +1192,7 @@ class ExpressionLhs {
 	void operator = ( const ExpressionLhs& );
 
 public:
+<<<<<<< HEAD
 #if defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 )
     ExpressionLhs( T lhs ) : m_lhs( lhs ) {}
 #else
@@ -1170,30 +1202,54 @@ public:
     template<typename RhsT>
     ExpressionResultBuilder& operator == ( const RhsT& rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
+=======
+    ExpressionLhs( T lhs ) : m_lhs( lhs ) {}
+
+    template<typename RhsT>
+    ExpressionResultBuilder& operator == ( const RhsT& rhs ) {
+        return captureExpression<Internal::IsEqualTo>( rhs );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator != ( const RhsT& rhs ) {
+<<<<<<< HEAD
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
+=======
+        return captureExpression<Internal::IsNotEqualTo>( rhs );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator < ( const RhsT& rhs ) {
+<<<<<<< HEAD
         return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
+=======
+        return captureExpression<Internal::IsLessThan>( rhs );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator > ( const RhsT& rhs ) {
+<<<<<<< HEAD
         return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
+=======
+        return captureExpression<Internal::IsGreaterThan>( rhs );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator <= ( const RhsT& rhs ) {
+<<<<<<< HEAD
         return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
+=======
+        return captureExpression<Internal::IsLessThanOrEqualTo>( rhs );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator >= ( const RhsT& rhs ) {
+<<<<<<< HEAD
         return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
@@ -1206,11 +1262,29 @@ public:
     }
 
     ExpressionResultBuilder& endExpression( ResultDisposition::Flags resultDisposition ) {
+=======
+        return captureExpression<Internal::IsGreaterThanOrEqualTo>( rhs );
+    }
+
+    ExpressionResultBuilder& operator == ( bool rhs ) {
+        return captureExpression<Internal::IsEqualTo>( rhs );
+    }
+
+    ExpressionResultBuilder& operator != ( bool rhs ) {
+        return captureExpression<Internal::IsNotEqualTo>( rhs );
+    }
+
+    ExpressionResultBuilder& negate( bool shouldNegate ) {
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
         bool value = m_lhs ? true : false;
         return m_result
             .setLhs( Catch::toString( value ) )
             .setResultType( value )
+<<<<<<< HEAD
             .endExpression( resultDisposition );
+=======
+            .negate( shouldNegate );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     }
 
     // Only simple binary expressions are allowed on the LHS.
@@ -1224,7 +1298,11 @@ private:
     template<Internal::Operator Op, typename RhsT>
     ExpressionResultBuilder& captureExpression( const RhsT& rhs ) {
         return m_result
+<<<<<<< HEAD
             .setResultType( Internal::Comparator<Op>::compare( m_lhs, rhs ) )
+=======
+            .setResultType( Internal::compare<Op>( m_lhs, rhs ) )
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
             .setLhs( Catch::toString( m_lhs ) )
             .setRhs( Catch::toString( rhs ) )
             .setOp( Internal::OperatorTraits<Op>::getName() );
@@ -1237,10 +1315,13 @@ private:
 
 } // end namespace Catch
 
+<<<<<<< HEAD
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 #pragma warning( pop )
 #endif
 
+=======
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
 namespace Catch {
 
 // Captures the LHS of the expression and wraps it in an Expression Lhs object
@@ -1345,6 +1426,10 @@ namespace Catch {
         virtual void popScopedInfo( ScopedInfo* scopedInfo ) = 0;
         virtual bool shouldDebugBreak() const = 0;
 
+<<<<<<< HEAD
+=======
+        virtual void acceptAssertionInfo( const AssertionInfo& assertionInfo ) = 0;
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
         virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult, const AssertionInfo& assertionInfo ) = 0;
 
         virtual std::string getCurrentTestName() const = 0;
@@ -1463,6 +1548,7 @@ inline void writeToDebugConsole( const std::string& text ) {
 
 // #included from: catch_interfaces_registry_hub.h
 #define TWOBLUECUBES_CATCH_INTERFACES_REGISTRY_HUB_H_INCLUDED
+<<<<<<< HEAD
 
 // #included from: catch_interfaces_reporter.h
 #define TWOBLUECUBES_CATCH_INTERFACES_REPORTER_H_INCLUDED
@@ -1576,9 +1662,150 @@ namespace Catch {
 
         TagExtracter( std::set<std::string>& tags )
         :   m_tags( tags )
+=======
+
+// #included from: catch_interfaces_reporter.h
+#define TWOBLUECUBES_CATCH_INTERFACES_REPORTER_H_INCLUDED
+
+// #included from: catch_config.hpp
+#define TWOBLUECUBES_CATCH_CONFIG_HPP_INCLUDED
+
+// #included from: catch_test_spec.h
+#define TWOBLUECUBES_CATCH_TEST_SPEC_H_INCLUDED
+
+// #included from: catch_test_case_info.h
+#define TWOBLUECUBES_CATCH_TEST_CASE_INFO_H_INCLUDED
+
+#include <string>
+#include <set>
+
+namespace Catch {
+
+    struct ITestCase;
+
+    class TestCaseInfo {
+    public:
+        TestCaseInfo();
+
+        TestCaseInfo(   ITestCase* testCase,
+                        const char* name,
+                        const char* description,
+                        const SourceLineInfo& lineInfo );
+
+        TestCaseInfo( const TestCaseInfo& other, const std::string& name );
+        TestCaseInfo( const TestCaseInfo& other );
+
+        void invoke() const;
+        const std::string& getName() const;
+        const std::string& getDescription() const;
+        const SourceLineInfo& getLineInfo() const;
+        bool isHidden() const;
+        bool hasTag( const std::string& tag ) const;
+        bool matchesTags( const std::string& tagPattern ) const;
+        const std::set<std::string>& getTags() const;
+
+        void swap( TestCaseInfo& other );
+        bool operator == ( const TestCaseInfo& other ) const;
+        bool operator < ( const TestCaseInfo& other ) const;
+        TestCaseInfo& operator = ( const TestCaseInfo& other );
+
+    private:
+        Ptr<ITestCase> m_test;
+        std::string m_name;
+        std::string m_description;
+        std::set<std::string> m_tags;
+        SourceLineInfo m_lineInfo;
+        bool m_isHidden;
+    };
+}
+
+// #included from: catch_tags.hpp
+#define TWOBLUECUBES_CATCH_TAGS_HPP_INCLUDED
+
+#include <string>
+#include <set>
+#include <map>
+#include <vector>
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
+namespace Catch {
+    class TagParser {
+    public:
+        virtual ~TagParser();
+
+        void parse( const std::string& str ) {
+            std::size_t pos = 0;
+            while( pos < str.size() ) {
+                char c = str[pos];
+                if( c == '[' ) {
+                    std::size_t end = str.find_first_of( ']', pos );
+                    if( end != std::string::npos ) {
+                        acceptTag( str.substr( pos+1, end-pos-1 ) );
+                        pos = end+1;
+                    }
+                    else {
+                        acceptChar( c );
+                        pos++;
+                    }
+                }
+                else {
+                    acceptChar( c );
+                    pos++;
+                }
+            }
+            endParse();
+        }
+
+    protected:
+        virtual void acceptTag( const std::string& tag ) = 0;
+        virtual void acceptChar( char c ) = 0;
+        virtual void endParse() {}
+
+    private:
+    };
+
+    class TagExtracter : public TagParser {
+    public:
+
+        TagExtracter( std::set<std::string>& tags )
+        :   m_tags( tags )
         {}
         virtual ~TagExtracter();
 
+        void parse( std::string& description ) {
+            TagParser::parse( description );
+            description = m_remainder;
+        }
+
+    private:
+        virtual void acceptTag( const std::string& tag ) {
+            m_tags.insert( tag );
+        }
+        virtual void acceptChar( char c ) {
+            m_remainder += c;
+        }
+
+        std::set<std::string>& m_tags;
+        std::string m_remainder;
+    };
+
+    class Tag {
+    public:
+        Tag()
+        : m_isNegated( false )
+        {}
+
+        Tag( const std::string& name, bool isNegated )
+        :   m_name( name ),
+        m_isNegated( isNegated )
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
+        {}
+        virtual ~TagExtracter();
+
+<<<<<<< HEAD
         void parse( std::string& description ) {
             TagParser::parse( description );
             description = m_remainder;
@@ -1625,12 +1852,31 @@ namespace Catch {
         bool m_isNegated;
     };
 
+=======
+        std::string getName() const {
+            return m_name;
+        }
+        bool isNegated() const {
+            return m_isNegated;
+        }
+
+        bool operator ! () const {
+            return m_name.empty();
+        }
+
+    private:
+        std::string m_name;
+        bool m_isNegated;
+    };
+
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     class TagSet {
         typedef std::map<std::string, Tag> TagMap;
     public:
         void add( const Tag& tag ) {
             m_tags.insert( std::make_pair( tag.getName(), tag ) );
         }
+<<<<<<< HEAD
 
         bool empty() const {
             return m_tags.empty();
@@ -1858,9 +2104,174 @@ namespace Catch {
 
 // #included from: catch_interfaces_config.h
 #define TWOBLUECUBES_CATCH_INTERFACES_CONFIG_H_INCLUDED
+=======
+
+        bool empty() const {
+            return m_tags.empty();
+        }
+
+        bool matches( const std::set<std::string>& tags ) const {
+            TagMap::const_iterator it = m_tags.begin();
+            TagMap::const_iterator itEnd = m_tags.end();
+            for(; it != itEnd; ++it ) {
+                bool found = tags.find( it->first ) != tags.end();
+                if( found == it->second.isNegated() )
+                    return false;
+            }
+            return true;
+        }
+
+    private:
+        TagMap m_tags;
+    };
+
+    class TagExpression {
+    public:
+        bool matches( const std::set<std::string>& tags ) const {
+            std::vector<TagSet>::const_iterator it = m_tagSets.begin();
+            std::vector<TagSet>::const_iterator itEnd = m_tagSets.end();
+            for(; it != itEnd; ++it )
+                if( it->matches( tags ) )
+                    return true;
+            return false;
+        }
+
+    private:
+        friend class TagExpressionParser;
+
+        std::vector<TagSet> m_tagSets;
+    };
+
+    class TagExpressionParser : public TagParser {
+    public:
+        TagExpressionParser( TagExpression& exp )
+        :   m_isNegated( false ),
+            m_exp( exp )
+        {}
+
+        ~TagExpressionParser();
+
+    private:
+        virtual void acceptTag( const std::string& tag ) {
+            m_currentTagSet.add( Tag( tag, m_isNegated ) );
+            m_isNegated = false;
+        }
+        virtual void acceptChar( char c ) {
+            switch( c ) {
+                case '~':
+                    m_isNegated = true;
+                    break;
+                case ',':
+                    m_exp.m_tagSets.push_back( m_currentTagSet );
+                    break;
+            }
+        }
+        virtual void endParse() {
+            if( !m_currentTagSet.empty() )
+                m_exp.m_tagSets.push_back( m_currentTagSet );
+        }
+
+        bool m_isNegated;
+        TagSet m_currentTagSet;
+        TagExpression& m_exp;
+    };
+
+} // end namespace Catch
+
+#include <string>
+#include <vector>
 
 namespace Catch {
 
+    struct IfFilterMatches{ enum DoWhat {
+        AutoDetectBehaviour,
+        IncludeTests,
+        ExcludeTests
+    }; };
+
+    class TestCaseFilter {
+        enum WildcardPosition {
+            NoWildcard = 0,
+            WildcardAtStart = 1,
+            WildcardAtEnd = 2,
+            WildcardAtBothEnds = WildcardAtStart | WildcardAtEnd
+        };
+
+    public:
+        TestCaseFilter( const std::string& testSpec, IfFilterMatches::DoWhat matchBehaviour = IfFilterMatches::AutoDetectBehaviour )
+        :   m_stringToMatch( testSpec ),
+            m_filterType( matchBehaviour ),
+            m_wildcardPosition( NoWildcard )
+        {
+            if( m_filterType == IfFilterMatches::AutoDetectBehaviour ) {
+                if( startsWith( m_stringToMatch, "exclude:" ) ) {
+                    m_stringToMatch = m_stringToMatch.substr( 8 );
+                    m_filterType = IfFilterMatches::ExcludeTests;
+                }
+                else if( startsWith( m_stringToMatch, "~" ) ) {
+                    m_stringToMatch = m_stringToMatch.substr( 1 );
+                    m_filterType = IfFilterMatches::ExcludeTests;
+                }
+                else {
+                    m_filterType = IfFilterMatches::IncludeTests;
+                }
+            }
+
+            if( m_stringToMatch[0] == '*' ) {
+                m_stringToMatch = m_stringToMatch.substr( 1 );
+                m_wildcardPosition = (WildcardPosition)( m_wildcardPosition | WildcardAtStart );
+            }
+            if( m_stringToMatch[m_stringToMatch.size()-1] == '*' ) {
+                m_stringToMatch = m_stringToMatch.substr( 0, m_stringToMatch.size()-1 );
+                m_wildcardPosition = (WildcardPosition)( m_wildcardPosition | WildcardAtEnd );
+            }
+        }
+
+        IfFilterMatches::DoWhat getFilterType() const {
+            return m_filterType;
+        }
+
+        bool shouldInclude( const TestCaseInfo& testCase ) const {
+            return isMatch( testCase ) == (m_filterType == IfFilterMatches::IncludeTests);
+        }
+    private:
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
+#endif
+
+        bool isMatch( const TestCaseInfo& testCase ) const {
+            const std::string& name = testCase.getName();
+
+            switch( m_wildcardPosition ) {
+                case NoWildcard:
+                    return m_stringToMatch == name;
+                case WildcardAtStart:
+                    return endsWith( name, m_stringToMatch );
+                case WildcardAtEnd:
+                    return startsWith( name, m_stringToMatch );
+                case WildcardAtBothEnds:
+                    return contains( name, m_stringToMatch );
+            }
+            throw std::logic_error( "Unhandled wildcard type" );
+        }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+        std::string m_stringToMatch;
+        IfFilterMatches::DoWhat m_filterType;
+        WildcardPosition m_wildcardPosition;
+    };
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
+
+    class TestCaseFilters {
+    public:
+        TestCaseFilters( const std::string& name ) : m_name( name ) {}
+
+<<<<<<< HEAD
     struct IConfig {
 
         virtual ~IConfig();
@@ -1885,6 +2296,268 @@ namespace Catch {
     };
 }
 
+#include <stdexcept>
+#include <cstdio>
+
+namespace Catch {
+
+    template<typename WriterF, size_t bufferSize=256>
+    class StreamBufImpl : public StreamBufBase {
+        char data[bufferSize];
+        WriterF m_writer;
+
+    public:
+        StreamBufImpl() {
+            setp( data, data + sizeof(data) );
+        }
+
+        ~StreamBufImpl() {
+            sync();
+        }
+
+    private:
+        int	overflow( int c ) {
+            sync();
+
+            if( c != EOF ) {
+                if( pbase() == epptr() )
+                    m_writer( std::string( 1, static_cast<char>( c ) ) );
+                else
+                    sputc( static_cast<char>( c ) );
+            }
+            return 0;
+        }
+
+        int	sync() {
+            if( pbase() != pptr() ) {
+                m_writer( std::string( pbase(), static_cast<std::string::size_type>( pptr() - pbase() ) ) );
+                setp( pbase(), epptr() );
+            }
+            return 0;
+        }
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    struct OutputDebugWriter {
+
+        void operator()( const std::string &str ) {
+            writeToDebugConsole( str );
+        }
+=======
+        std::string getName() const {
+            return m_name;
+        }
+
+        void addFilter( const TestCaseFilter& filter ) {
+            if( filter.getFilterType() == IfFilterMatches::ExcludeTests )
+                m_exclusionFilters.push_back( filter );
+            else
+                m_inclusionFilters.push_back( filter );
+        }
+
+        void addTags( const std::string& tagPattern ) {
+            TagExpression exp;
+            TagExpressionParser( exp ).parse( tagPattern );
+
+            m_tagExpressions.push_back( exp );
+        }
+
+        bool shouldInclude( const TestCaseInfo& testCase ) const {
+            if( !m_tagExpressions.empty() ) {
+                std::vector<TagExpression>::const_iterator it = m_tagExpressions.begin();
+                std::vector<TagExpression>::const_iterator itEnd = m_tagExpressions.end();
+                for(; it != itEnd; ++it )
+                    if( it->matches( testCase.getTags() ) )
+                        break;
+                if( it == itEnd )
+                    return false;
+            }
+
+            if( !m_inclusionFilters.empty() ) {
+                std::vector<TestCaseFilter>::const_iterator it = m_inclusionFilters.begin();
+                std::vector<TestCaseFilter>::const_iterator itEnd = m_inclusionFilters.end();
+                for(; it != itEnd; ++it )
+                    if( it->shouldInclude( testCase ) )
+                        break;
+                if( it == itEnd )
+                    return false;
+            }
+            else if( m_exclusionFilters.empty() && m_tagExpressions.empty() ) {
+                return !testCase.isHidden();
+            }
+
+            std::vector<TestCaseFilter>::const_iterator it = m_exclusionFilters.begin();
+            std::vector<TestCaseFilter>::const_iterator itEnd = m_exclusionFilters.end();
+            for(; it != itEnd; ++it )
+                if( !it->shouldInclude( testCase ) )
+                    return false;
+            return true;
+        }
+    private:
+        std::vector<TagExpression> m_tagExpressions;
+        std::vector<TestCaseFilter> m_inclusionFilters;
+        std::vector<TestCaseFilter> m_exclusionFilters;
+        std::string m_name;
+    };
+
+}
+
+// #included from: catch_interfaces_config.h
+#define TWOBLUECUBES_CATCH_INTERFACES_CONFIG_H_INCLUDED
+
+namespace Catch {
+
+    struct IConfig {
+
+        virtual ~IConfig();
+
+        virtual bool allowThrows() const = 0;
+    };
+}
+
+// #included from: catch_stream.hpp
+#define TWOBLUECUBES_CATCH_STREAM_HPP_INCLUDED
+
+// #included from: catch_streambuf.h
+#define TWOBLUECUBES_CATCH_STREAMBUF_H_INCLUDED
+
+#include <streambuf>
+
+namespace Catch {
+
+    class StreamBufBase : public std::streambuf {
+    public:
+        virtual ~StreamBufBase();
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
+    };
+}
+
+<<<<<<< HEAD
+    class Stream {
+    public:
+        Stream()
+        : streamBuf( NULL ), isOwned( false )
+        {}
+
+        Stream( std::streambuf* _streamBuf, bool _isOwned )
+        : streamBuf( _streamBuf ), isOwned( _isOwned )
+        {}
+
+        void release() {
+            if( isOwned ) {
+                delete streamBuf;
+                streamBuf = NULL;
+                isOwned = false;
+            }
+        }
+
+        std::streambuf* streamBuf;
+
+    private:
+        bool isOwned;
+    };
+}
+
+#include <memory>
+#include <vector>
+#include <string>
+#include <iostream>
+
+namespace Catch {
+
+    struct Include { enum WhichResults {
+        FailedOnly,
+        SuccessfulResults
+    }; };
+
+    struct List{ enum What {
+        None = 0,
+
+        Reports = 1,
+        Tests = 2,
+        All = 3,
+
+        TestNames = 6,
+
+        WhatMask = 0xf,
+
+        AsText = 0x10,
+        AsXml = 0x20,
+
+        AsMask = 0xf0
+    }; };
+
+    struct ConfigData {
+
+        struct WarnAbout { enum What {
+            Nothing = 0x00,
+            NoAssertions = 0x01
+        }; };
+
+        ConfigData()
+        :   listSpec( List::None ),
+            shouldDebugBreak( false ),
+            includeWhichResults( Include::FailedOnly ),
+            cutoff( -1 ),
+            allowThrows( true ),
+            warnings( WarnAbout::Nothing )
+        {}
+
+        std::string reporter;
+        std::string outputFilename;
+        List::What listSpec;
+        std::vector<TestCaseFilters> filters;
+        bool shouldDebugBreak;
+        std::string stream;
+        Include::WhichResults includeWhichResults;
+        std::string name;
+        int cutoff;
+        bool allowThrows;
+        WarnAbout::What warnings;
+    };
+
+    class Config : public IConfig {
+    private:
+        Config( const Config& other );
+        Config& operator = ( const Config& other );
+        virtual void dummy();
+    public:
+
+        Config()
+        :   m_os( std::cout.rdbuf() )
+        {}
+
+        Config( const ConfigData& data )
+        :   m_data( data ),
+            m_os( std::cout.rdbuf() )
+        {}
+
+        virtual ~Config() {
+            m_os.rdbuf( std::cout.rdbuf() );
+            m_stream.release();
+        }
+
+        void setFilename( const std::string& filename ) {
+            m_data.outputFilename = filename;
+        }
+
+        List::What getListSpec( void ) const {
+            return m_data.listSpec;
+        }
+
+        const std::string& getFilename() const {
+            return m_data.outputFilename ;
+        }
+
+        List::What listWhat() const {
+            return static_cast<List::What>( m_data.listSpec & List::WhatMask );
+        }
+
+        List::What listAs() const {
+            return static_cast<List::What>( m_data.listSpec & List::AsMask );
+        }
+=======
 #include <stdexcept>
 #include <cstdio>
 
@@ -1964,9 +2637,86 @@ namespace Catch {
 #include <vector>
 #include <string>
 #include <iostream>
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
 
-namespace Catch {
+        std::string getName() const {
+            return m_data.name;
+        }
 
+<<<<<<< HEAD
+        bool shouldDebugBreak() const {
+            return m_data.shouldDebugBreak;
+        }
+
+        virtual std::ostream& stream() const {
+            return m_os;
+        }
+
+        void setStreamBuf( std::streambuf* buf ) {
+            m_os.rdbuf( buf ? buf : std::cout.rdbuf() );
+        }
+
+        void useStream( const std::string& streamName ) {
+            Stream stream = createStream( streamName );
+            setStreamBuf( stream.streamBuf );
+            m_stream.release();
+            m_stream = stream;
+        }
+
+        void addTestSpec( const std::string& testSpec ) {
+            TestCaseFilters filters( testSpec );
+            filters.addFilter( TestCaseFilter( testSpec ) );
+            m_data.filters.push_back( filters );
+        }
+
+        virtual bool includeSuccessfulResults() const {
+            return m_data.includeWhichResults == Include::SuccessfulResults;
+        }
+
+        int getCutoff() const {
+            return m_data.cutoff;
+        }
+
+        virtual bool allowThrows() const {
+            return m_data.allowThrows;
+        }
+
+        const ConfigData& data() const {
+            return m_data;
+        }
+        ConfigData& data() {
+            return m_data;
+        }
+
+    private:
+        ConfigData m_data;
+
+        // !TBD Move these out of here
+        Stream m_stream;
+        mutable std::ostream m_os;
+    };
+
+} // end namespace Catch
+
+#include <string>
+#include <ostream>
+#include <map>
+
+namespace Catch
+{
+    struct ReporterConfig
+    {
+        ReporterConfig( const std::string& _name,
+                        std::ostream& _stream,
+                        bool _includeSuccessfulResults,
+                        const ConfigData& _fullConfig )
+        :   name( _name ),
+            stream( _stream ),
+            includeSuccessfulResults( _includeSuccessfulResults ),
+            fullConfig( _fullConfig )
+        {}
+
+=======
     struct Include { enum WhichResults {
         FailedOnly,
         SuccessfulResults
@@ -2135,6 +2885,7 @@ namespace Catch
             fullConfig( _fullConfig )
         {}
 
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
         ReporterConfig( const ReporterConfig& other )
         :   name( other.name ),
             stream( other.stream ),
@@ -2274,6 +3025,7 @@ namespace Catch {
             .setLhs( Catch::toString( arg ) )
             .setResultType( matcher.match( arg ) );
     }
+<<<<<<< HEAD
 
 struct TestFailureException{};
 
@@ -2425,6 +3177,155 @@ inline bool isTrue( bool value ){ return value; }
 
 namespace Catch {
 
+=======
+
+struct TestFailureException{};
+
+class ScopedInfo {
+public:
+    ScopedInfo() : m_resultBuilder( ResultWas::Info ) {
+        getResultCapture().pushScopedInfo( this );
+    }
+    ~ScopedInfo() {
+        getResultCapture().popScopedInfo( this );
+    }
+    template<typename T>
+    ScopedInfo& operator << ( const T& value ) {
+        m_resultBuilder << value;
+        return *this;
+    }
+    AssertionResult buildResult( const AssertionInfo& assertionInfo ) const {
+        return m_resultBuilder.buildResult( assertionInfo );
+    }
+
+private:
+    ExpressionResultBuilder m_resultBuilder;
+};
+
+// This is just here to avoid compiler warnings with macro constants and boolean literals
+inline bool isTrue( bool value ){ return value; }
+
+} // end namespace Catch
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_ASSERTIONINFO_NAME INTERNAL_CATCH_UNIQUE_NAME( __assertionInfo )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_ACCEPT_EXPR( evaluatedExpr, stopOnFailure, originalExpr ) \
+    if( Catch::ResultAction::Value internal_catch_action = Catch::getResultCapture().acceptExpression( evaluatedExpr, INTERNAL_CATCH_ASSERTIONINFO_NAME )  ) { \
+        if( internal_catch_action & Catch::ResultAction::Debug ) BreakIntoDebugger(); \
+        if( internal_catch_action & Catch::ResultAction::Abort ) throw Catch::TestFailureException(); \
+        if( Catch::isTrue( stopOnFailure ) ) throw Catch::TestFailureException(); \
+        if( Catch::isTrue( false ) ){ bool this_is_here_to_invoke_warnings = ( originalExpr ); Catch::isTrue( this_is_here_to_invoke_warnings ); } \
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_ACCEPT_INFO( expr, macroName, shouldNegate ) \
+    Catch::AssertionInfo INTERNAL_CATCH_ASSERTIONINFO_NAME( macroName, CATCH_INTERNAL_LINEINFO, expr, shouldNegate );
+// !TBD    Catch::getResultCapture().acceptAssertionInfo( INTERNAL_CATCH_ASSERTIONINFO_NAME )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_TEST( expr, shouldNegate, stopOnFailure, macroName ) \
+    do { \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, shouldNegate ); \
+        try { \
+            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionDecomposer()->*expr ).negate( shouldNegate ), stopOnFailure, expr ); \
+        } catch( Catch::TestFailureException& ) { \
+            throw; \
+        } catch( ... ) { \
+            INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), false, expr ); \
+            throw; \
+        } \
+    } while( Catch::isTrue( false ) )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_IF( expr, shouldNegate, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_TEST( expr, shouldNegate, stopOnFailure, macroName ); \
+    if( Catch::getResultCapture().getLastResult()->ok() )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_ELSE( expr, shouldNegate, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_TEST( expr, shouldNegate, stopOnFailure, macroName ); \
+    if( !Catch::getResultCapture().getLastResult()->ok() )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_NO_THROW( expr, stopOnFailure, macroName ) \
+    do { \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
+        try { \
+            expr; \
+            INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
+        } \
+        catch( ... ) { \
+            INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException(), stopOnFailure, false ); \
+        } \
+} while( Catch::isTrue( false ) )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_THROWS_IMPL( expr, exceptionType, stopOnFailure ) \
+    try { \
+        if( Catch::getCurrentContext().getConfig()->allowThrows() ) { \
+            expr; \
+            INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::DidntThrowException ), stopOnFailure, false ); \
+        } \
+    } \
+    catch( Catch::TestFailureException& ) { \
+        throw; \
+    } \
+    catch( exceptionType ) { \
+        INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( Catch::ResultWas::Ok ), stopOnFailure, false ); \
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_THROWS( expr, exceptionType, stopOnFailure, macroName ) \
+    do { \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
+        INTERNAL_CATCH_THROWS_IMPL( expr, exceptionType, stopOnFailure ) \
+    } while( Catch::isTrue( false ) )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_THROWS_AS( expr, exceptionType, stopOnFailure, macroName ) \
+    do { \
+        INTERNAL_CATCH_ACCEPT_INFO( #expr, macroName, false ); \
+        INTERNAL_CATCH_THROWS_IMPL( expr, exceptionType, stopOnFailure ) \
+        catch( ... ) { \
+            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), stopOnFailure, false ); \
+        } \
+    } while( Catch::isTrue( false ) )
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_MSG( reason, resultType, stopOnFailure, macroName ) \
+    INTERNAL_CATCH_ACCEPT_INFO( "", macroName, false ); \
+    INTERNAL_CATCH_ACCEPT_EXPR( Catch::ExpressionResultBuilder( resultType ) << reason, stopOnFailure, true );
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CATCH_SCOPED_INFO( log, macroName ) \
+    INTERNAL_CATCH_ACCEPT_INFO( "", macroName, false ); \
+    Catch::ScopedInfo INTERNAL_CATCH_UNIQUE_NAME( info ); \
+    INTERNAL_CATCH_UNIQUE_NAME( info ) << log
+
+///////////////////////////////////////////////////////////////////////////////
+#define INTERNAL_CHECK_THAT( arg, matcher, stopOnFailure, macroName ) \
+    do { \
+        INTERNAL_CATCH_ACCEPT_INFO( #arg " " #matcher, macroName, false ); \
+        try { \
+            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::expressionResultBuilderFromMatcher( ::Catch::Matchers::matcher, arg, #matcher ) ), stopOnFailure, false ); \
+        } catch( Catch::TestFailureException& ) { \
+            throw; \
+        } catch( ... ) { \
+            INTERNAL_CATCH_ACCEPT_EXPR( ( Catch::ExpressionResultBuilder( Catch::ResultWas::ThrewException ) << Catch::translateActiveException() ), false, false ); \
+            throw; \
+        } \
+    } while( Catch::isTrue( false ) )
+
+// #included from: internal/catch_section.hpp
+#define TWOBLUECUBES_CATCH_SECTION_HPP_INCLUDED
+
+#include <string>
+
+namespace Catch {
+
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     class Section {
     public:
         Section(    const std::string& name,
@@ -2508,6 +3409,89 @@ public:
     virtual std::size_t size() const {
         return m_values.size();
     }
+<<<<<<< HEAD
+
+private:
+    std::vector<T> m_values;
+};
+
+template<typename T>
+class CompositeGenerator {
+public:
+    CompositeGenerator() : m_totalSize( 0 ) {}
+
+	// *** Move semantics, similar to auto_ptr ***
+    CompositeGenerator( CompositeGenerator& other )
+    :   m_fileInfo( other.m_fileInfo ),
+        m_totalSize( 0 )
+    {
+		move( other );
+    }
+
+    CompositeGenerator& setFileInfo( const char* fileInfo ) {
+        m_fileInfo = fileInfo;
+        return *this;
+    }
+
+    ~CompositeGenerator() {
+        deleteAll( m_composed );
+    }
+
+    operator T () const {
+        size_t overallIndex = getCurrentContext().getGeneratorIndex( m_fileInfo, m_totalSize );
+
+        typename std::vector<const IGenerator<T>*>::const_iterator it = m_composed.begin();
+        typename std::vector<const IGenerator<T>*>::const_iterator itEnd = m_composed.end();
+        for( size_t index = 0; it != itEnd; ++it )
+        {
+            const IGenerator<T>* generator = *it;
+            if( overallIndex >= index && overallIndex < index + generator->size() )
+            {
+                return generator->getValue( overallIndex-index );
+            }
+            index += generator->size();
+        }
+        CATCH_INTERNAL_ERROR( "Indexed past end of generated range" );
+		return T(); // Suppress spurious "not all control paths return a value" warning in Visual Studio - if you know how to fix this please do so
+    }
+
+    void add( const IGenerator<T>* generator ) {
+        m_totalSize += generator->size();
+        m_composed.push_back( generator );
+    }
+
+    CompositeGenerator& then( CompositeGenerator& other ) {
+        move( other );
+        return *this;
+    }
+
+    CompositeGenerator& then( T value ) {
+        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
+        valuesGen->add( value );
+        add( valuesGen );
+        return *this;
+    }
+
+private:
+
+    void move( CompositeGenerator& other ) {
+        std::copy( other.m_composed.begin(), other.m_composed.end(), std::back_inserter( m_composed ) );
+        m_totalSize += other.m_totalSize;
+        other.m_composed.clear();
+    }
+
+    std::vector<const IGenerator<T>*> m_composed;
+    std::string m_fileInfo;
+    size_t m_totalSize;
+};
+
+namespace Generators
+{
+    template<typename T>
+    CompositeGenerator<T> between( T from, T to ) {
+        CompositeGenerator<T> generators;
+        generators.add( new BetweenGenerator<T>( from, to ) );
+=======
 
 private:
     std::vector<T> m_values;
@@ -2599,20 +3583,48 @@ namespace Generators
         valuesGen->add( val1 );
         valuesGen->add( val2 );
         generators.add( valuesGen );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
         return generators;
     }
 
     template<typename T>
+<<<<<<< HEAD
+    CompositeGenerator<T> values( T val1, T val2 ) {
+=======
     CompositeGenerator<T> values( T val1, T val2, T val3 ){
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
+        CompositeGenerator<T> generators;
+        ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
+        valuesGen->add( val1 );
+        valuesGen->add( val2 );
+<<<<<<< HEAD
+=======
+        valuesGen->add( val3 );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
+        generators.add( valuesGen );
+        return generators;
+    }
+
+    template<typename T>
+<<<<<<< HEAD
+    CompositeGenerator<T> values( T val1, T val2, T val3 ){
+=======
+    CompositeGenerator<T> values( T val1, T val2, T val3, T val4 ) {
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
         CompositeGenerator<T> generators;
         ValuesGenerator<T>* valuesGen = new ValuesGenerator<T>();
         valuesGen->add( val1 );
         valuesGen->add( val2 );
         valuesGen->add( val3 );
+<<<<<<< HEAD
+=======
+        valuesGen->add( val4 );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
         generators.add( valuesGen );
         return generators;
     }
 
+<<<<<<< HEAD
     template<typename T>
     CompositeGenerator<T> values( T val1, T val2, T val3, T val4 ) {
         CompositeGenerator<T> generators;
@@ -2636,6 +3648,19 @@ using namespace Generators;
 
 #define INTERNAL_CATCH_GENERATE( expr ) expr.setFileInfo( __FILE__ "(" INTERNAL_CATCH_LINESTR( __LINE__ ) ")" )
 
+=======
+} // end namespace Generators
+
+using namespace Generators;
+
+} // end namespace Catch
+
+#define INTERNAL_CATCH_LINESTR2( line ) #line
+#define INTERNAL_CATCH_LINESTR( line ) INTERNAL_CATCH_LINESTR2( line )
+
+#define INTERNAL_CATCH_GENERATE( expr ) expr.setFileInfo( __FILE__ "(" INTERNAL_CATCH_LINESTR( __LINE__ ) ")" )
+
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
 // #included from: internal/catch_interfaces_exception.h
 #define TWOBLUECUBES_CATCH_INTERFACES_EXCEPTION_H_INCLUDED
 
@@ -4268,6 +5293,10 @@ namespace Catch {
 
             do {
                 do {
+<<<<<<< HEAD
+=======
+                    m_assertionInfo.lineInfo = m_runningTest->getTestCaseInfo().getLineInfo();
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
                     runCurrentTest( redirectedCout, redirectedCerr );
                 }
                 while( m_runningTest->hasUntestedSections() && !aborting() );
@@ -4289,9 +5318,20 @@ namespace Catch {
 
     private: // IResultCapture
 
+<<<<<<< HEAD
         virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult, const AssertionInfo& assertionInfo ) {
             m_lastAssertionInfo = assertionInfo;
             return actOnCurrentResult( assertionResult.buildResult( assertionInfo ) );
+=======
+        virtual void acceptAssertionInfo( const AssertionInfo& assertionInfo ) {
+            m_assertionInfo = assertionInfo;
+        }
+
+        virtual ResultAction::Value acceptExpression( const ExpressionResultBuilder& assertionResult, const AssertionInfo& assertionInfo ) {
+            m_assertionInfo = assertionInfo;
+            m_currentResult = assertionResult;
+            return actOnCurrentResult();
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
         }
 
         virtual void testEnded( const AssertionResult& result ) {
@@ -4305,7 +5345,11 @@ namespace Catch {
                     std::vector<ScopedInfo*>::const_iterator it = m_scopedInfos.begin();
                     std::vector<ScopedInfo*>::const_iterator itEnd = m_scopedInfos.end();
                     for(; it != itEnd; ++it )
+<<<<<<< HEAD
                         m_reporter->Result( (*it)->buildResult( m_lastAssertionInfo ) );
+=======
+                        m_reporter->Result( (*it)->buildResult( m_assertionInfo ) );
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
                 }
                 {
                     std::vector<AssertionResult>::const_iterator it = m_assertionResults.begin();
@@ -4335,8 +5379,12 @@ namespace Catch {
             if( !m_runningTest->addSection( oss.str() ) )
                 return false;
 
+<<<<<<< HEAD
             m_lastAssertionInfo.lineInfo = lineInfo;
 
+=======
+            m_assertionInfo.lineInfo = lineInfo;
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
             m_reporter->StartSection( name, description );
             assertions = m_totals.assertions;
 
@@ -4387,10 +5435,20 @@ namespace Catch {
 
     private:
 
+<<<<<<< HEAD
         ResultAction::Value actOnCurrentResult( const AssertionResult& result ) {
             m_lastResult = result;
             testEnded( m_lastResult );
 
+=======
+        ResultAction::Value actOnCurrentResult() {
+            m_lastResult = m_currentResult.buildResult( m_assertionInfo );
+            testEnded( m_lastResult );
+
+            m_currentResult = ExpressionResultBuilder();
+            m_assertionInfo = AssertionInfo();
+
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
             ResultAction::Value action = ResultAction::None;
 
             if( !m_lastResult.isOk() ) {
@@ -4429,9 +5487,16 @@ namespace Catch {
                 // This just means the test was aborted due to failure
             }
             catch(...) {
+<<<<<<< HEAD
                 ExpressionResultBuilder exResult( ResultWas::ThrewException );
                 exResult << translateActiveException();
                 actOnCurrentResult( exResult.buildResult( m_lastAssertionInfo )  );
+=======
+                m_currentResult
+                    .setResultType( ResultWas::ThrewException )
+                    << translateActiveException();
+                actOnCurrentResult();
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
             }
             m_assertionResults.clear();
         }
@@ -4439,6 +5504,10 @@ namespace Catch {
     private:
         IMutableContext& m_context;
         RunningTest* m_runningTest;
+<<<<<<< HEAD
+=======
+        ExpressionResultBuilder m_currentResult;
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
         AssertionResult m_lastResult;
 
         const Config& m_config;
@@ -4449,7 +5518,11 @@ namespace Catch {
         IRunner* m_prevRunner;
         IResultCapture* m_prevResultCapture;
         const IConfig* m_prevConfig;
+<<<<<<< HEAD
         AssertionInfo m_lastAssertionInfo;
+=======
+        AssertionInfo m_assertionInfo;
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     };
 
 } // end namespace Catch
@@ -5213,7 +6286,11 @@ namespace Catch {
         if( isatty( fileno(stdout) ) ) {
             switch( colour ) {
                 case TextColour::FileName:
+<<<<<<< HEAD
                     std::cout << colourEscape << "[0m";    // white/ normal
+=======
+                    std::cout << colourEscape << "[0m";    // white
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
                     break;
                 case TextColour::ResultError:
                     std::cout << colourEscape << "[1;31m"; // bold red
@@ -5234,7 +6311,11 @@ namespace Catch {
                     std::cout << colourEscape << "[0;33m"; // yellow
                     break;
                 case TextColour::None:
+<<<<<<< HEAD
                     std::cout << colourEscape << "[0m"; // reset
+=======
+                    std::cout << colourEscape << "[0m"; // reset to white
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
             }
         }
     }
@@ -5403,6 +6484,7 @@ namespace Catch {
 
 namespace Catch {
 
+<<<<<<< HEAD
     AssertionInfo::AssertionInfo(   const std::string& _macroName,
                                     const SourceLineInfo& _lineInfo,
                                     const std::string& _capturedExpression,
@@ -5416,6 +6498,8 @@ namespace Catch {
             capturedExpression = "!" + _capturedExpression;
     }
 
+=======
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     AssertionResult::AssertionResult() {}
 
     AssertionResult::AssertionResult( const AssertionInfo& info, const AssertionResultData& data )
@@ -5425,6 +6509,7 @@ namespace Catch {
 
     AssertionResult::~AssertionResult() {}
 
+<<<<<<< HEAD
     // Result was a success
     bool AssertionResult::succeeded() const {
         return Catch::isOk( m_resultData.resultType );
@@ -5455,6 +6540,32 @@ namespace Catch {
         return hasExpression() && getExpandedExpression() != getExpression();
     }
 
+=======
+    bool AssertionResult::ok() const {
+        return isOk( m_resultData.resultType );
+    }
+
+    ResultWas::OfType AssertionResult::getResultType() const {
+        return m_resultData.resultType;
+    }
+
+    bool AssertionResult::hasExpression() const {
+        return !m_info.capturedExpression.empty();
+    }
+
+    bool AssertionResult::hasMessage() const {
+        return !m_resultData.message.empty();
+    }
+
+    std::string AssertionResult::getExpression() const {
+        return m_info.capturedExpression;
+    }
+
+    bool AssertionResult::hasExpandedExpression() const {
+        return hasExpression() && getExpandedExpression() != getExpression();
+    }
+
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
     std::string AssertionResult::getExpandedExpression() const {
         return m_resultData.reconstructedExpression;
     }
@@ -5503,8 +6614,13 @@ namespace Catch {
         m_data.resultType = result ? ResultWas::Ok : ResultWas::ExpressionFailed;
         return *this;
     }
+<<<<<<< HEAD
     ExpressionResultBuilder& ExpressionResultBuilder::endExpression( ResultDisposition::Flags resultDisposition ) {
         m_exprComponents.shouldNegate = shouldNegate( resultDisposition );
+=======
+    ExpressionResultBuilder& ExpressionResultBuilder::negate( bool shouldNegate ) {
+        m_exprComponents.shouldNegate = shouldNegate;
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
         return *this;
     }
     ExpressionResultBuilder& ExpressionResultBuilder::setLhs( const std::string& lhs ) {
@@ -5870,7 +6986,11 @@ namespace Catch {
             if( assertionResult.hasExpression() ) {
                 TextColour colour( TextColour::OriginalExpression );
                 m_config.stream << assertionResult.getExpression();
+<<<<<<< HEAD
                 if( assertionResult.succeeded() ) {
+=======
+                if( assertionResult.ok() ) {
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
                     TextColour successColour( TextColour::Success );
                     m_config.stream << " succeeded";
                 }
@@ -5927,7 +7047,11 @@ namespace Catch {
                 case ResultWas::ExpressionFailed:
                 case ResultWas::Exception:
                     if( !assertionResult.hasExpression() ) {
+<<<<<<< HEAD
                         if( assertionResult.succeeded() ) {
+=======
+                        if( assertionResult.ok() ) {
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
                             TextColour colour( TextColour::Success );
                             m_config.stream << " succeeded";
                         }
@@ -6320,7 +7444,11 @@ namespace Catch {
 
             if( assertionResult.hasExpression() ) {
                 m_xml.startElement( "Expression" )
+<<<<<<< HEAD
                     .writeAttribute( "success", assertionResult.succeeded() )
+=======
+                    .writeAttribute( "success", assertionResult.ok() )
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
                     .writeAttribute( "filename", assertionResult.getSourceInfo().file )
                     .writeAttribute( "line", assertionResult.getSourceInfo().line );
 
@@ -6328,7 +7456,11 @@ namespace Catch {
                     .writeText( assertionResult.getExpression() );
                 m_xml.scopedElement( "Expanded" )
                     .writeText( assertionResult.getExpandedExpression() );
+<<<<<<< HEAD
                 m_currentTestSuccess &= assertionResult.succeeded();
+=======
+                m_currentTestSuccess &= assertionResult.ok();
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
             }
 
             switch( assertionResult.getResultType() ) {
@@ -6706,12 +7838,21 @@ int main (int argc, char * const argv[]) {
 #define CHECK_THAT( arg, matcher ) INTERNAL_CHECK_THAT( arg, matcher, Catch::ResultDisposition::ContinueOnFailure, "CATCH_CHECK_THAT" )
 #define CATCH_REQUIRE_THAT( arg, matcher ) INTERNAL_CHECK_THAT( arg, matcher, Catch::ResultDisposition::Normal, "CATCH_REQUIRE_THAT" )
 
+<<<<<<< HEAD
 #define CATCH_INFO( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Info, Catch::ResultDisposition::ContinueOnFailure, "CATCH_INFO" )
 #define CATCH_WARN( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Warning, Catch::ResultDisposition::ContinueOnFailure, "CATCH_WARN" )
 #define CATCH_FAIL( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::ExplicitFailure, Catch::ResultDisposition::Normal, "CATCH_FAIL" )
 #define CATCH_SUCCEED( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Ok, Catch::ResultDisposition::ContinueOnFailure, "CATCH_SUCCEED" )
 #define CATCH_SCOPED_INFO( msg ) INTERNAL_CATCH_SCOPED_INFO( msg, "CATCH_SCOPED_INFO" )
 #define CATCH_CAPTURE( msg ) INTERNAL_CATCH_MSG( #msg " := " << msg, Catch::ResultWas::Info, Catch::ResultDisposition::ContinueOnFailure, "CATCH_CAPTURE" )
+=======
+#define CATCH_INFO( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Info, false, "CATCH_INFO" )
+#define CATCH_WARN( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Warning, false, "CATCH_WARN" )
+#define CATCH_FAIL( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::ExplicitFailure, true, "CATCH_FAIL" )
+#define CATCH_SUCCEED( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Ok, false, "CATCH_SUCCEED" )
+#define CATCH_SCOPED_INFO( msg ) INTERNAL_CATCH_SCOPED_INFO( msg, "CATCH_SCOPED_INFO" )
+#define CATCH_CAPTURE( msg ) INTERNAL_CATCH_MSG( #msg " := " << msg, Catch::ResultWas::Info, false, "CATCH_CAPTURE" )
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
 #define CATCH_SCOPED_CAPTURE( msg ) INTERNAL_CATCH_SCOPED_INFO( #msg " := " << msg, "CATCH_SCOPED_CAPTURE" )
 
 #define CATCH_SECTION( name, description ) INTERNAL_CATCH_SECTION( name, description )
@@ -6728,6 +7869,7 @@ int main (int argc, char * const argv[]) {
 // If CATCH_CONFIG_PREFIX_ALL is not defined then the CATCH_ prefix is not required
 #else
 
+<<<<<<< HEAD
 #define REQUIRE( expr ) INTERNAL_CATCH_TEST( expr, Catch::ResultDisposition::Normal, "REQUIRE" )
 #define REQUIRE_FALSE( expr ) INTERNAL_CATCH_TEST( expr, Catch::ResultDisposition::Normal | Catch::ResultDisposition::NegateResult, "REQUIRE_FALSE" )
 
@@ -6754,6 +7896,33 @@ int main (int argc, char * const argv[]) {
 #define SUCCEED( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Ok, Catch::ResultDisposition::ContinueOnFailure, "SUCCEED" )
 #define SCOPED_INFO( msg ) INTERNAL_CATCH_SCOPED_INFO( msg, "SCOPED_INFO" )
 #define CAPTURE( msg ) INTERNAL_CATCH_MSG( #msg " := " << msg, Catch::ResultWas::Info, Catch::ResultDisposition::ContinueOnFailure, "CAPTURE" )
+=======
+#define REQUIRE( expr ) INTERNAL_CATCH_TEST( expr, false, true, "REQUIRE" )
+#define REQUIRE_FALSE( expr ) INTERNAL_CATCH_TEST( expr, true, true, "REQUIRE_FALSE" )
+
+#define REQUIRE_THROWS( expr ) INTERNAL_CATCH_THROWS( expr, ..., true, "REQUIRE_THROWS" )
+#define REQUIRE_THROWS_AS( expr, exceptionType ) INTERNAL_CATCH_THROWS_AS( expr, exceptionType, true, "REQUIRE_THROWS_AS" )
+#define REQUIRE_NOTHROW( expr ) INTERNAL_CATCH_NO_THROW( expr, true, "REQUIRE_NOTHROW" )
+
+#define CHECK( expr ) INTERNAL_CATCH_TEST( expr, false, false, "CHECK" )
+#define CHECK_FALSE( expr ) INTERNAL_CATCH_TEST( expr, true, false, "CHECK_FALSE" )
+#define CHECKED_IF( expr ) INTERNAL_CATCH_IF( expr, false, false, "CHECKED_IF" )
+#define CHECKED_ELSE( expr ) INTERNAL_CATCH_ELSE( expr, false, false, "CHECKED_ELSE" )
+
+#define CHECK_THROWS( expr )  INTERNAL_CATCH_THROWS( expr, ..., false, "CHECK_THROWS" )
+#define CHECK_THROWS_AS( expr, exceptionType ) INTERNAL_CATCH_THROWS_AS( expr, exceptionType, false, "CHECK_THROWS_AS" )
+#define CHECK_NOTHROW( expr ) INTERNAL_CATCH_NO_THROW( expr, false, "CHECK_NOTHROW" )
+
+#define CHECK_THAT( arg, matcher ) INTERNAL_CHECK_THAT( arg, matcher, false, "CHECK_THAT" )
+#define REQUIRE_THAT( arg, matcher ) INTERNAL_CHECK_THAT( arg, matcher, true, "REQUIRE_THAT" )
+
+#define INFO( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Info, false, "INFO" )
+#define WARN( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Warning, false, "WARN" )
+#define FAIL( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::ExplicitFailure, true, "FAIL" )
+#define SUCCEED( msg ) INTERNAL_CATCH_MSG( msg, Catch::ResultWas::Ok, false, "SUCCEED" )
+#define SCOPED_INFO( msg ) INTERNAL_CATCH_SCOPED_INFO( msg, "SCOPED_INFO" )
+#define CAPTURE( msg ) INTERNAL_CATCH_MSG( #msg " := " << msg, Catch::ResultWas::Info, false, "CAPTURE" )
+>>>>>>> ce612bf6562f62236edc5f416a8aabc29e63ebc1
 #define SCOPED_CAPTURE( msg ) INTERNAL_CATCH_SCOPED_INFO( #msg " := " << msg, "SCOPED_CAPTURE" )
 
 #define SECTION( name, description ) INTERNAL_CATCH_SECTION( name, description )
