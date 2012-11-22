@@ -215,9 +215,9 @@ namespace Catch {
         }
 
         if( !displayedSpecificOption ) {
-            std::cout   << "\nCATCH v"    << libraryVersion.MajorVersion << "."
-                                        << libraryVersion.MinorVersion << " build "
-                                        << libraryVersion.BuildNumber;
+            std::cout   << "\nCATCH-VC6 v" << libraryVersion.MajorVersion << "."
+                                           << libraryVersion.MinorVersion << " build "
+                                           << libraryVersion.BuildNumber;
             if( libraryVersion.BranchName != "master" )
                 std::cout << " (" << libraryVersion.BranchName << " branch)";
 
