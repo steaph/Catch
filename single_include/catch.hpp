@@ -1,6 +1,6 @@
 /*
- *  CATCH v0.9 build 3 (integration branch)
- *  Generated: 2012-11-22 08:45:06.845000
+ *  CATCH v0.9 build 6 (integration branch)
+ *  Generated: 2012-11-22 08:55:16.001000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -5677,7 +5677,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion { 0, 9, 3, "integration" };
+    Version libraryVersion ( 0, 9, 6, "integration" );
 }
 
 // #included from: ../reporters/catch_reporter_basic.hpp
