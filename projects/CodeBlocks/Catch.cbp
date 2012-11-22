@@ -93,6 +93,7 @@
 		<Unit filename="..\..\include\reporters\catch_reporter_xml.hpp" />
 		<Unit filename="..\..\single_include\catch.hpp" />
 		<Unit filename="..\SelfTest\ApproxTests.cpp" />
+		<Unit filename="..\SelfTest\Baselines\results.txt" />
 		<Unit filename="..\SelfTest\BasicTests.cpp" />
 		<Unit filename="..\SelfTest\ClassTests.cpp" />
 		<Unit filename="..\SelfTest\ConditionTests.cpp" />
