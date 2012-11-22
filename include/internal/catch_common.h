@@ -127,7 +127,7 @@ namespace Catch {
         bool empty() const {
             return file.empty();
         }
-
+        
         std::string file;
         std::size_t line;
     };

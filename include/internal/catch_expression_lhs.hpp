@@ -27,11 +27,7 @@ class ExpressionLhs {
 	void operator = ( const ExpressionLhs& );
 
 public:
-#if defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 )
     ExpressionLhs( T lhs ) : m_lhs( lhs ) {}
-#else
-    ExpressionLhs( const T& lhs ) : m_lhs( lhs ) {}
-#endif
 
     template<typename RhsT>
     ExpressionResultBuilder& operator == ( const RhsT& rhs ) {
@@ -70,7 +66,7 @@ public:
     ExpressionResultBuilder& operator != ( bool rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
-
+    
     ExpressionResultBuilder& endExpression( ResultDisposition::Flags resultDisposition ) {
         bool value = m_lhs ? true : false;
         return m_result
