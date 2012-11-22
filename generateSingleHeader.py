@@ -3,7 +3,7 @@ import sys
 import re
 import datetime
 
-versionParser = re.compile( r'(\s*Version\slibraryVersion\s*=)\s*{\s*(.*)\s*,\s*(.*)\s*,\s*(.*)\s*,\s*\"(.*)\"\s*}.*' )
+versionParser = re.compile( r'(\s*Version\slibraryVersion\s*=?)\s*[\({]\s*(.*)\s*,\s*(.*)\s*,\s*(.*)\s*,\s*\"(.*)\"\s*[}\)].*' )
 includesParser = re.compile( r'\s*#include\s*"(.*)"' )
 guardParser = re.compile( r'\s*#.*_INCLUDED')
 defineParser = re.compile( r'\s*#define')
