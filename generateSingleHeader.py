@@ -65,7 +65,7 @@ class Version:
 		for line in f:
 			m = versionParser.match( line )
 			if m:
-				lines.append( '{0} ( {1}, {2}, {3}, "{4}" );'.format( self.variableDecl, self.majorVersion, self.minorVersion, self.buildNumber, self.branchName ) )
+				lines.append( '{0}( {1}, {2}, {3}, "{4}" );'.format( self.variableDecl, self.majorVersion, self.minorVersion, self.buildNumber, self.branchName ) )
 			else:
 				lines.append( line.rstrip() )
 		f.close()
