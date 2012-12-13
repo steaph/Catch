@@ -21,11 +21,11 @@ namespace
 {
     CATCH_ATTRIBUTE_NORETURN
     int thisThrows();
-    
+
     int thisThrows()
     {
         throw std::domain_error( "expected exception" );
-        /*NOTREACHED*/    
+        /*NOTREACHED*/
     }
 
     int thisDoesntThrow()
@@ -52,7 +52,7 @@ TEST_CASE( "./failing/exceptions/explicit", "When checked exceptions are thrown 
 TEST_CASE_NORETURN( "./failing/exceptions/implicit", "When unchecked exceptions are thrown they are always failures" )
 {
     throw std::domain_error( "unexpected exception" );
-    /*NOTREACHED*/    
+    /*NOTREACHED*/
 }
 
 TEST_CASE_NORETURN( "./failing/exceptions/implicit/2", "An unchecked exception reports the line of the last assertion" )
@@ -79,12 +79,12 @@ public:
     CustomException( const std::string& msg )
     : m_msg( msg )
     {}
-    
+
     std::string getMessage() const
     {
         return m_msg;
     }
-    
+
 private:
     std::string m_msg;
 };
