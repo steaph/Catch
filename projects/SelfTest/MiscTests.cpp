@@ -19,7 +19,7 @@ TEST_CASE( "./succeeding/Misc/Sections", "random SECTION tests" )
 {
     int a = 1;
     int b = 2;
-
+    
     SECTION( "s1", "doesn't equal" )
     {
         REQUIRE( a != b );
@@ -36,7 +36,7 @@ TEST_CASE( "./succeeding/Misc/Sections/nested", "nested SECTION tests" )
 {
     int a = 1;
     int b = 2;
-
+    
     SECTION( "s1", "doesn't equal" )
     {
         REQUIRE( a != b );
@@ -53,7 +53,7 @@ TEST_CASE( "./mixed/Misc/Sections/nested2", "nested SECTION tests" )
 {
     int a = 1;
     int b = 2;
-
+    
     SECTION( "s1", "doesn't equal" )
     {
         SECTION( "s2", "equal" )
@@ -79,7 +79,7 @@ TEST_CASE( "./Sections/nested/a/b", "nested SECTION tests" )
         SECTION( "d (leaf)", "" )
         {
         }
-
+        
         SECTION( "e (leaf)", "" )
         {
         }
@@ -90,47 +90,17 @@ TEST_CASE( "./Sections/nested/a/b", "nested SECTION tests" )
     }
 }
 
-TEST_CASE( "Sections/nested3", "nested SECTION tests" )
-{
-    Catch::EmbeddedRunner runner;
-
-    runner.runMatching( "./Sections/nested/a/b", "mock" );
-    CHECK( runner.getLog() ==
-        "\\[g] ./Sections/nested/a/b\n"
-        " \\[tc] ./Sections/nested/a/b\n"
-
-        "  \\ [s] c\n"
-        "   \\ [s] d (leaf)\n"
-        "   / [s] d (leaf)\n"
-        "  / [s] c\n"
-
-        "  \\ [s] c\n"
-        "   \\ [s] e (leaf)\n"
-        "   / [s] e (leaf)\n"
-        "  / [s] c\n"
-
-        "  \\ [s] c\n"
-        "  / [s] c\n"
-
-        "  \\ [s] f (leaf)\n"
-        "  / [s] f (leaf)\n"
-
-        " /[tc] ./Sections/nested/a/b\n"
-        "/[g] ./Sections/nested/a/b\n" );
-
-}
-
 TEST_CASE( "./mixed/Misc/Sections/loops", "looped SECTION tests" )
 {
     int a = 1;
-
+    
     for( int b = 0; b < 10; ++b )
     {
         std::ostringstream oss;
         oss << "b is currently: " << b;
         SECTION( "s1", oss.str() )
         {
-            CHECK( b > a );
+            CHECK( b > a );            
         }
     }
 }
@@ -138,18 +108,18 @@ TEST_CASE( "./mixed/Misc/Sections/loops", "looped SECTION tests" )
 TEST_CASE( "./mixed/Misc/loops", "looped tests" )
 {
     static const int fib[]  = { 1, 1, 2, 3, 5, 8, 13, 21 };
-
+    
     for( size_t i=0; i < sizeof(fib)/sizeof(int); ++i )
     {
         INFO( "Testing if fib[" << i << "] (" << fib[i] << ") is even" );
-        CHECK( ( fib[i] % 2 ) == 0 );
+        CHECK( ( fib[i] % 2 ) == 0 );                
     }
 }
 
 TEST_CASE( "./succeeding/Misc/stdout,stderr", "Sends stuff to stdout and stderr" )
 {
     std::cout << "Some information" << std::endl;
-
+    
     std::cerr << "An error" << std::endl;
 }
 
