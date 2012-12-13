@@ -12,21 +12,20 @@ namespace Catch {
 
     // Versioning information
     struct Version {
-        Version(
-            const unsigned int MajorVersion,
-            const unsigned int MinorVersion,
-            const unsigned int BuildNumber,
-            const std::string BranchName
-        )
-        : MajorVersion(MajorVersion)
-        , MinorVersion(MinorVersion)
-        , BuildNumber(BuildNumber)
-        , BranchName(BranchName) {}
+        Version(    unsigned int _majorVersion,
+                    unsigned int _minorVersion,
+                    unsigned int _buildNumber,
+                    std::string const& _branchName )
+        :   majorVersion( _majorVersion ),
+            minorVersion( _minorVersion ),
+            buildNumber( _buildNumber ),
+            branchName( _branchName )
+        {}
 
-        const unsigned int MajorVersion;
-        const unsigned int MinorVersion;
-        const unsigned int BuildNumber;
-        const std::string BranchName;
+        const unsigned int majorVersion;
+        const unsigned int minorVersion;
+        const unsigned int buildNumber;
+        const std::string branchName;
     };
 
     extern Version libraryVersion;

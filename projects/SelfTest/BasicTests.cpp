@@ -117,9 +117,9 @@ TEST_CASE( "./succeeding/Basic/mixed_integral", "mixed-type integral comparison"
     REQUIRE( (long)2 >  (unsigned int)1 );
 }
 
-TEST_CASE( "./failing/Basic/mixed_integral", "mixed-type integral comparison" )
-{
-}
+//TEST_CASE( "./failing/Basic/mixed_integral", "mixed-type integral comparison" )
+//{
+//}
 
 TEST_CASE( "./succeeding/Basic/string", "std::string comparison" )
 {
@@ -138,14 +138,14 @@ TEST_CASE( "./succeeding/Basic/string", "std::string comparison" )
 
 TEST_CASE( "./failing/Basic/string", "std::string comparison" )
 {
-    REQUIRE( std::string("hello") != std::string("hello") );
-    REQUIRE( std::string("hello") == std::string("world") );
+    CHECK( std::string("hello") != std::string("hello") );
+    CHECK( std::string("hello") == std::string("world") );
 
     std::string h = "hello" ;
     std::string w = "world" ;
 
-    REQUIRE( h == w );
-    REQUIRE( w == h );
+    CHECK( h == w );
+    CHECK( w == h );
 }
 
 TEST_CASE( "./succeeding/Basic/mixedstring", "C and std::string comparison" )
