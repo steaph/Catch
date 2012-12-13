@@ -485,7 +485,7 @@ TEST_CASE( "selftest/tags", "" ) {
     std::string p5 = "[one][two]~[hide],[three]";
 
     SECTION( "one tag", "" ) {
-        Catch::TestCase oneTag = makeTestCase( NULL, "", "test", "[one]", CATCH_INTERNAL_LINEINFO );
+        Catch::TestCase oneTag = Catch::makeTestCase( NULL, "", "test", "[one]", CATCH_INTERNAL_LINEINFO );
 
         CHECK( oneTag.getTestCaseInfo().description == "" );
         CHECK( oneTag.hasTag( "one" ) );
@@ -499,7 +499,7 @@ TEST_CASE( "selftest/tags", "" ) {
     }
 
     SECTION( "two tags", "" ) {
-        Catch::TestCase twoTags= makeTestCase( NULL, "", "test", "[one][two]", CATCH_INTERNAL_LINEINFO );
+        Catch::TestCase twoTags= Catch::makeTestCase( NULL, "", "test", "[one][two]", CATCH_INTERNAL_LINEINFO );
 
         CHECK( twoTags.getTestCaseInfo().description == "" );
         CHECK( twoTags.hasTag( "one" ) );
@@ -516,7 +516,7 @@ TEST_CASE( "selftest/tags", "" ) {
 
     SECTION( "one tag with characters either side", "" ) {
 
-        Catch::TestCase oneTagWithExtras = makeTestCase( NULL, "", "test", "12[one]34", CATCH_INTERNAL_LINEINFO );
+        Catch::TestCase oneTagWithExtras = Catch::makeTestCase( NULL, "", "test", "12[one]34", CATCH_INTERNAL_LINEINFO );
         CHECK( oneTagWithExtras.getTestCaseInfo().description == "1234" );
         CHECK( oneTagWithExtras.hasTag( "one" ) );
         CHECK( oneTagWithExtras.hasTag( "two" ) == false );
@@ -525,7 +525,7 @@ TEST_CASE( "selftest/tags", "" ) {
 
     SECTION( "start of a tag, but not closed", "" ) {
 
-        Catch::TestCase oneTagOpen = makeTestCase( NULL, "", "test", "[one", CATCH_INTERNAL_LINEINFO );
+        Catch::TestCase oneTagOpen = Catch::makeTestCase( NULL, "", "test", "[one", CATCH_INTERNAL_LINEINFO );
 
         CHECK( oneTagOpen.getTestCaseInfo().description == "[one" );
         CHECK( oneTagOpen.hasTag( "one" ) == false );
@@ -533,7 +533,7 @@ TEST_CASE( "selftest/tags", "" ) {
     }
 
     SECTION( "hidden", "" ) {
-        Catch::TestCase oneTag = makeTestCase( NULL, "", "test", "[hide]", CATCH_INTERNAL_LINEINFO );
+        Catch::TestCase oneTag = Catch::makeTestCase( NULL, "", "test", "[hide]", CATCH_INTERNAL_LINEINFO );
 
         CHECK( oneTag.getTestCaseInfo().description == "" );
         CHECK( oneTag.hasTag( "hide" ) );
