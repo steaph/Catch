@@ -211,14 +211,14 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 
     SECTION( "reporter", "" ) {
         SECTION( "-r/basic", "" ) {
-            const char* argv[] = { "test", "-r", "basic" };
+            const char* argv[] = { "test", "-r", "console" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
             CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
 #endif
 
-            REQUIRE( config.reporter == "basic" );
+            REQUIRE( config.reporter == "console" );
         }
         SECTION( "-r/xml", "" ) {
             const char* argv[] = { "test", "-r", "xml" };
