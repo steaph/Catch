@@ -61,7 +61,7 @@ namespace Catch {
             stream << "[Section: " << sectionPath << "]" << std::endl;
             unusedSectionInfo.reset();
         }
-        
+
         void lazyPrintSectionInfoLegacy() {
             std::vector<ThreadedSectionInfo*> sections;
             for(    ThreadedSectionInfo* section = unusedSectionInfo.get();
@@ -69,7 +69,7 @@ namespace Catch {
                     section = section->parent.get() )
                 sections.push_back( section );
 
-            typedef std::vector<ThreadedSectionInfo*>::const_reverse_iterator It;
+            typedef std::vector<ThreadedSectionInfo*>::reverse_iterator It;
             for( It it = sections.rbegin(), itEnd = sections.rend(); it != itEnd; ++it ) {
                 stream << "[Started section: " << "'" + (*it)->name + "'" << "]" << std::endl;
                 (*it)->printed = true;
@@ -92,7 +92,7 @@ namespace Catch {
         virtual void assertionEnded( Ptr<AssertionStats const> const& _assertionStats ) {
 
             AssertionResult const& result = _assertionStats->assertionResult;
-            
+
             // Drop out if result was successful and we're not printing those
             if( !m_config.includeSuccessfulResults() && result.isOk() )
                 return;
@@ -196,10 +196,10 @@ namespace Catch {
                 TextColour colour( TextColour::ReconstructedExpression );
                 stream << result.getExpandedExpression();
             }
-            
+
             stream << std::endl;
         }
-        
+
         void streamVariableLengthText( std::string const& prefix, std::string const& text ) {
             std::string trimmed = trim( text );
             if( trimmed.find_first_of( "\r\n" ) == std::string::npos ) {
@@ -210,7 +210,7 @@ namespace Catch {
                         << "\n[end of " << prefix << "] <<<<<<<<<<<<<<<<<<<<<<<<\n";
             }
         }
-        
+
         void printAssertionCounts( std::string const& label, Counts const& counts, std::string const& allPrefix = "All " ) {
             if( counts.passed )
                 stream << counts.failed << " of " << counts.total() << " " << label << "s failed";
