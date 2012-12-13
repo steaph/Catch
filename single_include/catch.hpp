@@ -1,6 +1,6 @@
 /*
- *  CATCH v0.9 build 8 (integration branch)
- *  Generated: 2012-12-13 11:21:15.177000
+ *  CATCH v0.9 build 9 (integration branch)
+ *  Generated: 2012-12-13 12:08:41.800000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -285,6 +285,11 @@ namespace Catch {
             if( m_p )
                 m_p->release();
         }
+        void reset() {
+            if( m_p )
+                m_p->release();
+            m_p = NULL;
+        }
         Ptr& operator = ( T* p ){
             Ptr temp( p );
             swap( temp );
@@ -301,6 +306,7 @@ namespace Catch {
         T& operator*() const { return *m_p; }
         T* operator->() const { return m_p; }
         bool operator !() const { return m_p == NULL; }
+        operator SafeBool::type() const { return SafeBool::makeSafe( m_p != NULL ); }
 
     private:
         T* m_p;
@@ -1471,8 +1477,8 @@ namespace Catch {
         std::string className;
         std::string description;
         std::set<std::string> tags;
-        bool isHidden;
         SourceLineInfo lineInfo;
+        bool isHidden;
     };
 
     class TestCase : protected TestCaseInfo {
@@ -2102,6 +2108,59 @@ namespace Catch {
 
 } // end namespace Catch
 
+// #included from: catch_option.hpp
+#define TWOBLUECUBES_CATCH_OPTION_HPP_INCLUDED
+
+namespace Catch {
+
+    // An optional type
+    template<typename T>
+    class Option {
+    public:
+        Option() : nullableValue( NULL ) {}
+        Option( T const& _value )
+        : nullableValue( new( storage ) T( _value ) )
+        {}
+        Option( Option const& _other )
+        : nullableValue( _other ? new( storage ) T( *_other ) : NULL )
+        {}
+
+        ~Option() {
+            reset();
+        }
+
+        Option& operator= ( Option const& _other ) {
+            reset();
+            if( _other )
+                nullableValue = new( storage ) T( *_other );
+            return *this;
+        }
+
+        void reset() {
+            if( nullableValue )
+                nullableValue->~T();
+            nullableValue = NULL;
+        }
+        T& operator*() { return *nullableValue; }
+        const T& operator*() const { return *nullableValue; }
+        T* operator->() { return nullableValue; }
+        const T* operator->() const { return nullableValue; }
+
+        bool some() const { return nullableValue != NULL; }
+        bool none() const { return nullableValue == NULL; }
+
+        bool operator !() const { return nullableValue == NULL; }
+        operator SafeBool::type() const {
+            return SafeBool::makeSafe( some() );
+        }
+
+    private:
+        T* nullableValue;
+        char storage[sizeof(T)];
+    };
+
+} // end namespace Catch
+
 #include <string>
 #include <ostream>
 #include <map>
@@ -2112,7 +2171,7 @@ namespace Catch
         ReporterConfig( std::ostream& _stream, ConfigData const& _fullConfig )
         :   m_stream( &_stream ), m_fullConfig( _fullConfig ) {}
 
-        std::ostream& stream()                  { return *m_stream; }
+        std::ostream& stream() const            { return *m_stream; }
         std::string name() const                { return m_fullConfig.name; }
         bool includeSuccessfulResults() const   { return m_fullConfig.includeWhichResults == Include::SuccessfulResults; }
         bool warnAboutMissingAssertions() const { return m_fullConfig.warnings & ConfigData::WarnAbout::NoAssertions; }
@@ -2151,6 +2210,17 @@ namespace Catch
         std::string name;
         std::string description;
         SourceLineInfo lineInfo;
+    };
+
+    struct ThreadedSectionInfo : SectionInfo, SharedImpl<> {
+        ThreadedSectionInfo( SectionInfo const& _sectionInfo, Ptr<ThreadedSectionInfo> const& _parent = Ptr<ThreadedSectionInfo>() )
+        :   SectionInfo( _sectionInfo ),
+            parent( _parent )
+        {}
+        virtual ~ThreadedSectionInfo();
+
+        std::vector<Ptr<ThreadedSectionInfo> > children;
+        Ptr<ThreadedSectionInfo> parent;
     };
 
     struct AssertionStats : SharedImpl<> {
@@ -2237,6 +2307,10 @@ namespace Catch
     // !Work In progress
     struct IStreamingReporter : IShared {
         virtual ~IStreamingReporter();
+
+        // Implementing class must also provide the following static methid:
+        // static std::string getDescription();
+
         virtual ReporterPreferences getPreferences() const = 0;
 
         virtual void testRunStarting( TestRunInfo const& testRunInfo ) = 0;
@@ -2258,6 +2332,58 @@ namespace Catch
     // - this would be used by the JUnit reporter, for example.
     // - it may be used by the basic reporter, too, but that would clear down the stack
     //   as it goes
+    struct AccumulatingReporter : SharedImpl<IStreamingReporter> {
+
+        AccumulatingReporter( ReporterConfig const& _config )
+        : stream( _config.stream() )
+        {}
+
+        virtual ~AccumulatingReporter();
+
+        virtual void testRunStarting( TestRunInfo const& _testRunInfo ) {
+            testRunInfo = _testRunInfo;
+        }
+        virtual void testGroupStarting( GroupInfo const& _groupInfo ) {
+            unusedGroupInfo = _groupInfo;
+        }
+
+        virtual void testCaseStarting( TestCaseInfo const& _testInfo ) {
+            unusedTestCaseInfo = _testInfo;
+        }
+        virtual void sectionStarting( SectionInfo const& _sectionInfo ) {
+            Ptr<ThreadedSectionInfo> sectionInfo = new ThreadedSectionInfo( _sectionInfo );
+            unusedSectionInfo = sectionInfo;
+            if( !currentSectionInfo ) {
+                currentSectionInfo = sectionInfo;
+            }
+            else {
+                currentSectionInfo->children.push_back( sectionInfo );
+                sectionInfo->parent = currentSectionInfo;
+                currentSectionInfo = sectionInfo;
+            }
+        }
+
+        virtual void sectionEnded( Ptr<SectionStats const> const& /* _sectionStats */ ) {
+            currentSectionInfo = currentSectionInfo->parent;
+            unusedSectionInfo = currentSectionInfo;
+        }
+        virtual void testCaseEnded( Ptr<TestCaseStats const> const& /* _testCaseStats */ ) {
+            unusedTestCaseInfo.reset();
+        }
+        virtual void testGroupEnded( Ptr<TestGroupStats const> const& /* _testGroupStats */ ) {
+            unusedGroupInfo.reset();
+        }
+        virtual void testRunEnded( Ptr<TestRunStats const> const& /* _testRunStats */ ) {
+        }
+
+        Option<TestRunInfo> testRunInfo;
+        Option<GroupInfo> unusedGroupInfo;
+        Option<TestCaseInfo> unusedTestCaseInfo;
+        Ptr<ThreadedSectionInfo> unusedSectionInfo;
+        Ptr<ThreadedSectionInfo> currentSectionInfo;
+        bool currentSectionOpen;
+        std::ostream& stream;
+    };
 
     // Deprecated
     struct IReporter : IShared {
@@ -2980,9 +3106,11 @@ namespace Matchers {
     template<typename ExpressionT>
     struct Matcher : SharedImpl<IShared>
     {
+        typedef ExpressionT ExpressionType;
+
         virtual ~Matcher() {}
         virtual Ptr<Matcher> clone() const = 0;
-        virtual bool match( const ExpressionT& expr ) const = 0;
+        virtual bool match( ExpressionT const& expr ) const = 0;
         virtual std::string toString() const = 0;
     };
 
@@ -3272,7 +3400,7 @@ namespace Catch {
                         std::string name = Detail::getAnnotation( cls, "Name", testCaseName );
                         std::string desc = Detail::getAnnotation( cls, "Description", testCaseName );
 
-                        getMutableRegistryHub().registerTest( TestCase( new OcMethod( cls, selector ), name.c_str(), desc.c_str(), SourceLineInfo() ) );
+                        getMutableRegistryHub().registerTest( makeTestCase( new OcMethod( cls, selector ), "", name.c_str(), desc.c_str(), SourceLineInfo() ) );
                         noTestMethods++;
                     }
                 }
@@ -3286,8 +3414,10 @@ namespace Catch {
         namespace Impl {
         namespace NSStringMatchers {
 
-            struct StringHolder {
+            template<typename MatcherT>
+            struct StringHolder : MatcherImpl<MatcherT, NSString*>{
                 StringHolder( NSString* substr ) : m_substr( [substr copy] ){}
+                StringHolder( StringHolder const& other ) : m_substr( [other.m_substr copy] ){}
                 StringHolder() {
                     arcSafeRelease( m_substr );
                 }
@@ -3295,54 +3425,50 @@ namespace Catch {
                 NSString* m_substr;
             };
 
-            struct Equals : StringHolder {
+            struct Equals : StringHolder<Equals> {
                 Equals( NSString* substr ) : StringHolder( substr ){}
 
-                bool operator()( NSString* str ) const {
+                virtual bool match( ExpressionType const& str ) const {
                     return [str isEqualToString:m_substr];
                 }
 
-                friend std::ostream& operator<<( std::ostream& os, const Equals& matcher ) {
-                    os << "equals string: " << Catch::toString( matcher.m_substr );
-                    return os;
+                virtual std::string toString() const {
+                    return "equals string: \"" + Catch::toString( m_substr ) + "\"";
                 }
             };
 
-            struct Contains : StringHolder {
+            struct Contains : StringHolder<Contains> {
                 Contains( NSString* substr ) : StringHolder( substr ){}
 
-                bool operator()( NSString* str ) const {
+                virtual bool match( ExpressionType const& str ) const {
                     return [str rangeOfString:m_substr].location != NSNotFound;
                 }
 
-                friend std::ostream& operator<<( std::ostream& os, const Contains& matcher ) {
-                    os << "contains: " << Catch::toString( matcher.m_substr );
-                    return os;
+                virtual std::string toString() const {
+                    return "contains string: \"" + Catch::toString( m_substr ) + "\"";
                 }
             };
 
-            struct StartsWith : StringHolder {
+            struct StartsWith : StringHolder<StartsWith> {
                 StartsWith( NSString* substr ) : StringHolder( substr ){}
 
-                bool operator()( NSString* str ) const {
+                virtual bool match( ExpressionType const& str ) const {
                     return [str rangeOfString:m_substr].location == 0;
                 }
 
-                friend std::ostream& operator<<( std::ostream& os, const StartsWith& matcher ) {
-                    os << "starts with: " << Catch::toString( matcher.m_substr );
-                    return os;
+                virtual std::string toString() const {
+                    return "starts with: \"" + Catch::toString( m_substr ) + "\"";
                 }
             };
-            struct EndsWith : StringHolder {
+            struct EndsWith : StringHolder<EndsWith> {
                 EndsWith( NSString* substr ) : StringHolder( substr ){}
 
-                bool operator()( NSString* str ) const {
+                virtual bool match( ExpressionType const& str ) const {
                     return [str rangeOfString:m_substr].location == [str length] - [m_substr length];
                 }
 
-                friend std::ostream& operator<<( std::ostream& os, const EndsWith& matcher ) {
-                    os << "ends with: " << Catch::toString( matcher.m_substr );
-                    return os;
+                virtual std::string toString() const {
+                    return "ends with: \"" + Catch::toString( m_substr ) + "\"";
                 }
             };
 
@@ -5789,8 +5915,8 @@ namespace Catch {
         className( _className ),
         description( _description ),
         tags( _tags ),
-        isHidden( _isHidden ),
-        lineInfo( _lineInfo )
+        lineInfo( _lineInfo ),
+        isHidden( _isHidden )
     {}
 
     TestCaseInfo::TestCaseInfo( const TestCaseInfo& other )
@@ -5798,8 +5924,8 @@ namespace Catch {
         className( other.className ),
         description( other.description ),
         tags( other.tags ),
-        isHidden( other.isHidden ),
-        lineInfo( other.lineInfo )
+        lineInfo( other.lineInfo ),
+        isHidden( other.isHidden )
     {}
 
     TestCase::TestCase( ITestCase* testCase, const TestCaseInfo& info ) : TestCaseInfo( info ), test( testCase ) {}
@@ -5871,7 +5997,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 0, 9, 8, "integration" );
+    Version libraryVersion( 0, 9, 9, "integration" );
 }
 
 // #included from: ../reporters/catch_reporter_basic.hpp
@@ -6852,6 +6978,132 @@ namespace Catch {
 
 } // end namespace Catch
 
+// #included from: ../reporters/catch_reporter_console.hpp
+#define TWOBLUECUBES_CATCH_REPORTER_CONSOLE_HPP_INCLUDED
+
+namespace Catch {
+
+    struct ConsoleReporter : AccumulatingReporter {
+        ConsoleReporter( ReporterConfig const& _config )
+        : AccumulatingReporter( _config )
+        {}
+
+        virtual ~ConsoleReporter();
+        static std::string getDescription() {
+            return "Reports test results as plain lines of text";
+        }
+        virtual ReporterPreferences getPreferences() const {
+            ReporterPreferences prefs;
+            prefs.shouldRedirectStdOut = false;
+            return prefs;
+
+        }
+        void lazyPrintRunInfo() {
+            stream << "[Started testing: " << testRunInfo->name << "]" << std::endl;
+            testRunInfo.reset();
+        }
+        void lazyPrintGroupInfo() {
+            if( !unusedGroupInfo->name.empty() )
+                stream << "[Group: '" << unusedGroupInfo->name << "']" << std::endl;
+            unusedGroupInfo.reset();
+        }
+        void lazyPrintTestCaseInfo() {
+            stream << "[Test case: '" << unusedTestCaseInfo->name << "']" << std::endl;
+            unusedTestCaseInfo.reset();
+        }
+        std::string makeSectionPath( ThreadedSectionInfo const * section, std::string const& delimiter ) {
+            std::string sectionPath = "'" + section->name + "'";
+            while( ( section = section->parent.get() ) )
+                sectionPath = "'" + section->name + "'" + delimiter + sectionPath;
+            return sectionPath;
+        }
+        void lazyPrintSectionInfo() {
+            ThreadedSectionInfo* section = unusedSectionInfo.get();
+
+            std::string sectionPath = makeSectionPath( section, ", " );
+            if( sectionPath.size() > 60 )
+                sectionPath = makeSectionPath( section, ",\n          " );
+
+            stream << "[Section: " << sectionPath << "]" << std::endl;
+            unusedSectionInfo.reset();
+        }
+        void lazyPrint() {
+            if( testRunInfo )
+                lazyPrintRunInfo();
+            if( unusedGroupInfo )
+                lazyPrintGroupInfo();
+            if( unusedTestCaseInfo )
+                lazyPrintTestCaseInfo();
+            if( unusedSectionInfo )
+                lazyPrintSectionInfo();
+        }
+
+        virtual void assertionStarting( AssertionInfo const& _assertionInfo ) {
+        }
+        virtual void assertionEnded( Ptr<AssertionStats const> const& _assertionStats ) {
+            if( !_assertionStats->assertionResult.isOk() )
+                lazyPrint();
+        }
+
+        void printAssertionCounts( std::string const& label, Counts const& counts, std::string const& allPrefix = "All " ) {
+            if( counts.passed )
+                stream << counts.failed << " of " << counts.total() << " " << label << "s failed";
+            else
+                stream << ( counts.failed > 1 ? allPrefix : "" ) << pluralise( counts.failed, label ) << " failed";
+        }
+
+        void printTotals( const Totals& totals, const std::string& allPrefix = "All " ) {
+            if( totals.assertions.total() == 0 ) {
+                stream << "No tests ran";
+            }
+            else if( totals.assertions.failed ) {
+                TextColour colour( TextColour::ResultError );
+                printAssertionCounts( "test case", totals.testCases, allPrefix );
+                if( totals.testCases.failed > 0 ) {
+                    stream << " (";
+                    printAssertionCounts( "assertion", totals.assertions, allPrefix );
+                    stream << ")";
+                }
+            }
+            else {
+                TextColour colour( TextColour::ResultSuccess );
+                stream << allPrefix << "tests passed ("
+                    << pluralise( totals.assertions.passed, "assertion" ) << " in "
+                    << pluralise( totals.testCases.passed, "test case" ) << ")";
+            }
+        }
+
+        virtual void sectionEnded( Ptr<SectionStats const> const& _sectionStats ) {
+            if( !unusedSectionInfo ) {
+                stream << "[Summary for section '" << _sectionStats->sectionInfo.name << "': ";
+                printAssertionCounts( "assertion", _sectionStats->assertions );
+                stream << "]\n" << std::endl;
+            }
+            AccumulatingReporter::sectionEnded( _sectionStats );
+        }
+        virtual void testCaseEnded( Ptr<TestCaseStats const> const& _testCaseStats ) {
+            if( !unusedTestCaseInfo ) {
+                stream << "[Summary for test case '" << _testCaseStats->testInfo.name << "': ";
+                printTotals( _testCaseStats->totals );
+                stream << "]\n" << std::endl;
+            }
+            AccumulatingReporter::testCaseEnded( _testCaseStats );
+        }
+        virtual void testGroupEnded( Ptr<TestGroupStats const> const& _testGroupStats ) {
+            // !TBD
+            AccumulatingReporter::testGroupEnded( _testGroupStats );
+        }
+        virtual void testRunEnded( Ptr<TestRunStats const> const& _testRunStats ) {
+            // !TBD
+            AccumulatingReporter::testRunEnded( _testRunStats );
+        }
+
+    };
+
+    INTERNAL_CATCH_REGISTER_REPORTER( "console", ConsoleReporter )
+
+} // end namespace Catch
+
 namespace Catch {
     NonCopyable::~NonCopyable() {}
     IShared::~IShared() {}
@@ -6874,8 +7126,11 @@ namespace Catch {
     TestCaseStats::~TestCaseStats() {}
     TestGroupStats::~TestGroupStats() {}
     TestRunStats::~TestRunStats() {}
+    ThreadedSectionInfo::~ThreadedSectionInfo() {}
 
     BasicReporter::~BasicReporter() {}
+    AccumulatingReporter::~AccumulatingReporter() {}
+    ConsoleReporter::~ConsoleReporter() {}
     IRunner::~IRunner() {}
     IMutableContext::~IMutableContext() {}
     IConfig::~IConfig() {}
