@@ -24,12 +24,12 @@ namespace Catch {
     public:
         TestRegistry() : m_unnamedCount( 0 ) {}
         virtual ~TestRegistry();
-        
-        virtual void registerTest( const TestCaseInfo& testInfo ) {
+
+        virtual void registerTest( const TestCase& testInfo ) {
             if( testInfo.getName() == "" ) {
                 std::ostringstream oss;
                 oss << testInfo.getName() << "unnamed/" << ++m_unnamedCount;
-                registerTest( TestCaseInfo( testInfo, oss.str() ) );
+                registerTest( TestCase( testInfo, oss.str() ) );
                 return;
             }
 
@@ -40,44 +40,44 @@ namespace Catch {
                     m_nonHiddenFunctions.push_back( testInfo );
             }
             else {
-                const TestCaseInfo& prev = *m_functions.find( testInfo );
+                const TestCase& prev = *m_functions.find( testInfo );
                 std::cerr   << "error: TEST_CASE( \"" << testInfo.getName() << "\" ) already defined.\n"
                             << "\tFirst seen at " << SourceLineInfo( prev.getLineInfo() ) << "\n"
                             << "\tRedefined at " << SourceLineInfo( testInfo.getLineInfo() ) << std::endl;
                 exit(1);
             }
         }
-        
-        virtual const std::vector<TestCaseInfo>& getAllTests() const {
+
+        virtual const std::vector<TestCase>& getAllTests() const {
             return m_functionsInOrder;
         }
 
-        virtual const std::vector<TestCaseInfo>& getAllNonHiddenTests() const {
+        virtual const std::vector<TestCase>& getAllNonHiddenTests() const {
             return m_nonHiddenFunctions;
         }
 
         // !TBD deprecated
-        virtual std::vector<TestCaseInfo> getMatchingTestCases( const std::string& rawTestSpec ) const {
-            std::vector<TestCaseInfo> matchingTests;
+        virtual std::vector<TestCase> getMatchingTestCases( const std::string& rawTestSpec ) const {
+            std::vector<TestCase> matchingTests;
             getMatchingTestCases( rawTestSpec, matchingTests );
             return matchingTests;
         }
 
         // !TBD deprecated
-        virtual void getMatchingTestCases( const std::string& rawTestSpec, std::vector<TestCaseInfo>& matchingTestsOut ) const {
+        virtual void getMatchingTestCases( const std::string& rawTestSpec, std::vector<TestCase>& matchingTestsOut ) const {
             TestCaseFilter filter( rawTestSpec );
 
-            std::vector<TestCaseInfo>::const_iterator it = m_functionsInOrder.begin();
-            std::vector<TestCaseInfo>::const_iterator itEnd = m_functionsInOrder.end();
+            std::vector<TestCase>::const_iterator it = m_functionsInOrder.begin();
+            std::vector<TestCase>::const_iterator itEnd = m_functionsInOrder.end();
             for(; it != itEnd; ++it ) {
                 if( filter.shouldInclude( *it ) ) {
                     matchingTestsOut.push_back( *it );
                 }
             }
         }
-        virtual void getMatchingTestCases( const TestCaseFilters& filters, std::vector<TestCaseInfo>& matchingTestsOut ) const {
-            std::vector<TestCaseInfo>::const_iterator it = m_functionsInOrder.begin();
-            std::vector<TestCaseInfo>::const_iterator itEnd = m_functionsInOrder.end();
+        virtual void getMatchingTestCases( const TestCaseFilters& filters, std::vector<TestCase>& matchingTestsOut ) const {
+            std::vector<TestCase>::const_iterator it = m_functionsInOrder.begin();
+            std::vector<TestCase>::const_iterator itEnd = m_functionsInOrder.end();
             // !TBD: replace with algorithm
             for(; it != itEnd; ++it )
                 if( filters.shouldInclude( *it ) )
@@ -85,15 +85,15 @@ namespace Catch {
         }
 
     private:
-        
-        std::set<TestCaseInfo> m_functions;
-        std::vector<TestCaseInfo> m_functionsInOrder;
-        std::vector<TestCaseInfo> m_nonHiddenFunctions;        
+
+        std::set<TestCase> m_functions;
+        std::vector<TestCase> m_functionsInOrder;
+        std::vector<TestCase> m_nonHiddenFunctions;
         size_t m_unnamedCount;
     };
 
     ///////////////////////////////////////////////////////////////////////////
-        
+
     class FreeFunctionTestCase : public SharedImpl<ITestCase> {
     public:
 
@@ -121,27 +121,27 @@ namespace Catch {
         }
         return className;
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
-    
-    AutoReg::AutoReg(   TestFunction function, 
+
+    AutoReg::AutoReg(   TestFunction function,
                         const char* name,
                         const char* description,
                         const SourceLineInfo& lineInfo ) {
         registerTestCase( new FreeFunctionTestCase( function ), "global", name, description, lineInfo );
-    }    
-    
+    }
+
     AutoReg::~AutoReg() {}
-    
+
     void AutoReg::registerTestCase( ITestCase* testCase,
                                     const char* classOrQualifiedMethodName,
                                     const char* name,
                                     const char* description,
                                     const SourceLineInfo& lineInfo ) {
-        
-        getMutableRegistryHub().registerTest( TestCaseInfo( testCase, extractClassName( classOrQualifiedMethodName ), name, description, lineInfo ) );
+
+        getMutableRegistryHub().registerTest( TestCase( testCase, extractClassName( classOrQualifiedMethodName ), name, description, lineInfo ) );
     }
-    
+
 } // end namespace Catch
 
 
