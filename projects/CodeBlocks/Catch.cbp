@@ -66,6 +66,7 @@
 		<Unit filename="../../include/internal/catch_notimplemented_exception.hpp" />
 		<Unit filename="../../include/internal/catch_objc.hpp" />
 		<Unit filename="../../include/internal/catch_objc_arc.hpp" />
+		<Unit filename="../../include/internal/catch_option.hpp" />
 		<Unit filename="../../include/internal/catch_ptr.hpp" />
 		<Unit filename="../../include/internal/catch_registry_hub.hpp" />
 		<Unit filename="../../include/internal/catch_reporter_registrars.hpp" />
