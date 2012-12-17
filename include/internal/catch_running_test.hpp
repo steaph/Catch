@@ -24,9 +24,10 @@ namespace Catch {
         };
         
     public:
-        explicit RunningTest( const TestCaseInfo* info = NULL )
+        explicit RunningTest( const TestCase& info )
         :   m_info( info ),
             m_runStatus( RanAtLeastOneSection ),
+            m_rootSection( info.getTestCaseInfo().name ),
             m_currentSection( &m_rootSection ),
             m_changed( false )
         {}
@@ -54,16 +55,12 @@ namespace Catch {
         }
         
         void ranToCompletion() {
-            if( m_runStatus == RanAtLeastOneSection ||
-                m_runStatus == EncounteredASection ) {
-                m_runStatus = RanToCompletionWithSections;
-                if( m_lastSectionToRun ) {
-                    m_lastSectionToRun->ranToCompletion();
-                    m_changed = true;
-                }
-            }
-            else {
+            if( m_runStatus != RanAtLeastOneSection && m_runStatus != EncounteredASection )
                 m_runStatus = RanToCompletionWithNoSections;
+            m_runStatus = RanToCompletionWithSections;
+            if( m_lastSectionToRun ) {
+                m_lastSectionToRun->ranToCompletion();
+                m_changed = true;
             }
         }
         
@@ -71,12 +68,8 @@ namespace Catch {
             if( m_runStatus == NothingRun )
                 m_runStatus = EncounteredASection;
             
-            SectionInfo* thisSection = m_currentSection->findSubSection( name );
-            if( !thisSection ) {
-                thisSection = m_currentSection->addSubSection( name );
-                m_changed = true;
-            }
-            
+            RunningSection* thisSection = m_currentSection->findOrAddSubSection( name, m_changed );
+
             if( !wasSectionSeen() && thisSection->shouldRun() ) {
                 m_currentSection = thisSection;
                 m_lastSectionToRun = NULL;
@@ -97,21 +90,21 @@ namespace Catch {
             m_currentSection = m_currentSection->getParent();
         }
         
-        const TestCaseInfo& getTestCaseInfo() const {
-            return *m_info;
+        const TestCase& getTestCase() const {
+            return m_info;
         }
-        
+
         bool hasUntestedSections() const {
             return  m_runStatus == RanAtLeastOneSection ||
                     ( m_rootSection.hasUntestedSections() && m_changed );
         }
         
     private:
-        const TestCaseInfo* m_info;
+        const TestCase& m_info;
         RunStatus m_runStatus;
-        SectionInfo m_rootSection;
-        SectionInfo* m_currentSection;
-        SectionInfo* m_lastSectionToRun;
+        RunningSection m_rootSection;
+        RunningSection* m_currentSection;
+        RunningSection* m_lastSectionToRun;
         bool m_changed;
     };
 }

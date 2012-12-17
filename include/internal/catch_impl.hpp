@@ -26,10 +26,12 @@
 #include "catch_expressionresult_builder.hpp"
 #include "catch_test_case_info.hpp"
 #include "catch_tags.hpp"
+#include "catch_version.hpp"
 
 #include "../reporters/catch_reporter_basic.hpp"
 #include "../reporters/catch_reporter_xml.hpp"
 #include "../reporters/catch_reporter_junit.hpp"
+#include "../reporters/catch_reporter_console.hpp"
 
 namespace Catch {
     NonCopyable::~NonCopyable() {}
@@ -46,7 +48,18 @@ namespace Catch {
     IReporter::~IReporter() {}
     IReporterFactory::~IReporterFactory() {}
     IReporterRegistry::~IReporterRegistry() {}
+    IStreamingReporter::~IStreamingReporter() {}
+    LegacyReporterAdapter::~LegacyReporterAdapter() {}
+    AssertionStats::~AssertionStats() {}
+    SectionStats::~SectionStats() {}
+    TestCaseStats::~TestCaseStats() {}
+    TestGroupStats::~TestGroupStats() {}
+    TestRunStats::~TestRunStats() {}
+    ThreadedSectionInfo::~ThreadedSectionInfo() {}
+
     BasicReporter::~BasicReporter() {}
+    AccumulatingReporter::~AccumulatingReporter() {}
+    ConsoleReporter::~ConsoleReporter() {}
     IRunner::~IRunner() {}
     IMutableContext::~IMutableContext() {}
     IConfig::~IConfig() {}
@@ -67,9 +80,9 @@ namespace Catch {
 
     void Config::dummy() {}
 
-    INTERNAL_CATCH_REGISTER_REPORTER( "basic", BasicReporter )
-    INTERNAL_CATCH_REGISTER_REPORTER( "xml", XmlReporter )
-    INTERNAL_CATCH_REGISTER_REPORTER( "junit", JunitReporter )
+    INTERNAL_CATCH_REGISTER_LEGACY_REPORTER( "basic", BasicReporter )
+    INTERNAL_CATCH_REGISTER_LEGACY_REPORTER( "xml", XmlReporter )
+    INTERNAL_CATCH_REGISTER_LEGACY_REPORTER( "junit", JunitReporter )
 
 }
 

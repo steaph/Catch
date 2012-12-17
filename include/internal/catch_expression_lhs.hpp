@@ -66,13 +66,13 @@ public:
     ExpressionResultBuilder& operator != ( bool rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
-
-    ExpressionResultBuilder& negate( bool shouldNegate ) {
+    
+    ExpressionResultBuilder& endExpression( ResultDisposition::Flags resultDisposition ) {
         bool value = m_lhs ? true : false;
         return m_result
             .setLhs( Catch::toString( value ) )
             .setResultType( value )
-            .negate( shouldNegate );
+            .endExpression( resultDisposition );
     }
 
     // Only simple binary expressions are allowed on the LHS.

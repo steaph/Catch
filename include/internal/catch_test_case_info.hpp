@@ -14,96 +14,104 @@
 
 namespace Catch {
 
-    
-    TestCaseInfo::TestCaseInfo( ITestCase* testCase,
-                                const char* name,
-                                const char* description,
-                                const SourceLineInfo& lineInfo )
-    :   m_test( testCase ),
-        m_name( name ),
-        m_description( description ),
-        m_lineInfo( lineInfo ),
-        m_isHidden( startsWith( name, "./" ) )
+    TestCase makeTestCase(  ITestCase* _testCase,
+                            const std::string& _className,
+                            const std::string& _name,
+                            const std::string& _descOrTags,
+                            const SourceLineInfo& _lineInfo )
     {
-        TagExtracter( m_tags ).parse( m_description );
-        if( hasTag( "hide" ) )
-            m_isHidden = true;
+        std::string desc = _descOrTags;
+        bool isHidden( startsWith( _name, "./" ) );
+        std::set<std::string> tags;
+        TagExtracter( tags ).parse( desc );
+        if( tags.find( "hide" ) != tags.end() )
+            isHidden = true;
+
+        TestCaseInfo info( _name, _className, desc, tags, isHidden, _lineInfo );
+        return TestCase( _testCase, info );
     }
 
-    TestCaseInfo::TestCaseInfo()
-    :   m_test( NULL ),
-        m_name(),
-        m_description(),
-        m_isHidden( false )
-    {}
-
-    TestCaseInfo::TestCaseInfo( const TestCaseInfo& other, const std::string& name )
-    :   m_test( other.m_test ),
-        m_name( name ),
-        m_description( other.m_description ),
-        m_tags( other.m_tags ),
-        m_lineInfo( other.m_lineInfo ),
-        m_isHidden( other.m_isHidden )
+    TestCaseInfo::TestCaseInfo( const std::string& _name,
+                                const std::string& _className,
+                                const std::string& _description,
+                                const std::set<std::string>& _tags,
+                                bool _isHidden,
+                                const SourceLineInfo& _lineInfo )
+    :   name( _name ),
+        className( _className ),
+        description( _description ),
+        tags( _tags ),
+        lineInfo( _lineInfo ),
+        isHidden( _isHidden )
     {}
 
     TestCaseInfo::TestCaseInfo( const TestCaseInfo& other )
-    :   m_test( other.m_test ),
-        m_name( other.m_name ),
-        m_description( other.m_description ),
-        m_tags( other.m_tags ),
-        m_lineInfo( other.m_lineInfo ),
-        m_isHidden( other.m_isHidden )
+    :   name( other.name ),
+        className( other.className ),
+        description( other.description ),
+        tags( other.tags ),
+        lineInfo( other.lineInfo ),
+        isHidden( other.isHidden )
     {}
 
-    void TestCaseInfo::invoke() const {
-        m_test->invoke();
+    TestCase::TestCase( ITestCase* testCase, const TestCaseInfo& info ) : TestCaseInfo( info ), test( testCase ) {}
+
+    TestCase::TestCase( const TestCase& other )
+    :   TestCaseInfo( other ),
+        test( other.test )
+    {}
+
+    TestCase TestCase::withName( const std::string& _newName ) const {
+        TestCase other( *this );
+        other.name = _newName;
+        return other;
     }
 
-    const std::string& TestCaseInfo::getName() const {
-        return m_name;
+    void TestCase::invoke() const {
+        test->invoke();
     }
 
-    const std::string& TestCaseInfo::getDescription() const {
-        return m_description;
+    bool TestCase::isHidden() const {
+        return TestCaseInfo::isHidden;
     }
 
-    const SourceLineInfo& TestCaseInfo::getLineInfo() const {
-        return m_lineInfo;
+    bool TestCase::hasTag( const std::string& tag ) const {
+        return tags.find( tag ) != tags.end();
     }
-
-    bool TestCaseInfo::isHidden() const {
-        return m_isHidden;
-    }
-
-    bool TestCaseInfo::hasTag( const std::string& tag ) const {
-        return m_tags.find( tag ) != m_tags.end();
-    }
-    bool TestCaseInfo::matchesTags( const std::string& tagPattern ) const {
+    bool TestCase::matchesTags( const std::string& tagPattern ) const {
         TagExpression exp;
         TagExpressionParser( exp ).parse( tagPattern );
-        return exp.matches( m_tags );
+        return exp.matches( tags );
     }
-    const std::set<std::string>& TestCaseInfo::getTags() const {
-        return m_tags;
-    }
-
-    void TestCaseInfo::swap( TestCaseInfo& other ) {
-        m_test.swap( other.m_test );
-        m_name.swap( other.m_name );
-        m_description.swap( other.m_description );
-        m_lineInfo.swap( other.m_lineInfo );
+    const std::set<std::string>& TestCase::getTags() const {
+        return tags;
     }
 
-    bool TestCaseInfo::operator == ( const TestCaseInfo& other ) const {
-        return m_test.get() == other.m_test.get() && m_name == other.m_name;
+    void TestCase::swap( TestCase& other ) {
+        test.swap( other.test );
+        className.swap( other.className );
+        name.swap( other.name );
+        description.swap( other.description );
+        std::swap( lineInfo, other.lineInfo );
     }
 
-    bool TestCaseInfo::operator < ( const TestCaseInfo& other ) const {
-        return m_name < other.m_name;
+    bool TestCase::operator == ( const TestCase& other ) const {
+        return  test.get() == other.test.get() &&
+                name == other.name &&
+                className == other.className;
     }
-    TestCaseInfo& TestCaseInfo::operator = ( const TestCaseInfo& other ) {
-        TestCaseInfo temp( other );
+
+    bool TestCase::operator < ( const TestCase& other ) const {
+        return name < other.name;
+    }
+    TestCase& TestCase::operator = ( const TestCase& other ) {
+        TestCase temp( other );
         swap( temp );
+        return *this;
+    }
+
+    const TestCaseInfo& TestCase::getTestCaseInfo() const
+    {
         return *this;
     }
 

@@ -16,9 +16,9 @@
 
 #define VC6_SUCCEED_TEST( tag, N ) \
     TEST_CASE( tag, "VC6: Skipping tricky tests" ) {\
-        WARN( "VC6: Skip succeeding tricky test:" ) \
+        WARN( "VC6: Skip succeeding tricky test:" ); \
         for ( int i = 0; i < N; ++i ) { \
-            SUCCEED( "VC6: Skip succeeding tricky test." ) \
+            SUCCEED( "VC6: Skip succeeding tricky test." ); \
         } \
     }
 

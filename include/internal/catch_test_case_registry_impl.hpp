@@ -24,60 +24,61 @@ namespace Catch {
     public:
         TestRegistry() : m_unnamedCount( 0 ) {}
         virtual ~TestRegistry();
-        
-        virtual void registerTest( const TestCaseInfo& testInfo ) {
-            if( testInfo.getName() == "" ) {
+
+        virtual void registerTest( const TestCase& testCase ) {
+            std::string name = testCase.getTestCaseInfo().name;
+            if( name == "" ) {
                 std::ostringstream oss;
-                oss << testInfo.getName() << "unnamed/" << ++m_unnamedCount;
-                registerTest( TestCaseInfo( testInfo, oss.str() ) );
+                oss << name << "unnamed/" << ++m_unnamedCount;
+                registerTest( testCase.withName( oss.str() ) );
                 return;
             }
 
-            if( m_functions.find( testInfo ) == m_functions.end() ) {
-                m_functions.insert( testInfo );
-                m_functionsInOrder.push_back( testInfo );
-                if( !testInfo.isHidden() )
-                    m_nonHiddenFunctions.push_back( testInfo );
+            if( m_functions.find( testCase ) == m_functions.end() ) {
+                m_functions.insert( testCase );
+                m_functionsInOrder.push_back( testCase );
+                if( !testCase.isHidden() )
+                    m_nonHiddenFunctions.push_back( testCase );
             }
             else {
-                const TestCaseInfo& prev = *m_functions.find( testInfo );
-                std::cerr   << "error: TEST_CASE( \"" << testInfo.getName() << "\" ) already defined.\n"
-                            << "\tFirst seen at " << SourceLineInfo( prev.getLineInfo() ) << "\n"
-                            << "\tRedefined at " << SourceLineInfo( testInfo.getLineInfo() ) << std::endl;
+                const TestCase& prev = *m_functions.find( testCase );
+                std::cerr   << "error: TEST_CASE( \"" << name << "\" ) already defined.\n"
+                            << "\tFirst seen at " << SourceLineInfo( prev.getTestCaseInfo().lineInfo ) << "\n"
+                            << "\tRedefined at " << SourceLineInfo( testCase.getTestCaseInfo().lineInfo ) << std::endl;
                 exit(1);
             }
         }
-        
-        virtual const std::vector<TestCaseInfo>& getAllTests() const {
+
+        virtual const std::vector<TestCase>& getAllTests() const {
             return m_functionsInOrder;
         }
 
-        virtual const std::vector<TestCaseInfo>& getAllNonHiddenTests() const {
+        virtual const std::vector<TestCase>& getAllNonHiddenTests() const {
             return m_nonHiddenFunctions;
         }
 
         // !TBD deprecated
-        virtual std::vector<TestCaseInfo> getMatchingTestCases( const std::string& rawTestSpec ) const {
-            std::vector<TestCaseInfo> matchingTests;
+        virtual std::vector<TestCase> getMatchingTestCases( const std::string& rawTestSpec ) const {
+            std::vector<TestCase> matchingTests;
             getMatchingTestCases( rawTestSpec, matchingTests );
             return matchingTests;
         }
 
         // !TBD deprecated
-        virtual void getMatchingTestCases( const std::string& rawTestSpec, std::vector<TestCaseInfo>& matchingTestsOut ) const {
+        virtual void getMatchingTestCases( const std::string& rawTestSpec, std::vector<TestCase>& matchingTestsOut ) const {
             TestCaseFilter filter( rawTestSpec );
 
-            std::vector<TestCaseInfo>::const_iterator it = m_functionsInOrder.begin();
-            std::vector<TestCaseInfo>::const_iterator itEnd = m_functionsInOrder.end();
+            std::vector<TestCase>::const_iterator it = m_functionsInOrder.begin();
+            std::vector<TestCase>::const_iterator itEnd = m_functionsInOrder.end();
             for(; it != itEnd; ++it ) {
                 if( filter.shouldInclude( *it ) ) {
                     matchingTestsOut.push_back( *it );
                 }
             }
         }
-        virtual void getMatchingTestCases( const TestCaseFilters& filters, std::vector<TestCaseInfo>& matchingTestsOut ) const {
-            std::vector<TestCaseInfo>::const_iterator it = m_functionsInOrder.begin();
-            std::vector<TestCaseInfo>::const_iterator itEnd = m_functionsInOrder.end();
+        virtual void getMatchingTestCases( const TestCaseFilters& filters, std::vector<TestCase>& matchingTestsOut ) const {
+            std::vector<TestCase>::const_iterator it = m_functionsInOrder.begin();
+            std::vector<TestCase>::const_iterator itEnd = m_functionsInOrder.end();
             // !TBD: replace with algorithm
             for(; it != itEnd; ++it )
                 if( filters.shouldInclude( *it ) )
@@ -85,15 +86,15 @@ namespace Catch {
         }
 
     private:
-        
-        std::set<TestCaseInfo> m_functions;
-        std::vector<TestCaseInfo> m_functionsInOrder;
-        std::vector<TestCaseInfo> m_nonHiddenFunctions;        
+
+        std::set<TestCase> m_functions;
+        std::vector<TestCase> m_functionsInOrder;
+        std::vector<TestCase> m_nonHiddenFunctions;
         size_t m_unnamedCount;
     };
 
     ///////////////////////////////////////////////////////////////////////////
-        
+
     class FreeFunctionTestCase : public SharedImpl<ITestCase> {
     public:
 
@@ -108,25 +109,40 @@ namespace Catch {
 
         TestFunction m_fun;
     };
-        
+
+    inline std::string extractClassName( const std::string& classOrQualifiedMethodName ) {
+        std::string className = classOrQualifiedMethodName;
+        if( className[0] == '&' )
+        {
+            std::size_t lastColons = className.rfind( "::" );
+            std::size_t penultimateColons = className.rfind( "::", lastColons-1 );
+            if( penultimateColons == std::string::npos )
+                penultimateColons = 1;
+            className = className.substr( penultimateColons, lastColons-penultimateColons );
+        }
+        return className;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
-    
-    AutoReg::AutoReg(   TestFunction function, 
+
+    AutoReg::AutoReg(   TestFunction function,
                         const char* name,
                         const char* description,
                         const SourceLineInfo& lineInfo ) {
-        registerTestCase( new FreeFunctionTestCase( function ), name, description, lineInfo );
-    }    
-    
+        registerTestCase( new FreeFunctionTestCase( function ), "global", name, description, lineInfo );
+    }
+
     AutoReg::~AutoReg() {}
-    
-    void AutoReg::registerTestCase( ITestCase* testCase, 
-                                    const char* name, 
+
+    void AutoReg::registerTestCase( ITestCase* testCase,
+                                    const char* classOrQualifiedMethodName,
+                                    const char* name,
                                     const char* description,
                                     const SourceLineInfo& lineInfo ) {
-        getMutableRegistryHub().registerTest( TestCaseInfo( testCase, name, description, lineInfo ) );
+
+        getMutableRegistryHub().registerTest( makeTestCase( testCase, extractClassName( classOrQualifiedMethodName ), name, description, lineInfo ) );
     }
-    
+
 } // end namespace Catch
 
 

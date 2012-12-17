@@ -12,6 +12,7 @@
 #include "internal/catch_list.hpp"
 #include "internal/catch_runner_impl.hpp"
 #include "internal/catch_test_spec.h"
+#include "internal/catch_version.h"
 
 #include <fstream>
 #include <stdlib.h>
@@ -43,20 +44,19 @@ namespace Catch {
 
             std::vector<TestCaseFilters>::const_iterator it = filterGroups.begin();
             std::vector<TestCaseFilters>::const_iterator itEnd = filterGroups.end();
+
             for(; it != itEnd && !context.aborting(); ++it ) {
-                m_reporter->StartGroup( it->getName() );
+                context.testGroupStarting( it->getName() );
                 totals += runTestsForGroup( context, *it );
-                if( context.aborting() )
-                    m_reporter->Aborted();
-                m_reporter->EndGroup( it->getName(), totals );
+                context.testGroupEnded( it->getName(), totals );
             }
             return totals;
         }
 
         Totals runTestsForGroup( Runner& context, const TestCaseFilters& filterGroup ) {
             Totals totals;
-            std::vector<TestCaseInfo>::const_iterator it = getRegistryHub().getTestCaseRegistry().getAllTests().begin();
-            std::vector<TestCaseInfo>::const_iterator itEnd = getRegistryHub().getTestCaseRegistry().getAllTests().end();
+            std::vector<TestCase>::const_iterator it = getRegistryHub().getTestCaseRegistry().getAllTests().begin();
+            std::vector<TestCase>::const_iterator itEnd = getRegistryHub().getTestCaseRegistry().getAllTests().end();
             int testsRunForGroup = 0;
             for(; it != itEnd; ++it ) {
                 if( filterGroup.shouldInclude( *it ) ) {
@@ -95,10 +95,10 @@ namespace Catch {
         }
         void makeReporter() {
             std::string reporterName = m_config.reporter.empty()
-            ? "basic"
+            ? "console"
             : m_config.reporter;
 
-            ReporterConfig reporterConfig( m_config.name, m_configWrapper.stream(), m_config.includeWhichResults == Include::SuccessfulResults, m_config );
+            ReporterConfig reporterConfig( m_configWrapper.stream(), m_config );
 
             m_reporter = getRegistryHub().getReporterRegistry().create( reporterName, reporterConfig );
             if( !m_reporter ) {
@@ -112,8 +112,8 @@ namespace Catch {
         Config& m_configWrapper;
         const ConfigData& m_config;
         std::ofstream m_ofs;
-        Ptr<IReporter> m_reporter;
-        std::set<TestCaseInfo> m_testsAlreadyRun;
+        Ptr<IStreamingReporter> m_reporter;
+        std::set<TestCase> m_testsAlreadyRun;
     };
 
     inline int Main( Config& configWrapper ) {
@@ -199,12 +199,6 @@ namespace Catch {
     }
 
     inline void showHelp( const CommandParser& parser ) {
-        std::string exeName = parser.exeName();
-        std::string::size_type pos = exeName.find_last_of( "/\\" );
-        if( pos != std::string::npos ) {
-            exeName = exeName.substr( pos+1 );
-        }
-
         AllOptions options;
         Options::HelpOptionParser helpOpt;
         bool displayedSpecificOption = false;
@@ -220,7 +214,13 @@ namespace Catch {
         }
 
         if( !displayedSpecificOption ) {
-            std::cout << exeName << " is a CATCH host application. Options are as follows:\n\n";
+            std::cout   << "\nCATCH-VC6 v" << libraryVersion.majorVersion << "."
+                                        << libraryVersion.minorVersion << " build "
+                                        << libraryVersion.buildNumber;
+            if( libraryVersion.branchName != "master" )
+                std::cout << " (" << libraryVersion.branchName << " branch)";
+
+            std::cout << "\n\n" << parser.exeName() << " is a CATCH host application. Options are as follows:\n\n";
             showUsage( std::cout );
         }
     }

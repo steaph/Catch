@@ -21,11 +21,11 @@ namespace
 {
     CATCH_ATTRIBUTE_NORETURN
     int thisThrows();
-    
+
     int thisThrows()
     {
         throw std::domain_error( "expected exception" );
-        /*NOTREACHED*/    
+        /*NOTREACHED*/
     }
 
     int thisDoesntThrow()
@@ -52,7 +52,14 @@ TEST_CASE( "./failing/exceptions/explicit", "When checked exceptions are thrown 
 TEST_CASE_NORETURN( "./failing/exceptions/implicit", "When unchecked exceptions are thrown they are always failures" )
 {
     throw std::domain_error( "unexpected exception" );
-    /*NOTREACHED*/    
+    /*NOTREACHED*/
+}
+
+TEST_CASE_NORETURN( "./failing/exceptions/implicit/2", "An unchecked exception reports the line of the last assertion" )
+{
+    CHECK( 1 == 1 );
+    throw std::domain_error( "unexpected exception" );
+    /*NOTREACHED*/
 }
 
 TEST_CASE( "./succeeding/exceptions/implicit", "When unchecked exceptions are thrown, but caught, they do not affect the test" )
@@ -72,12 +79,12 @@ public:
     CustomException( const std::string& msg )
     : m_msg( msg )
     {}
-    
+
     std::string getMessage() const
     {
         return m_msg;
     }
-    
+
 private:
     std::string m_msg;
 };
@@ -111,49 +118,6 @@ TEST_CASE( "./failing/exceptions/custom/throw", "Custom exceptions can be transl
 TEST_CASE_NORETURN( "./failing/exceptions/custom/double", "Unexpected custom exceptions can be translated"  )
 {
     throw double( 3.14 );
-}
-
-#ifdef  __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#endif
-
-TEST_CASE( "./failing/exceptions/in-section", "Exceptions thrown from sections report file/ line or section" )
-{
-    SECTION( "the section", "" )
-    {
-        CATCH_REGISTER_LINE_INFO( "the section2" ) SECTION( "the section2", "" )
-        {
-            throw std::domain_error( "Exception from section" );
-        }
-    }
-}
-
-#ifdef  __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
-TEST_CASE( "./succeeding/exceptions/error messages", "The error messages produced by exceptions caught by Catch matched the expected form" )
-{
-    Catch::EmbeddedRunner runner;
-    using namespace Catch::Matchers;
-    
-    SECTION( "custom, unexpected", "" )
-    {    
-        runner.runMatching( "./failing/exceptions/custom" );
-//        CHECK_THAT( runner.getLog(), Contains( "Unexpected exception" ) ); // Mock reporter doesn't say this
-        CHECK_THAT( runner.getLog(), Contains( "custom exception" ) );
-    }
-    
-    SECTION( "in section", "" )
-    {    
-        runner.runMatching( "./failing/exceptions/in-section" );
-        INFO( runner.getLog() );
-//        CHECK( runner.getLog().find( "Unexpected exception" ) != std::string::npos ); // Mock reporter doesn't say this
-        CHECK_THAT( runner.getLog(), Contains( "Exception from section" ) );
-//        CHECK( runner.getLog().find( CATCH_GET_LINE_INFO( "the section2" ) ) != std::string::npos ); // Mock reporter doesn't say this
-    }
-    
 }
 
 inline int thisFunctionNotImplemented( int ) {

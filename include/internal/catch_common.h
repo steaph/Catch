@@ -45,7 +45,7 @@ namespace Catch {
 		NonCopyable() {}
 		virtual ~NonCopyable();
 	};
-    
+
     class SafeBool {
     public:
         typedef void (SafeBool::*type)() const;
@@ -56,31 +56,27 @@ namespace Catch {
     private:
         void trueValue() const {}
     };
-  
+
     template<typename ContainerT>
     inline void deleteAll( ContainerT& container ) {
         typename ContainerT::const_iterator it = container.begin();
         typename ContainerT::const_iterator itEnd = container.end();
         for(; it != itEnd; ++it )
-        {
             delete *it;
-        }
     }
     template<typename AssociativeContainerT>
     inline void deleteAllValues( AssociativeContainerT& container ) {
         typename AssociativeContainerT::const_iterator it = container.begin();
         typename AssociativeContainerT::const_iterator itEnd = container.end();
         for(; it != itEnd; ++it )
-        {
             delete it->second;
-        }
     }
-    
+
     template<typename ContainerT, typename Function>
     inline void forEach( ContainerT& container, Function function ) {
         std::for_each( container.begin(), container.end(), function );
     }
-    
+
     template<typename ContainerT, typename Function>
     inline void forEach( const ContainerT& container, Function function ) {
         std::for_each( container.begin(), container.end(), function );
@@ -105,7 +101,7 @@ namespace Catch {
         friend std::ostream& operator << ( std::ostream& os, const pluralise& pluraliser ) {
             os << pluraliser.m_count << " " << pluraliser.m_label;
             if( pluraliser.m_count != 1 )
-            os << "s";
+                os << "s";
             return os;
         }
 
@@ -114,43 +110,34 @@ namespace Catch {
     };
 
     struct SourceLineInfo {
-    
+
         SourceLineInfo() : line( 0 ){}
         SourceLineInfo( const std::string& _file, std::size_t _line )
         :   file( _file ),
-            line( _line )
-        {}
-        SourceLineInfo( const std::string& _function, const std::string& _file, std::size_t _line )
-        :   function( _function ),
-            file( _file ),
             line( _line )
         {}
         SourceLineInfo( const SourceLineInfo& other )
         :   file( other.file ),
             line( other.line )
         {}
-        void swap( SourceLineInfo& other ){
-            file.swap( other.file );
-            std::swap( line, other.line );
-        }
+
         bool empty() const {
             return file.empty();
         }
-        
-        std::string function;
+
         std::string file;
-        std::size_t line;        
+        std::size_t line;
     };
-    
+
     inline std::ostream& operator << ( std::ostream& os, const SourceLineInfo& info ) {
 #ifndef __GNUG__
         os << info.file << "(" << info.line << "): ";
-#else                
-        os << info.file << ":" << info.line << ": ";            
-#endif            
+#else
+        os << info.file << ":" << info.line << ": ";
+#endif
         return os;
     }
-    
+
     CATCH_ATTRIBUTE_NORETURN
     inline void throwLogicError( const std::string& message, const SourceLineInfo& locationInfo ) {
         std::ostringstream oss;

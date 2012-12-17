@@ -13,6 +13,10 @@ TEST_CASE( "./succeeding/message", "INFO and WARN do not abort tests" )
     INFO( "this is a " << "message" );    // This should output the message if a failure occurs
     WARN( "this is a " << "warning" );    // This should always output the message but then continue
 }
+TEST_CASE( "./succeeding/succeed", "SUCCEED counts as a test pass" )
+{
+    SUCCEED( "this is a " << "success" );
+}
 
 TEST_CASE( "./failing/message/info/1", "INFO gets logged on failure" )
 {
@@ -43,7 +47,8 @@ TEST_CASE( "./mixed/message/info/2", "INFO gets logged on failure" )
 
 TEST_CASE( "./failing/message/fail", "FAIL aborts the test" )
 {
-    FAIL( "This is a " << "failure" );    // This should output the message and abort
+    if( true )
+        FAIL( "This is a " << "failure" );    // This should output the message and abort
 }
 
 TEST_CASE( "./failing/message/sections", "Output from all sections is reported" )
@@ -80,4 +85,9 @@ TEST_CASE( "./mixed/message/scoped", "" )
         SCOPED_CAPTURE( i );
         REQUIRE( i < 10 );
     }
+}
+
+TEST_CASE( "./succeeding/nofail", "The NO_FAIL macro reports a failure but does not fail the test" )
+{
+    CHECK_NOFAIL( 1 == 2 );
 }
