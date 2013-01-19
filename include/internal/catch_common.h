@@ -130,17 +130,17 @@ namespace Catch {
 
     inline std::ostream& operator << ( std::ostream& os, const SourceLineInfo& info ) {
 #ifndef __GNUG__
-        os << info.file << "(" << info.line << "): ";
-#else
-        os << info.file << ":" << info.line << ": ";
-#endif
+        os << info.file << "(" << info.line << ")";
+#else                
+        os << info.file << ":" << info.line;
+#endif            
         return os;
     }
 
     CATCH_ATTRIBUTE_NORETURN
     inline void throwLogicError( const std::string& message, const SourceLineInfo& locationInfo ) {
         std::ostringstream oss;
-        oss << "Internal Catch error: '" << message << "' at: " << locationInfo;
+        oss << locationInfo << ": Internal Catch error: '" << message << "'";
         throw std::logic_error( oss.str() );
     }
 }
