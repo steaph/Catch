@@ -210,7 +210,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
     }
 
     SECTION( "reporter", "" ) {
-        SECTION( "-r/basic", "" ) {
+        SECTION( "-r/console", "" ) {
             const char* argv[] = { "test", "-r", "console" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );

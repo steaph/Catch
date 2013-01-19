@@ -95,6 +95,7 @@
 		<Unit filename="../../include/reporters/catch_reporter_xml.hpp" />
 		<Unit filename="../../single_include/catch.hpp" />
 		<Unit filename="../SelfTest/ApproxTests.cpp" />
+		<Unit filename="../SelfTest/Baselines/approvedResults.txt" />
 		<Unit filename="../SelfTest/Baselines/results.txt" />
 		<Unit filename="../SelfTest/BasicTests.cpp" />
 		<Unit filename="../SelfTest/ClassTests.cpp" />
@@ -134,6 +135,7 @@
 		<Unit filename="../VS6/Tutorial/compile.bat" />
 		<Unit filename="../XCode3/OCTest/CatchOCTestCase.h" />
 		<Unit filename="../XCode3/OCTest/TestObj.h" />
+		<Unit filename="../XCode4/CatchSelfTest/CatchSelfTest/BDDTests.cpp" />
 		<Unit filename="../XCode4/OCTest/OCTest/CatchOCTestCase.h" />
 		<Unit filename="../XCode4/OCTest/OCTest/TestObj.h" />
 		<Unit filename="../XCode4/iOSTest/iOSTest/TestObj.h" />

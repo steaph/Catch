@@ -1,6 +1,10 @@
 /*
  *  CATCH v0.9 build 12 (integration branch)
+<<<<<<< HEAD
  *  Generated: 2012-12-16 22:54:07.476000
+=======
+ *  Generated: 2012-12-14 07:49:28.360647
+>>>>>>> 8b7115854054591d45340b5cb086fe71f9a78bc0
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
