@@ -1,6 +1,10 @@
 /*
  *  CATCH v0.9 build 13 (integration branch)
+<<<<<<< HEAD
  *  Generated: 2013-01-19 15:48:36.510000
+=======
+ *  Generated: 2013-01-16 09:43:42.849422
+>>>>>>> 10e891767febca73f6721010d2b8d86f51039a22
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -2406,7 +2410,89 @@ namespace Catch
         Option<TestCaseInfo> unusedTestCaseInfo;
         Ptr<ThreadedSectionInfo> unusedSectionInfo;
         Ptr<ThreadedSectionInfo> currentSectionInfo;
-        bool currentSectionOpen;
+        std::ostream& stream;
+    };
+
+    struct TestGroupNode : TestGroupStats {
+        TestGroupNode( TestGroupStats const& _stats ) : TestGroupStats( _stats ) {}
+//        TestGroupNode( GroupInfo const& _info ) : TestGroupStats( _stats ) {}
+        ~TestGroupNode();
+
+    };
+
+    struct TestRunNode : TestRunStats {
+
+        TestRunNode( TestRunStats const& _stats ) : TestRunStats( _stats ) {}
+        ~TestRunNode();
+
+        std::vector<TestGroupNode> groups;
+    };
+
+    // !TBD: Derived helper that implements the streaming interface but holds the stats
+    // - declares a new interface where methods are called at the end of each event
+    // - this would be used by the JUnit reporter, for example.
+    // - it may be used by the basic reporter, too, but that would clear down the stack
+    //   as it goes
+    struct CumulativeReporterBase : SharedImpl<IStreamingReporter> {
+
+        CumulativeReporterBase( ReporterConfig const& _config )
+        :   m_config( _config ),
+            stream( _config.stream() )
+        {}
+
+        virtual ~CumulativeReporterBase();
+
+        virtual void testRunStarting( TestRunInfo const& _testRunInfo ) {
+//            testRunInfo = _testRunInfo;
+        }
+        virtual void testGroupStarting( GroupInfo const& _groupInfo ) {
+            testGroupNode = TestGroupNode( _groupInfo );
+        }
+
+        virtual void testCaseStarting( TestCaseInfo const& _testInfo ) {
+//            unusedTestCaseInfo = _testInfo;
+        }
+        virtual void sectionStarting( SectionInfo const& _sectionInfo ) {
+//            Ptr<ThreadedSectionInfo> sectionInfo = new ThreadedSectionInfo( _sectionInfo );
+//            unusedSectionInfo = sectionInfo;
+//            if( !currentSectionInfo ) {
+//                currentSectionInfo = sectionInfo;
+//            }
+//            else {
+//                currentSectionInfo->children.push_back( sectionInfo );
+//                sectionInfo->parent = currentSectionInfo;
+//                currentSectionInfo = sectionInfo;
+//            }
+        }
+
+        virtual void sectionEnded( SectionStats const& /* _sectionStats */ ) {
+//            currentSectionInfo = currentSectionInfo->parent;
+//            unusedSectionInfo = currentSectionInfo;
+        }
+        virtual void testCaseEnded( TestCaseStats const& /* _testCaseStats */ ) {
+//            unusedTestCaseInfo.reset();
+        }
+        virtual void testGroupEnded( TestGroupStats const&  _testGroupStats ) {
+//            testGroupNode-> // populate
+//            Ptr<TestGroupNode> node ( new TestGroupNode( _testGroupStats ) );
+//            unusedGroupInfo.reset();
+        }
+        virtual void testRunEnded( TestRunStats const& /* _testRunStats */ ) {
+//            currentSectionInfo.reset();
+//            unusedSectionInfo.reset();
+//            unusedTestCaseInfo.reset();
+//            unusedGroupInfo.reset();
+//            testRunInfo.reset();
+        }
+
+        ReporterConfig m_config;
+//        Option<TestRunInfo> testRunInfo;
+//        Option<GroupInfo> unusedGroupInfo;
+//        Option<TestCaseInfo> unusedTestCaseInfo;
+//        Ptr<ThreadedSectionInfo> unusedSectionInfo;
+//        Ptr<ThreadedSectionInfo> currentSectionInfo;
+//        Ptr<TestGroupNode> testGroupNode;
+        Option<TestGroupNode> testGroupNode;
         std::ostream& stream;
     };
 
@@ -5071,7 +5157,11 @@ namespace Catch {
         }
 
         if( !displayedSpecificOption ) {
+<<<<<<< HEAD
             std::cout   << "\nCATCH-VC6 v" << libraryVersion.majorVersion << "."
+=======
+            std::cout   << "\nCATCH v"  << libraryVersion.majorVersion << "."
+>>>>>>> 10e891767febca73f6721010d2b8d86f51039a22
                                         << libraryVersion.minorVersion << " build "
                                         << libraryVersion.buildNumber;
             if( libraryVersion.branchName != "master" )
@@ -6091,8 +6181,12 @@ namespace Catch {
                 if( pos == width ) {
                     addIndent( os, indent );
                     os << paragraph.substr( 0, wrapPoint ) << "\n";
+<<<<<<< HEAD
                     recursivelyWrapLine( os, paragraph.substr( wrapPoint+1 ), columns, indent+tab );
                     return ;
+=======
+                    return recursivelyWrapLine( os, paragraph.substr( wrapPoint+1 ), columns, indent+tab );
+>>>>>>> 10e891767febca73f6721010d2b8d86f51039a22
                 }
                 if( paragraph[pos] == '\t' ) {
                     tab = pos;
@@ -7220,6 +7314,7 @@ namespace Catch {
                         colour = TextColour::Error;
                         break;
                 }
+<<<<<<< HEAD
             }
 
             TextColour::Colours colour;
@@ -7233,6 +7328,21 @@ namespace Catch {
                 TextColour colour( _components.colour );
                 stream << _components.passOrFail << " ";
             }
+=======
+            }
+
+            TextColour::Colours colour;
+            std::string passOrFail;
+            std::string messageLabel;
+            std::string message;
+        };
+
+        void printResultType( ResultComponents const& _components ) {
+            if( !_components.passOrFail.empty() ) {
+                TextColour colour( _components.colour );
+                stream << _components.passOrFail << " ";
+            }
+>>>>>>> 10e891767febca73f6721010d2b8d86f51039a22
         }
         bool printOriginalExpression( AssertionResult const& _result ) {
             if( _result.hasExpression() ) {
@@ -7370,7 +7480,11 @@ namespace Catch {
                     firstInset = "Section: ";
                     inset =      "         ";
                 }
+<<<<<<< HEAD
                 typedef std::vector<ThreadedSectionInfo*>::reverse_iterator It;
+=======
+                typedef std::vector<ThreadedSectionInfo*>::const_reverse_iterator It;
+>>>>>>> 10e891767febca73f6721010d2b8d86f51039a22
                 for( It it = sections.rbegin(), itEnd = sections.rend(); it != itEnd; ++it ) {
                     if( it == sections.rbegin() )
                         stream << firstInset;
@@ -7441,10 +7555,17 @@ namespace Catch {
 
         void printTotalsDivider() {
             stream << getDoubleDashes() << "\n";
+<<<<<<< HEAD
         }
         void printSummaryDivider() {
             stream << getDashes() << "\n";
         }
+=======
+        }
+        void printSummaryDivider() {
+            stream << getDashes() << "\n";
+        }
+>>>>>>> 10e891767febca73f6721010d2b8d86f51039a22
         static std::string const& getDashes() {
             static const std::string dashes
                 = "----------------------------------------------------------------";
