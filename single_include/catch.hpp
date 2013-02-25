@@ -1,6 +1,6 @@
 /*
- *  CATCH v0.9 build 17 (integration branch)
- *  Generated: 2013-02-25 21:48:31.058000
+ *  CATCH v0.9 build 18 (integration branch)
+ *  Generated: 2013-02-25 21:53:08.116000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -4879,6 +4879,7 @@ namespace Catch {
             try {
                 m_lastAssertionInfo = AssertionInfo( "TEST_CASE", m_runningTest->getTestCase().getTestCaseInfo().lineInfo, "", ResultDisposition::Normal );
                 m_runningTest->reset();
+
                 if( m_reporter->getPreferences().shouldRedirectStdOut ) {
                     StreamRedirect coutRedir( std::cout, redirectedCout );
                     StreamRedirect cerrRedir( std::cerr, redirectedCerr );
@@ -4897,6 +4898,7 @@ namespace Catch {
                 exResult << translateActiveException();
                 actOnCurrentResult( exResult.buildResult( m_lastAssertionInfo )  );
             }
+            m_messages.clear();
         }
 
     private:
@@ -6104,7 +6106,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 0, 9, 17, "integration" );
+    Version libraryVersion( 0, 9, 18, "integration" );
 }
 
 // #included from: catch_line_wrap.hpp
