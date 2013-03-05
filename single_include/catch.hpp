@@ -1,6 +1,6 @@
 /*
  *  CATCH v0.9 build 21 (integration branch)
- *  Generated: 2013-03-05 20:49:28.335000
+ *  Generated: 2013-03-05 20:55:31.727000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -7501,7 +7501,7 @@ namespace Catch {
             if( !currentSectionInfo ) {
                 printHeader( unusedTestCaseInfo->name );
                 stream << std::endl;
-                unusedTestCaseInfo.reset();
+//                unusedTestCaseInfo.reset();
             }
         }
         void lazyPrintSectionInfo() {
