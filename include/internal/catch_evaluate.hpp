@@ -301,6 +301,11 @@ class ::Catch::Detail::Approx;
         static bool compare( T* const & lhs, T* const & rhs ) {
             return Evaluator<Op>::evaluate( lhs, rhs );
         }
+
+        template<typename T>
+        static bool compare( const std::vector<T>& lhs, const std::vector<T>& rhs ) { \
+            return Evaluator<Op>::evaluate( lhs, rhs ); \
+        }
 #endif
     };
 

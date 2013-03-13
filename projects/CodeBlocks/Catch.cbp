@@ -44,8 +44,6 @@
 		<Unit filename="../../include/internal/catch_default_main.hpp" />
 		<Unit filename="../../include/internal/catch_evaluate.hpp" />
 		<Unit filename="../../include/internal/catch_exception_translator_registry.hpp" />
-		<Unit filename="../../include/internal/catch_expression.hpp.bak" />
-		<Unit filename="../../include/internal/catch_expression_builder.hpp" />
 		<Unit filename="../../include/internal/catch_expression_decomposer.hpp" />
 		<Unit filename="../../include/internal/catch_expression_lhs.hpp" />
 		<Unit filename="../../include/internal/catch_expressionresult_builder.h" />
@@ -65,6 +63,8 @@
 		<Unit filename="../../include/internal/catch_line_wrap.hpp" />
 		<Unit filename="../../include/internal/catch_list.hpp" />
 		<Unit filename="../../include/internal/catch_matchers.hpp" />
+		<Unit filename="../../include/internal/catch_message.h" />
+		<Unit filename="../../include/internal/catch_message.hpp" />
 		<Unit filename="../../include/internal/catch_notimplemented_exception.h" />
 		<Unit filename="../../include/internal/catch_notimplemented_exception.hpp" />
 		<Unit filename="../../include/internal/catch_objc.hpp" />
