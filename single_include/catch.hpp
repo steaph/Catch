@@ -1,6 +1,6 @@
 /*
- *  CATCH v0.9 build 21 (integration branch)
- *  Generated: 2013-03-05 20:55:31.727000
+ *  CATCH v0.9 build 22 (integration branch)
+ *  Generated: 2013-03-14 08:52:06.813000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -56,13 +56,13 @@ namespace std { using ::size_t; }
 
 namespace Catch {
 
-	class NonCopyable {
-		NonCopyable( const NonCopyable& );
-		void operator = ( const NonCopyable& );
-	protected:
-		NonCopyable() {}
-		virtual ~NonCopyable();
-	};
+    class NonCopyable {
+        NonCopyable( const NonCopyable& );
+        void operator = ( const NonCopyable& );
+    protected:
+        NonCopyable() {}
+        virtual ~NonCopyable();
+    };
 
     class SafeBool {
     public:
@@ -1060,6 +1060,11 @@ class ::Catch::Detail::Approx;
         static bool compare( T* const & lhs, T* const & rhs ) {
             return Evaluator<Op>::evaluate( lhs, rhs );
         }
+
+        template<typename T>
+        static bool compare( const std::vector<T>& lhs, const std::vector<T>& rhs ) { \
+            return Evaluator<Op>::evaluate( lhs, rhs ); \
+        }
 #endif
     };
 
@@ -1154,7 +1159,7 @@ struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
 // in an ExpressionResultBuilder object
 template<typename T>
 class ExpressionLhs {
-	void operator = ( const ExpressionLhs& );
+    void operator = ( const ExpressionLhs& );
 
 public:
     ExpressionLhs( T lhs ) : m_lhs( lhs ) {}
@@ -1494,8 +1499,8 @@ namespace Catch {
         return IsDebuggerPresent() != 0;
     }
 #else
-	   inline void BreakIntoDebugger(){}
-	   inline bool isDebuggerActive() { return false; }
+       inline void BreakIntoDebugger(){}
+       inline bool isDebuggerActive() { return false; }
 #endif
 
 #ifdef CATCH_PLATFORM_WINDOWS
@@ -1965,7 +1970,7 @@ namespace Catch {
         }
 
     private:
-        int	overflow( int c ) {
+        int overflow( int c ) {
             sync();
 
             if( c != EOF ) {
@@ -1977,7 +1982,7 @@ namespace Catch {
             return 0;
         }
 
-        int	sync() {
+        int sync() {
             if( pbase() != pptr() ) {
                 m_writer( std::string( pbase(), static_cast<std::string::size_type>( pptr() - pbase() ) ) );
                 setp( pbase(), epptr() );
@@ -2969,12 +2974,12 @@ class CompositeGenerator {
 public:
     CompositeGenerator() : m_totalSize( 0 ) {}
 
-	// *** Move semantics, similar to auto_ptr ***
+    // *** Move semantics, similar to auto_ptr ***
     CompositeGenerator( CompositeGenerator& other )
     :   m_fileInfo( other.m_fileInfo ),
         m_totalSize( 0 )
     {
-		move( other );
+        move( other );
     }
 
     CompositeGenerator& setFileInfo( const char* fileInfo ) {
@@ -3001,7 +3006,7 @@ public:
             index += generator->size();
         }
         CATCH_INTERNAL_ERROR( "Indexed past end of generated range" );
-		return T(); // Suppress spurious "not all control paths return a value" warning in Visual Studio - if you know how to fix this please do so
+        return T(); // Suppress spurious "not all control paths return a value" warning in Visual Studio - if you know how to fix this please do so
     }
 
     void add( const IGenerator<T>* generator ) {
@@ -6146,7 +6151,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 0, 9, 21, "integration" );
+    Version libraryVersion( 0, 9, 22, "integration" );
 }
 
 // #included from: catch_line_wrap.hpp
@@ -7239,7 +7244,7 @@ namespace Catch {
     struct ConsoleReporter : StreamingReporterBase {
         ConsoleReporter( ReporterConfig const& _config )
         :   StreamingReporterBase( _config ),
-            m_printedCurrentSection( false ),
+            m_headerPrinted( false ),
             m_atLeastOneTestCasePrinted( false )
         {}
 
@@ -7272,7 +7277,7 @@ namespace Catch {
         }
 
         virtual void sectionStarting( SectionInfo const& _sectionInfo ) {
-            m_printedCurrentSection = false;
+            m_headerPrinted = false;
             StreamingReporterBase::sectionStarting( _sectionInfo );
         }
         virtual void sectionEnded( SectionStats const& _sectionStats ) {
@@ -7281,7 +7286,7 @@ namespace Catch {
                 TextColour colour( TextColour::ResultError );
                 stream << "\nNo assertions in section, '" << _sectionStats.sectionInfo.name << "'\n" << std::endl;
             }
-            m_printedCurrentSection = false;
+            m_headerPrinted = false;
             StreamingReporterBase::sectionEnded( _sectionStats );
         }
 
@@ -7293,6 +7298,7 @@ namespace Catch {
                 stream << "\nNo assertions in test case, '" << _testCaseStats.testInfo.name << "'\n" << std::endl;
             }
             StreamingReporterBase::testCaseEnded( _testCaseStats );
+            m_headerPrinted = false;
         }
         virtual void testGroupEnded( TestGroupStats const& _testGroupStats ) {
             if( !unusedGroupInfo ) {
@@ -7472,11 +7478,11 @@ namespace Catch {
                 lazyPrintRunInfo();
             if( unusedGroupInfo )
                 lazyPrintGroupInfo();
-            if( unusedTestCaseInfo )
-                lazyPrintTestCaseInfo();
-            if( currentSectionInfo && !m_printedCurrentSection )
-                lazyPrintSectionInfo();
 
+            if( !m_headerPrinted ) {
+                printTestCaseAndSectionHeader();
+                m_headerPrinted = true;
+            }
             m_atLeastOneTestCasePrinted = true;
         }
         void lazyPrintRunInfo() {
@@ -7493,42 +7499,42 @@ namespace Catch {
         }
         void lazyPrintGroupInfo() {
             if( !unusedGroupInfo->name.empty() && unusedGroupInfo->groupsCounts > 1 ) {
-                printHeader( "Group: " + unusedGroupInfo->name );
+                printClosedHeader( "Group: " + unusedGroupInfo->name );
                 unusedGroupInfo.reset();
             }
         }
         void lazyPrintTestCaseInfo() {
             if( !currentSectionInfo ) {
-                printHeader( unusedTestCaseInfo->name );
+                printClosedHeader( unusedTestCaseInfo->name );
                 stream << std::endl;
-//                unusedTestCaseInfo.reset();
             }
         }
-        void lazyPrintSectionInfo() {
+        void printTestCaseAndSectionHeader() {
+            printOpenHeader( unusedTestCaseInfo->name );
+            if( currentSectionInfo ) {
+                std::vector<ThreadedSectionInfo*> sections;
+                for(    ThreadedSectionInfo* section = currentSectionInfo.get();
+                        section;
+                        section = section->parent )
+                    sections.push_back( section );
 
-            std::vector<ThreadedSectionInfo*> sections;
-            for(    ThreadedSectionInfo* section = currentSectionInfo.get();
-                    section;
-                    section = section->parent )
-                sections.push_back( section );
-
-            // Sections
-            if( !sections.empty() ) {
-                printHeader( unusedTestCaseInfo->name, false );
-
-                typedef std::vector<ThreadedSectionInfo*>::reverse_iterator It;
-                for( It it = sections.rbegin(), itEnd = sections.rend(); it != itEnd; ++it )
-                    stream << "  " << (*it)->name << "\n";
-                stream << getDots() << "\n" << std::endl;
+                // Sections
+                if( !sections.empty() ) {
+                    typedef std::vector<ThreadedSectionInfo*>::reverse_iterator It;
+                    for( It it = sections.rbegin(), itEnd = sections.rend(); it != itEnd; ++it )
+                        stream << "  " << (*it)->name << "\n";
+                }
             }
-            m_printedCurrentSection = true;
+            stream << getDots() << "\n" << std::endl;
         }
 
-        void printHeader( std::string const& _name, bool closed = true ) {
+        void printClosedHeader( std::string const& _name ) {
+            printOpenHeader( _name );
+            stream << getDots() << "\n";
+        }
+        void printOpenHeader( std::string const& _name ) {
             stream  << getDashes() << "\n"
                     << _name << "\n";
-            if( closed )
-                stream << getDots() << "\n";
         }
 
         void printTotals( const Totals& totals ) {
@@ -7598,7 +7604,7 @@ namespace Catch {
         }
 
     private:
-        bool m_printedCurrentSection;
+        bool m_headerPrinted;
         bool m_atLeastOneTestCasePrinted;
     };
 
