@@ -1,6 +1,6 @@
 /*
- *  CATCH v0.9 build 23 (integration branch)
- *  Generated: 2013-03-14 09:01:12.197000
+ *  CATCH v0.9 build 24 (integration branch)
+ *  Generated: 2013-03-14 09:10:00.197000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -108,6 +108,9 @@ namespace Catch {
     }
     inline bool contains( const std::string& s, const std::string& infix ) {
         return s.find( infix ) != std::string::npos;
+    }
+    inline void toLower( std::string& s ) {
+        std::transform( s.begin(), s.end(), s.begin(), ::tolower );
     }
 
     struct pluralise {
@@ -639,9 +642,13 @@ inline std::string toString( std::nullptr_t ) {
 
 #ifdef __OBJC__
     inline std::string toString( NSString const * const& nsstring ) {
+        if( !nsstring )
+            return "nil";
         return std::string( "@\"" ) + [nsstring UTF8String] + "\"";
     }
     inline std::string toString( NSString * CATCH_ARC_STRONG const& nsstring ) {
+        if( !nsstring )
+            return "nil";
         return std::string( "@\"" ) + [nsstring UTF8String] + "\"";
     }
     inline std::string toString( NSObject* const& nsObject ) {
@@ -1651,7 +1658,9 @@ namespace Catch {
 
     private:
         virtual void acceptTag( const std::string& tag ) {
-            m_tags.insert( tag );
+            std::string lcTag = tag;
+            toLower( lcTag );
+            m_tags.insert( lcTag );
         }
         virtual void acceptChar( char c ) {
             m_remainder += c;
@@ -1694,7 +1703,9 @@ namespace Catch {
         typedef std::map<std::string, Tag> TagMap;
     public:
         void add( const Tag& tag ) {
-            m_tags.insert( std::make_pair( tag.getName(), tag ) );
+            std::string tagName = tag.getName();
+            toLower( tagName );
+            m_tags.insert( std::make_pair( tagName, tag ) );
         }
 
         bool empty() const {
@@ -1796,6 +1807,8 @@ namespace Catch {
             m_filterType( matchBehaviour ),
             m_wildcardPosition( NoWildcard )
         {
+            toLower( m_stringToMatch );
+
             if( m_filterType == IfFilterMatches::AutoDetectBehaviour ) {
                 if( startsWith( m_stringToMatch, "exclude:" ) ) {
                     m_stringToMatch = m_stringToMatch.substr( 8 );
@@ -1835,7 +1848,8 @@ namespace Catch {
 #endif
 
         bool isMatch( const TestCase& testCase ) const {
-            const std::string& name = testCase.getTestCaseInfo().name;
+            std::string name = testCase.getTestCaseInfo().name;
+            toLower( name );
 
             switch( m_wildcardPosition ) {
                 case NoWildcard:
@@ -5741,16 +5755,16 @@ namespace {
                     std::cout << colourEscape << "[0m";    // white/ normal
                     break;
                 case ResultError:
-                    std::cout << colourEscape << "[0;31m"; // red
+                    std::cout << colourEscape << "[1;31m"; // bold red
                     break;
                 case ResultSuccess:
-                    std::cout << colourEscape << "[0;32m"; // green
+                    std::cout << colourEscape << "[1;32m"; // bold green
                     break;
                 case Error:
                     std::cout << colourEscape << "[1;31m"; // bold red
                     break;
                 case Success:
-                    std::cout << colourEscape << "[1;32m"; // bold green
+                    std::cout << colourEscape << "[0;32m"; // green
                     break;
                 case OriginalExpression:
                     std::cout << colourEscape << "[0;36m"; // cyan
@@ -6152,7 +6166,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 0, 9, 23, "integration" );
+    Version libraryVersion( 0, 9, 24, "integration" );
 }
 
 // #included from: catch_line_wrap.hpp
