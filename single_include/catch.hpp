@@ -1,6 +1,6 @@
 /*
  *  CATCH v0.9 build 24 (integration branch)
- *  Generated: 2013-03-14 09:10:00.197000
+ *  Generated: 2013-03-13 12:18:41.022404
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -267,6 +267,11 @@ namespace Catch {
 // #included from: catch_ptr.hpp
 #define TWOBLUECUBES_CATCH_PTR_HPP_INCLUDED
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 namespace Catch {
 
     // An intrusive reference counting smart pointer.
@@ -338,6 +343,10 @@ namespace Catch {
     };
 
 } // end namespace Catch
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #include <vector>
 
@@ -1540,6 +1549,11 @@ inline void writeToDebugConsole( const std::string& text ) {
 #include <string>
 #include <set>
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 namespace Catch {
 
     struct ITestCase;
@@ -1594,6 +1608,10 @@ namespace Catch {
                             const std::string& description,
                             const SourceLineInfo& lineInfo );
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 // #included from: catch_tags.hpp
 #define TWOBLUECUBES_CATCH_TAGS_HPP_INCLUDED
@@ -2434,6 +2452,8 @@ namespace Catch
 
         virtual ReporterPreferences getPreferences() const = 0;
 
+        virtual void noMatchingTestCases( std::string const& spec ) = 0;
+
         virtual void testRunStarting( TestRunInfo const& testRunInfo ) = 0;
         virtual void testGroupStarting( GroupInfo const& groupInfo ) = 0;
 
@@ -2457,6 +2477,8 @@ namespace Catch
         {}
 
         virtual ~StreamingReporterBase();
+
+        virtual void noMatchingTestCases( std::string const& ) {}
 
         virtual void testRunStarting( TestRunInfo const& _testRunInfo ) {
             testRunInfo = _testRunInfo;
@@ -2523,70 +2545,6 @@ namespace Catch
         std::vector<TestGroupNode> groups;
     };
 
-    // !TBD: Derived helper that implements the streaming interface but holds the stats
-    // - declares a new interface where methods are called at the end of each event
-    // - this would be used by the JUnit reporter, for example.
-    // - it may be used by the basic reporter, too, but that would clear down the stack
-    //   as it goes
-    struct CumulativeReporterBase : SharedImpl<IStreamingReporter> {
-
-        CumulativeReporterBase( ReporterConfig const& _config )
-        :   m_config( _config ),
-            stream( _config.stream() )
-        {}
-
-        virtual ~CumulativeReporterBase();
-
-        virtual void testRunStarting( TestRunInfo const& _testRunInfo ) {
-//            testRunInfo = _testRunInfo;
-        }
-        virtual void testGroupStarting( GroupInfo const& _groupInfo ) {
-            testGroupNode = TestGroupNode( _groupInfo );
-        }
-
-        virtual void testCaseStarting( TestCaseInfo const& _testInfo ) {
-//            unusedTestCaseInfo = _testInfo;
-        }
-        virtual void sectionStarting( SectionInfo const& _sectionInfo ) {
-//            Ptr<ThreadedSectionInfo> sectionInfo = new ThreadedSectionInfo( _sectionInfo );
-//            if( !currentSectionInfo ) {
-//                currentSectionInfo = sectionInfo;
-//            }
-//            else {
-//                currentSectionInfo->children.push_back( sectionInfo );
-//                sectionInfo->parent = currentSectionInfo;
-//                currentSectionInfo = sectionInfo;
-//            }
-        }
-
-        virtual void sectionEnded( SectionStats const& /* _sectionStats */ ) {
-//            currentSectionInfo = currentSectionInfo->parent;
-        }
-        virtual void testCaseEnded( TestCaseStats const& /* _testCaseStats */ ) {
-//            unusedTestCaseInfo.reset();
-        }
-        virtual void testGroupEnded( TestGroupStats const&  _testGroupStats ) {
-//            testGroupNode-> // populate
-//            Ptr<TestGroupNode> node ( new TestGroupNode( _testGroupStats ) );
-//            unusedGroupInfo.reset();
-        }
-        virtual void testRunEnded( TestRunStats const& /* _testRunStats */ ) {
-//            currentSectionInfo.reset();
-//            unusedTestCaseInfo.reset();
-//            unusedGroupInfo.reset();
-//            testRunInfo.reset();
-        }
-
-        ReporterConfig m_config;
-//        Option<TestRunInfo> testRunInfo;
-//        Option<GroupInfo> unusedGroupInfo;
-//        Option<TestCaseInfo> unusedTestCaseInfo;
-//        Ptr<ThreadedSectionInfo> currentSectionInfo;
-//        Ptr<TestGroupNode> testGroupNode;
-        Option<TestGroupNode> testGroupNode;
-        std::ostream& stream;
-    };
-
     // Deprecated
     struct IReporter : IShared {
         virtual ~IReporter();
@@ -2622,6 +2580,7 @@ namespace Catch
             return prefs;
         }
 
+        virtual void noMatchingTestCases( std::string const& ) {}
         virtual void testRunStarting( TestRunInfo const& ) {
             m_legacyReporter->StartTesting();
         }
@@ -5062,7 +5021,7 @@ namespace Catch {
                 }
             }
             if( testsRunForGroup == 0 && !filterGroup.getName().empty() )
-                std::cerr << "\n[No test cases matched with: " << filterGroup.getName() << "]" << std::endl;
+                m_reporter->noMatchingTestCases( filterGroup.getName() );
             return totals;
 
         }
@@ -7239,7 +7198,7 @@ namespace Catch {
 
     private:
         ReporterConfig m_config;
-        bool m_currentTestSuccess;
+//        bool m_currentTestSuccess;
 
         Stats m_testSuiteStats;
         Stats* m_currentStats;
@@ -7272,6 +7231,10 @@ namespace Catch {
             prefs.shouldRedirectStdOut = false;
             return prefs;
 
+        }
+
+        virtual void noMatchingTestCases( std::string const& spec ) {
+            stream << "No test cases matched '" << spec << "'" << std::endl;
         }
 
         virtual void assertionStarting( AssertionInfo const& ) {
@@ -7655,7 +7618,6 @@ namespace Catch {
 
     BasicReporter::~BasicReporter() {}
     StreamingReporterBase::~StreamingReporterBase() {}
-    CumulativeReporterBase::~CumulativeReporterBase() {}
     ConsoleReporter::~ConsoleReporter() {}
     IRunner::~IRunner() {}
     IMutableContext::~IMutableContext() {}
@@ -7767,6 +7729,14 @@ int main (int argc, char * const argv[]) {
 
 #define CATCH_GENERATE( expr) INTERNAL_CATCH_GENERATE( expr )
 
+// "BDD-style" convenience wrappers
+#define CATCH_SCENARIO( name, tags ) CATCH_TEST_CASE( "Scenario: " name, tags )
+#define CATCH_GIVEN( desc )    CATCH_SECTION( "Given: " desc, "" )
+#define CATCH_WHEN( desc )     CATCH_SECTION( " When: " desc, "" )
+#define CATCH_AND_WHEN( desc ) CATCH_SECTION( "  And: " desc, "" )
+#define CATCH_THEN( desc )     CATCH_SECTION( " Then: " desc, "" )
+#define CATCH_AND_THEN( desc ) CATCH_SECTION( "  And: " desc, "" )
+
 // If CATCH_CONFIG_PREFIX_ALL is not defined then the CATCH_ prefix is not required
 #else
 
@@ -7813,6 +7783,14 @@ int main (int argc, char * const argv[]) {
 #endif
 
 #define CATCH_TRANSLATE_EXCEPTION( signature ) INTERNAL_CATCH_TRANSLATE_EXCEPTION( signature )
+
+// "BDD-style" convenience wrappers
+#define SCENARIO( name, tags ) TEST_CASE( "Scenario: " name, tags )
+#define GIVEN( desc )    SECTION( "Given: " desc, "" )
+#define WHEN( desc )     SECTION( " When: " desc, "" )
+#define AND_WHEN( desc ) SECTION( "  And: " desc, "" )
+#define THEN( desc )     SECTION( " Then: " desc, "" )
+#define AND_THEN( desc ) SECTION( "  And: " desc, "" )
 
 using Catch::Detail::Approx;
 
