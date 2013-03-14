@@ -1,6 +1,6 @@
 /*
  *  CATCH v0.9 build 25 (integration branch)
- *  Generated: 2013-03-13 20:53:37.480746
+ *  Generated: 2013-03-14 09:21:09.188000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
