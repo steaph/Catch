@@ -38,13 +38,13 @@ namespace std { using ::size_t; }
 
 namespace Catch {
 
-	class NonCopyable {
-		NonCopyable( const NonCopyable& );
-		void operator = ( const NonCopyable& );
-	protected:
-		NonCopyable() {}
-		virtual ~NonCopyable();
-	};
+    class NonCopyable {
+        NonCopyable( const NonCopyable& );
+        void operator = ( const NonCopyable& );
+    protected:
+        NonCopyable() {}
+        virtual ~NonCopyable();
+    };
 
     class SafeBool {
     public:
