@@ -25,6 +25,8 @@
 		<Unit filename="../../.gitignore" />
 		<Unit filename="../../LICENSE_1_0.txt" />
 		<Unit filename="../../README" />
+		<Unit filename="../../approvalTests.py" />
+		<Unit filename="../../approve.py" />
 		<Unit filename="../../generateSingleHeader.py" />
 		<Unit filename="../../include/catch.hpp" />
 		<Unit filename="../../include/catch_runner.hpp" />
