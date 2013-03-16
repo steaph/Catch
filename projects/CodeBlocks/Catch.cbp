@@ -112,6 +112,7 @@
 		<Unit filename="../SelfTest/PointerTests.cpp" />
 		<Unit filename="../SelfTest/TestMain.cpp" />
 		<Unit filename="../SelfTest/TrickyTests.cpp" />
+		<Unit filename="../SelfTest/VariadicMacrosTests.cpp" />
 		<Unit filename="../SelfTest/catch_self_test.cpp" />
 		<Unit filename="../SelfTest/catch_self_test.hpp" />
 		<Unit filename="../Tutorial/Tutorial1.cpp" />

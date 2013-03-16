@@ -29,7 +29,7 @@ namespace Catch {
             std::string name = testCase.getTestCaseInfo().name;
             if( name == "" ) {
                 std::ostringstream oss;
-                oss << name << "unnamed/" << ++m_unnamedCount;
+                oss << "Anonymous test case " << ++m_unnamedCount;
                 registerTest( testCase.withName( oss.str() ) );
                 return;
             }
@@ -124,23 +124,26 @@ namespace Catch {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
+    
     AutoReg::AutoReg(   TestFunction function,
-                        const char* name,
-                        const char* description,
-                        const SourceLineInfo& lineInfo ) {
-        registerTestCase( new FreeFunctionTestCase( function ), "global", name, description, lineInfo );
+                        SourceLineInfo const& lineInfo,
+                        NameAndDesc const& nameAndDesc ) {
+        registerTestCase( new FreeFunctionTestCase( function ), "global", nameAndDesc, lineInfo );
     }
 
     AutoReg::~AutoReg() {}
 
     void AutoReg::registerTestCase( ITestCase* testCase,
-                                    const char* classOrQualifiedMethodName,
-                                    const char* name,
-                                    const char* description,
-                                    const SourceLineInfo& lineInfo ) {
+                                    char const* classOrQualifiedMethodName,
+                                    NameAndDesc const& nameAndDesc,
+                                    SourceLineInfo const& lineInfo ) {
 
-        getMutableRegistryHub().registerTest( makeTestCase( testCase, extractClassName( classOrQualifiedMethodName ), name, description, lineInfo ) );
+        getMutableRegistryHub().registerTest
+            ( makeTestCase( testCase,
+                            extractClassName( classOrQualifiedMethodName ),
+                            nameAndDesc.name,
+                            nameAndDesc.description,
+                            lineInfo ) );
     }
 
 } // end namespace Catch
