@@ -1,11 +1,6 @@
 /*
-<<<<<<< HEAD
- *  CATCH v0.9 build 25 (integration branch)
- *  Generated: 2013-03-14 09:21:09.188000
-=======
  *  CATCH v0.9 build 26 (integration branch)
- *  Generated: 2013-03-16 20:19:56.120579
->>>>>>> 9390675260ac8b0906a6846c82f8113224fc2c7a
+ *  Generated: 2013-03-16 22:29:31.029000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -5246,14 +5241,9 @@ namespace Catch {
             std::string name = testCase.getTestCaseInfo().name;
             if( name == "" ) {
                 std::ostringstream oss;
-<<<<<<< HEAD
-                oss << name << "unnamed/" << ++m_unnamedCount;
+                oss << "Anonymous test case " << ++m_unnamedCount;
                 registerTest( testCase.withName( oss.str() ) );
                 return;
-=======
-                oss << "Anonymous test case " << ++m_unnamedCount;
-                return registerTest( testCase.withName( oss.str() ) );
->>>>>>> 9390675260ac8b0906a6846c82f8113224fc2c7a
             }
 
             if( m_functions.find( testCase ) == m_functions.end() ) {
