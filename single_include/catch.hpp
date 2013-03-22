@@ -1,11 +1,6 @@
 /*
-<<<<<<< HEAD
- *  CATCH v0.9 build 26 (integration branch)
- *  Generated: 2013-03-16 22:29:31.029000
-=======
  *  CATCH v0.9 build 27 (integration branch)
- *  Generated: 2013-03-21 08:59:28.031778
->>>>>>> bd7f797e09300402eedc29cfad971933de4db666
+ *  Generated: 2013-03-22 08:37:44.960000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -3980,17 +3975,12 @@ namespace Catch {
                     groupName += cmd[i];
                 }
                 TestCaseFilters filters( groupName );
-<<<<<<< HEAD
-                {for( std::size_t i = 0; i < cmd.argsCount(); ++i )
-                    filters.addFilter( TestCaseFilter( cmd[i] ) ); }
-=======
-                for( std::size_t i = 0; i < cmd.argsCount(); ++i ) {
+                {for( std::size_t i = 0; i < cmd.argsCount(); ++i ) {
                     if( startsWith( cmd[i], "[" ) || startsWith( cmd[i], "~[" ) )
                         filters.addTags( cmd[i] );
                     else
                         filters.addFilter( TestCaseFilter( cmd[i] ) );
-                }
->>>>>>> bd7f797e09300402eedc29cfad971933de4db666
+                }}
                 config.filters.push_back( filters );
             }
         };
