@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="Catch" />
+		<Option title="Catch-VC6" />
 		<Option pch_mode="2" />
 		<Option compiler="microsoft_visual_c_60" />
 		<Build>
@@ -24,10 +24,8 @@
 		<Unit filename="../../.gitattributes" />
 		<Unit filename="../../.gitignore" />
 		<Unit filename="../../LICENSE_1_0.txt" />
-		<Unit filename="../../README" />
-		<Unit filename="../../approvalTests.py" />
-		<Unit filename="../../approve.py" />
-		<Unit filename="../../generateSingleHeader.py" />
+		<Unit filename="../../README.md" />
+		<Unit filename="../../catch-logo-small.png" />
 		<Unit filename="../../include/catch.hpp" />
 		<Unit filename="../../include/catch_runner.hpp" />
 		<Unit filename="../../include/catch_with_main.hpp" />
@@ -94,10 +92,15 @@
 		<Unit filename="../../include/internal/catch_version.h" />
 		<Unit filename="../../include/internal/catch_version.hpp" />
 		<Unit filename="../../include/internal/catch_xmlwriter.hpp" />
+		<Unit filename="../../include/reporters/00-catch_reporter_console.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_basic.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_console.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_junit.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_xml.hpp" />
+		<Unit filename="../../include/reporters/nw-catch_reporter_console.hpp" />
+		<Unit filename="../../scripts/approvalTests.py" />
+		<Unit filename="../../scripts/approve.py" />
+		<Unit filename="../../scripts/generateSingleHeader.py" />
 		<Unit filename="../../single_include/catch.hpp" />
 		<Unit filename="../SelfTest/ApproxTests.cpp" />
 		<Unit filename="../SelfTest/Baselines/approvedResults.txt" />
@@ -110,20 +113,51 @@
 		<Unit filename="../SelfTest/MessageTests.cpp" />
 		<Unit filename="../SelfTest/MiscTests.cpp" />
 		<Unit filename="../SelfTest/PointerTests.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_common.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_console_colour.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_debugger.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_interfaces_capture.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_interfaces_config.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_interfaces_exception.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_interfaces_generators.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_interfaces_registry_hub.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_interfaces_reporter.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_interfaces_runner.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_interfaces_testcase.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_message.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_option.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_ptr.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_stream.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_streambuf.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_tags.cpp" />
+		<Unit filename="../SelfTest/SurrogateCpps/catch_xmlwriter.cpp" />
 		<Unit filename="../SelfTest/TestMain.cpp" />
 		<Unit filename="../SelfTest/TrickyTests.cpp" />
 		<Unit filename="../SelfTest/VariadicMacrosTests.cpp" />
 		<Unit filename="../SelfTest/catch_self_test.cpp" />
 		<Unit filename="../SelfTest/catch_self_test.hpp" />
 		<Unit filename="../Tutorial/Tutorial1.cpp" />
+		<Unit filename="../VS2008/TestCatch/TestCatch/ReadMe.txt" />
 		<Unit filename="../VS2008/TestCatch/TestCatch/TestCatch.cpp" />
 		<Unit filename="../VS2008/TestCatch/_UpgradeReport_Files/UpgradeReport_Minus.gif" />
 		<Unit filename="../VS2008/TestCatch/_UpgradeReport_Files/UpgradeReport_Plus.gif" />
 		<Unit filename="../VS2008/Tutorial/compile.bat" />
+		<Unit filename="../VS2010/TestCatch/TestCatch/ReadMe.txt" />
 		<Unit filename="../VS2010/TestCatch/TestCatch/TestCatch.cpp" />
 		<Unit filename="../VS2010/TestCatch/compile.bat" />
 		<Unit filename="../VS2010/Tutorial/compile.bat" />
 		<Unit filename="../VS6/README.md" />
+		<Unit filename="../VS6/TestCatch/00-test-condition-1.cpp" />
+		<Unit filename="../VS6/TestCatch/00-test-condition-pre.cpp" />
+		<Unit filename="../VS6/TestCatch/00-test-condition.cpp" />
+		<Unit filename="../VS6/TestCatch/00-test-require-1-gcc.cpp" />
+		<Unit filename="../VS6/TestCatch/00-test-require-1.cpp" />
+		<Unit filename="../VS6/TestCatch/00-test-require.cpp" />
+		<Unit filename="../VS6/TestCatch/00-test-require.pre.cpp" />
+		<Unit filename="../VS6/TestCatch/00-test-require.pre.gcc.cpp" />
+		<Unit filename="../VS6/TestCatch/00-test-require.pre.test.cpp" />
+		<Unit filename="../VS6/TestCatch/00-test-stringize.cpp" />
+		<Unit filename="../VS6/TestCatch/TestCatch.help.txt" />
 		<Unit filename="../VS6/TestCatch/compile-00-basic.bat" />
 		<Unit filename="../VS6/TestCatch/compile-00-pointer.bat" />
 		<Unit filename="../VS6/TestCatch/compile-01-misc.bat" />
@@ -134,22 +168,31 @@
 		<Unit filename="../VS6/TestCatch/compile-06-condition.bat" />
 		<Unit filename="../VS6/TestCatch/compile-07-exception.bat" />
 		<Unit filename="../VS6/TestCatch/compile-08-tricky.bat" />
+		<Unit filename="../VS6/TestCatch/compile-09-most.bat" />
 		<Unit filename="../VS6/TestCatch/compile-10-most.bat" />
 		<Unit filename="../VS6/TestCatch/compile-debug.bat" />
 		<Unit filename="../VS6/TestCatch/compile.bat" />
+		<Unit filename="../VS6/TestCatch/fail-vc6.txt" />
 		<Unit filename="../VS6/TestCatch/mk-help.bat" />
 		<Unit filename="../VS6/Tutorial/compile.bat" />
 		<Unit filename="../XCode3/OCTest/CatchOCTestCase.h" />
 		<Unit filename="../XCode3/OCTest/TestObj.h" />
+		<Unit filename="../XCode4/CatchSelfTest/CatchSelfTestSingle/dummy.txt" />
 		<Unit filename="../XCode4/CatchSelfTest/CatchSelfTest/BDDTests.cpp" />
+		<Unit filename="../XCode4/CatchSelfTest/CatchSelfTest/catch_line_wrap.cpp" />
 		<Unit filename="../XCode4/OCTest/OCTest/CatchOCTestCase.h" />
 		<Unit filename="../XCode4/OCTest/OCTest/TestObj.h" />
 		<Unit filename="../XCode4/iOSTest/iOSTest/TestObj.h" />
+		<Unit filename="../gcc/TestCatch/compile-00-basic.bat" />
 		<Unit filename="../gcc/TestCatch/compile.bat" />
+		<Unit filename="../gcc/TestCatch/fail-gcc.txt" />
 		<Unit filename="../gcc/Tutorial/compile.bat" />
 		<Unit filename="../runners/iTchRunner/internal/iTchRunnerAppDelegate.h" />
 		<Unit filename="../runners/iTchRunner/internal/iTchRunnerMainView.h" />
 		<Unit filename="../runners/iTchRunner/internal/iTchRunnerReporter.h" />
+		<Unit filename="../runners/iTchRunner/itChRunnerMain.mm" />
+		<Unit filename="../runners/iTchRunner/readme" />
+		<Unit filename=".gitignore" />
 		<Extensions>
 			<code_completion />
 			<envvars />
