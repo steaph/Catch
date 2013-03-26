@@ -8,6 +8,11 @@
 #ifndef TWOBLUECUBES_CATCH_EVALUATE_HPP_INCLUDED
 #define TWOBLUECUBES_CATCH_EVALUATE_HPP_INCLUDED
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4389) // '==' : signed/unsigned mismatch
+#endif
+
 namespace Catch {
 
 namespace Detail {
@@ -33,6 +38,7 @@ namespace Internal {
     template<> struct OperatorTraits<IsGreaterThan>         { static const char* getName(){ return ">"; } };
     template<> struct OperatorTraits<IsLessThanOrEqualTo>   { static const char* getName(){ return "<="; } };
     template<> struct OperatorTraits<IsGreaterThanOrEqualTo>{ static const char* getName(){ return ">="; } };
+
 
     // So the compare overloads can be operator agnostic we convey the operator as a template
     // enum, which is used to specialise an Evaluator for doing the comparison.
@@ -311,5 +317,9 @@ class ::Catch::Detail::Approx;
 
 } // end of namespace Internal
 } // end of namespace Catch
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif // TWOBLUECUBES_CATCH_EVALUATE_HPP_INCLUDED
