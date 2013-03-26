@@ -25,9 +25,15 @@ namespace Catch {
             for( std::size_t pos = 0; pos < paragraph.size(); ++pos ) {
                 if( pos == width ) {
                     addIndent( os, indent );
-                    os << paragraph.substr( 0, wrapPoint ) << "\n";
-                    recursivelyWrapLine( os, paragraph.substr( wrapPoint+1 ), columns, indent+tab );
-                    return ;
+                    if( paragraph[wrapPoint] == ' ' ) {
+                        os << paragraph.substr( 0, wrapPoint ) << "\n";
+                        while( paragraph[++wrapPoint] == ' ' );
+                    }
+                    else {
+                        os << paragraph.substr( 0, --wrapPoint ) << "-\n";
+                    }
+                    recursivelyWrapLine( os, paragraph.substr( wrapPoint ), columns, indent+tab );
+                    return ; 
                 }
                 if( paragraph[pos] == '\t' ) {
                     tab = pos;
