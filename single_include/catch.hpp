@@ -1,6 +1,6 @@
 /*
- *  CATCH v0.9 build 27 (integration branch)
- *  Generated: 2013-03-22 08:37:44.960000
+ *  CATCH v0.9 build 28 (integration branch)
+ *  Generated: 2013-03-26 13:30:52.948000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -118,8 +118,13 @@ namespace Catch {
     inline bool contains( const std::string& s, const std::string& infix ) {
         return s.find( infix ) != std::string::npos;
     }
-    inline void toLower( std::string& s ) {
+    inline void toLowerInPlace( std::string& s ) {
         std::transform( s.begin(), s.end(), s.begin(), ::tolower );
+    }
+    inline std::string toLower( std::string const& s ) {
+        std::string lc = s;
+        toLowerInPlace( lc );
+        return lc;
     }
 
     struct pluralise {
@@ -831,6 +836,11 @@ namespace Catch {
 // #included from: catch_evaluate.hpp
 #define TWOBLUECUBES_CATCH_EVALUATE_HPP_INCLUDED
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4389) // '==' : signed/unsigned mismatch
+#endif
+
 namespace Catch {
 
 namespace Detail {
@@ -1134,6 +1144,10 @@ class ::Catch::Detail::Approx;
 
 } // end of namespace Internal
 } // end of namespace Catch
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 namespace Catch {
 
@@ -1724,9 +1738,7 @@ namespace Catch {
 
     private:
         virtual void acceptTag( const std::string& tag ) {
-            std::string lcTag = tag;
-            toLower( lcTag );
-            m_tags.insert( lcTag );
+            m_tags.insert( toLower( tag ) );
         }
         virtual void acceptChar( char c ) {
             m_remainder += c;
@@ -1769,9 +1781,7 @@ namespace Catch {
         typedef std::map<std::string, Tag> TagMap;
     public:
         void add( const Tag& tag ) {
-            std::string tagName = tag.getName();
-            toLower( tagName );
-            m_tags.insert( std::make_pair( tagName, tag ) );
+            m_tags.insert( std::make_pair( toLower( tag.getName() ), tag ) );
         }
 
         bool empty() const {
@@ -1869,12 +1879,10 @@ namespace Catch {
 
     public:
         TestCaseFilter( const std::string& testSpec, IfFilterMatches::DoWhat matchBehaviour = IfFilterMatches::AutoDetectBehaviour )
-        :   m_stringToMatch( testSpec ),
+        :   m_stringToMatch( toLower( testSpec ) ),
             m_filterType( matchBehaviour ),
             m_wildcardPosition( NoWildcard )
         {
-            toLower( m_stringToMatch );
-
             if( m_filterType == IfFilterMatches::AutoDetectBehaviour ) {
                 if( startsWith( m_stringToMatch, "exclude:" ) ) {
                     m_stringToMatch = m_stringToMatch.substr( 8 );
@@ -1915,7 +1923,7 @@ namespace Catch {
 
         bool isMatch( const TestCase& testCase ) const {
             std::string name = testCase.getTestCaseInfo().name;
-            toLower( name );
+            toLowerInPlace( name );
 
             switch( m_wildcardPosition ) {
                 case NoWildcard:
@@ -4449,9 +4457,9 @@ namespace Catch {
                 if( matchesFilters( config.filters, *it ) ) {
                     matchedTests++;
                     // !TBD: consider listAs()
-                    std::cout << "\t" << it->getTestCaseInfo().name << "\n";
+                    std::cout << "  " << it->getTestCaseInfo().name << "\n";
                     if( ( config.listSpec & List::TestNames ) != List::TestNames )
-                        std::cout << "\t\t '" << it->getTestCaseInfo().description << "'\n";
+                        std::cout << "    '" << it->getTestCaseInfo().description << "'\n";
                 }
             }
             if( config.filters.empty() )
@@ -4669,6 +4677,9 @@ namespace Catch {
         }
 
     private:
+		RunningTest( RunningTest const& );
+		void operator=( RunningTest const& );
+
         const TestCase& m_info;
         RunStatus m_runStatus;
         RunningSection m_rootSection;
@@ -5006,6 +5017,9 @@ namespace Catch {
         const unsigned int minorVersion;
         const unsigned int buildNumber;
         const std::string branchName;
+
+	private:
+		void operator=( Version const& );
     };
 
     extern Version libraryVersion;
@@ -6060,7 +6074,9 @@ namespace Catch {
         else if( m_exprComponents.op == "matches" )
             return m_exprComponents.lhs + " " + m_exprComponents.rhs;
         else if( m_exprComponents.op != "!" ) {
-            if( m_exprComponents.lhs.size() + m_exprComponents.rhs.size() < 40 )
+            if( m_exprComponents.lhs.size() + m_exprComponents.rhs.size() < 40 &&
+                m_exprComponents.lhs.find("\n") == std::string::npos &&
+                m_exprComponents.rhs.find("\n") == std::string::npos )
                 return m_exprComponents.lhs + " " + m_exprComponents.op + " " + m_exprComponents.rhs;
             else
                 return m_exprComponents.lhs + "\n" + m_exprComponents.op + "\n" + m_exprComponents.rhs;
@@ -6138,7 +6154,7 @@ namespace Catch {
     }
 
     bool TestCase::hasTag( const std::string& tag ) const {
-        return tags.find( tag ) != tags.end();
+        return tags.find( toLower( tag ) ) != tags.end();
     }
     bool TestCase::matchesTags( const std::string& tagPattern ) const {
         TagExpression exp;
@@ -6185,7 +6201,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 0, 9, 27, "integration" );
+    Version libraryVersion( 0, 9, 28, "integration" );
 }
 
 // #included from: catch_line_wrap.hpp
@@ -6206,8 +6222,14 @@ namespace Catch {
             for( std::size_t pos = 0; pos < paragraph.size(); ++pos ) {
                 if( pos == width ) {
                     addIndent( os, indent );
-                    os << paragraph.substr( 0, wrapPoint ) << "\n";
-                    recursivelyWrapLine( os, paragraph.substr( wrapPoint+1 ), columns, indent+tab );
+                    if( paragraph[wrapPoint] == ' ' ) {
+                        os << paragraph.substr( 0, wrapPoint ) << "\n";
+                        while( paragraph[++wrapPoint] == ' ' );
+                    }
+                    else {
+                        os << paragraph.substr( 0, --wrapPoint ) << "-\n";
+                    }
+                    recursivelyWrapLine( os, paragraph.substr( wrapPoint ), columns, indent+tab );
                     return ;
                 }
                 if( paragraph[pos] == '\t' ) {
@@ -7358,6 +7380,7 @@ namespace Catch {
     private:
 
         class AssertionPrinter {
+			void operator= ( AssertionPrinter const& );
         public:
             AssertionPrinter( std::ostream& _stream, AssertionStats const& _stats )
             :   stream( _stream ),
