@@ -95,7 +95,7 @@ def generateSingleInclude():
 		v.updateVersionFile()
 		v.updateReadmeFile()
 	print "/*"
-	print " *  CATCH v{0}.{1} build {2} ({3} branch)".format( v.majorVersion, v.minorVersion, v.buildNumber, v.branchName )
+	print " *  CATCH-VC6 v{0}.{1} build {2} ({3} branch)".format( v.majorVersion, v.minorVersion, v.buildNumber, v.branchName )
 	print " *  Generated: " + str( datetime.datetime.now() )
 	print " *  ----------------------------------------------------------"
 	print " *  This file has been merged from multiple headers. Please don't edit it directly"
