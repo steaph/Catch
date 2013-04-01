@@ -10,7 +10,7 @@
 #endif
 
 #include "catch_self_test.hpp"
-#include "catch_line_wrap.h"
+#include "internal/catch_line_wrap.h"
 
 #define CATCH_DIMENSION_OF( a ) ( sizeof(a) / sizeof(0[a]) )
 
