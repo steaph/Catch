@@ -35,7 +35,7 @@ namespace Catch {
         virtual void noMatchingTestCases( std::string const& spec ) {
             stream << "No test cases matched '" << spec << "'" << std::endl;
         }
-        
+
         virtual void assertionStarting( AssertionInfo const& ) {
         }
 
@@ -219,7 +219,7 @@ namespace Catch {
                     stream << messageLabel << ":" << "\n";
                 for( std::vector<MessageInfo>::const_iterator it = messages.begin(), itEnd = messages.end();
                         it != itEnd;
-                        ++it ) {                    
+                        ++it ) {
                     stream << LineWrapper().setIndent(2).wrap( it->message ) << "\n";
                 }
             }
@@ -288,7 +288,8 @@ namespace Catch {
                 if( !sections.empty() ) {
                     typedef std::vector<ThreadedSectionInfo*>::reverse_iterator It;
                     for( It it = sections.rbegin(), itEnd = sections.rend(); it != itEnd; ++it )
-                        stream << "  " << (*it)->name << "\n";
+                        printUserString( (*it)->name, 2 );
+
                 }
             }
             stream << getDots() << "\n" << std::endl;
@@ -306,8 +307,22 @@ namespace Catch {
             }
             {
                 Colour colourGuard( Colour::Headers );
-                stream << _name << "\n";
+                printUserString( _name );
             }
+        }
+
+        // if string has a : in first line will set indent to follow it on
+        // subsequent lines
+        void printUserString( std::string const& _string, std::size_t indent = 0 ) {
+            std::size_t i = _string.find( ": " );
+            if( i != std::string::npos )
+                i+=2;
+            else
+                i = 0;
+            stream << LineWrapper()
+                        .setIndent( indent+i)
+                        .setInitialIndent( indent )
+                        .wrap( _string ) << "\n";
         }
 
         void printTotals( const Totals& totals ) {
@@ -379,7 +394,7 @@ namespace Catch {
             static const std::string dots( CATCH_CONFIG_CONSOLE_WIDTH-1, '~' );
             return dots;
         }
-        
+
     private:
         bool m_headerPrinted;
         bool m_atLeastOneTestCasePrinted;

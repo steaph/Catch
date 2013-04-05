@@ -32,9 +32,6 @@ namespace {
             GetConsoleScreenBufferInfo( stdoutHandle, &csbiInfo );
             originalAttributes = csbiInfo.wAttributes;
         }
-        ~Win32ColourImpl() {
-            use( Colour::None );
-        }
 
         virtual void use( Colour::Code _colourCode ) {
             switch( _colourCode ) {
@@ -86,10 +83,6 @@ namespace {
     // https://github.com/philsquared/Catch/pull/131
     class PosixColourImpl : public Detail::IColourImpl {
     public:
-        PosixColourImpl() {
-            use( Colour::None );
-        }
-
         virtual void use( Colour::Code _colourCode ) {
             switch( _colourCode ) {
                 case Colour::None:
