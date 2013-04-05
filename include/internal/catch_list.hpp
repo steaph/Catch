@@ -71,25 +71,25 @@ namespace Catch {
                 tagsWrapper.setRight( maxTagLen ).wrap( it->getTestCaseInfo().tagsAsString );
 
                 for( std::size_t i = 0; i < (max)( nameWrapper.size(), tagsWrapper.size() ); ++i ) {
-                    TextColour::Colours colour = TextColour::None;
+                    Colour::Code colour = Colour::None;
                     if( it->getTestCaseInfo().isHidden )
-                        colour = TextColour::SecondaryText;
+                        colour = Colour::SecondaryText;
                     std::string nameCol;
                     if( i < nameWrapper.size() ) {
                         nameCol = nameWrapper[i];
                     }
                     else {
                         nameCol = "    ...";
-                        colour = TextColour::SecondaryText;
+                        colour = Colour::SecondaryText;
                     }
-                    
+
                     {
-                        TextColour colourGuard( colour );
+                        Colour colourGuard( colour );
                         std::cout << nameCol;
                     }
                     if( i < tagsWrapper.size() && !tagsWrapper[i].empty() ) {
                         if( i == 0 ) {
-                            TextColour colourGuard( TextColour::SecondaryText );
+                            Colour colourGuard( Colour::SecondaryText );
                             std::cout << "  " << std::string( maxNameLen - nameCol.size(), '.' ) << "  ";
                         }
                         else {
@@ -106,7 +106,7 @@ namespace Catch {
         else
             std::cout << pluralise( matchedTests, "matching test case" ) << std::endl;
     }
-    
+
     inline void listTags( const ConfigData& config ) {
         if( config.filters.empty() )
             std::cout << "All available tags:\n";
@@ -116,7 +116,7 @@ namespace Catch {
         std::vector<TestCase>::const_iterator it = allTests.begin(), itEnd = allTests.end();
 
         std::map<std::string, int> tagCounts;
-        
+
         std::size_t maxTagLen = 0;
 
         for(; it != itEnd; ++it ) {
@@ -138,19 +138,19 @@ namespace Catch {
         maxTagLen +=4;
         if( maxTagLen > CATCH_CONFIG_CONSOLE_WIDTH-10 )
             maxTagLen = CATCH_CONFIG_CONSOLE_WIDTH-10;
-        
+
         for( std::map<std::string, int>::const_iterator countIt = tagCounts.begin(), countItEnd = tagCounts.end();
                 countIt != countItEnd;
-                ++countIt ) {            
+                ++countIt ) {
             LineWrapper wrapper;
             wrapper.setIndent(2).setRight( maxTagLen ).wrap( "[" + countIt->first + "]" );
-            
+
             std::cout << wrapper;
             std::size_t dots = 2;
             if( maxTagLen > wrapper.last().size() )
                 dots += maxTagLen - wrapper.last().size();
             {
-                TextColour colourGuard( TextColour::SecondaryText );
+                Colour colourGuard( Colour::SecondaryText );
                 std::cout << std::string( dots, '.' );
             }
             std::cout   << countIt->second
