@@ -10,13 +10,60 @@
 
 #include "catch_console_colour.hpp"
 
+namespace Catch { namespace Detail {
+    struct IColourImpl {
+        virtual ~IColourImpl() {}
+        virtual void use( Colour::Code _colourCode ) = 0;
+    };
+}}
+
 #if defined ( CATCH_PLATFORM_WINDOWS ) /////////////////////////////////////////
 
 #include <windows.h>
 
+namespace Catch {
 namespace {
-    using namespace Catch;
-    
+
+    class Win32ColourImpl : public Detail::IColourImpl {
+    public:
+        Win32ColourImpl() : stdoutHandle( GetStdHandle(STD_OUTPUT_HANDLE) )
+        {
+            CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+            GetConsoleScreenBufferInfo( stdoutHandle, &csbiInfo );
+            originalAttributes = csbiInfo.wAttributes;
+        }
+        ~Win32ColourImpl() {
+            use( Colour::None );
+        }
+
+        virtual void use( Colour::Code _colourCode ) {
+            switch( _colourCode ) {
+                case Colour::None:      setTextAttribute( originalAttributes ); return;
+                case Colour::White:     setTextAttribute( FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE ); return;
+                case Colour::Red:       setTextAttribute( FOREGROUND_RED ); return;
+                case Colour::Green:     setTextAttribute( FOREGROUND_GREEN ); return;
+                case Colour::Blue:      setTextAttribute( FOREGROUND_BLUE ); return;
+                case Colour::Cyan:      setTextAttribute( FOREGROUND_BLUE | FOREGROUND_GREEN ); return;
+                case Colour::Yellow:    setTextAttribute( FOREGROUND_RED | FOREGROUND_GREEN ); return;
+                case Colour::Grey:      setTextAttribute( 0 );
+
+                case Colour::LightGrey:     setTextAttribute( FOREGROUND_INTENSITY ); return;
+                case Colour::BrightRed:     setTextAttribute( FOREGROUND_INTENSITY | FOREGROUND_RED ); return;
+                case Colour::BrightGreen:   setTextAttribute( FOREGROUND_INTENSITY | FOREGROUND_GREEN ); return;
+                case Colour::BrightWhite:   setTextAttribute( FOREGROUND_INTENSITY |  FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE ); return;
+
+                case Colour::Bright: throw std::logic_error( "not a colour" );
+            }
+        }
+
+    private:
+        void setTextAttribute( WORD _textAttribute ) {
+            SetConsoleTextAttribute( stdoutHandle, _textAttribute );
+        }
+        HANDLE stdoutHandle;
+        WORD originalAttributes;
+    };
+
     WORD mapConsoleColour( IConsoleColourCodes::Colours colour ) {
         enum Win32Colours {
                 Grey = FOREGROUND_INTENSITY,
@@ -42,7 +89,7 @@ namespace {
     }
 
     struct WindowsConsoleColourCodes : IConsoleColourCodes {
-    
+
         WindowsConsoleColourCodes()
         :   hStdout( GetStdHandle(STD_OUTPUT_HANDLE) ),
             wOldColorAttrs( 0 )
@@ -50,17 +97,17 @@ namespace {
             GetConsoleScreenBufferInfo( hStdout, &csbiInfo );
             wOldColorAttrs = csbiInfo.wAttributes;
         }
-        
+
         ~WindowsConsoleColourCodes() {
             SetConsoleTextAttribute( hStdout, wOldColorAttrs );
         }
-        
+
         void set( Colours colour ) {
             WORD consoleColour = mapConsoleColour( colour );
             if( consoleColour > 0 )
                 SetConsoleTextAttribute( hStdout, consoleColour );
         }
-        
+
         HANDLE hStdout;
         CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
         WORD wOldColorAttrs;
@@ -69,17 +116,50 @@ namespace {
     inline bool shouldUseColourForPlatform() {
         return true;
     }
-    
+
     typedef WindowsConsoleColourCodes PlatformConsoleColourCodes;
+    Win32ColourImpl platformColourImpl;
 
 } // end anon namespace
+} // end namespace Catch
 
 #else // Not Windows - assumed to be POSIX compatible //////////////////////////
 
 #include <unistd.h>
 
+namespace Catch {
 namespace {
-    using namespace Catch;
+
+    class PosixColourImpl : public Detail::IColourImpl {
+    public:
+        PosixColourImpl() {
+            use( Colour::None );
+        }
+
+        virtual void use( Colour::Code _colourCode ) {
+            switch( _colourCode ) {
+                case Colour::None:
+                case Colour::White:     return setColour( "[0m" );
+                case Colour::Red:       return setColour( "[0;31m" );
+                case Colour::Green:     return setColour( "[0;32m" );
+                case Colour::Blue:      return setColour( "[0:34m" );
+                case Colour::Cyan:      return setColour( "[0;36m" );
+                case Colour::Yellow:    return setColour( "[0;33m" );
+                case Colour::Grey:      return setColour( "[1;30m" );
+
+                case Colour::LightGrey:     return setColour( "[0;37m" );
+                case Colour::BrightRed:     return setColour( "[1;31m" );
+                case Colour::BrightGreen:   return setColour( "[1;33m" );
+                case Colour::BrightWhite:   return setColour( "[1;37m" );
+
+                case Colour::Bright: throw std::logic_error( "not a colour" );
+            }
+        }
+    private:
+        void setColour( const char* _escapeCode ) {
+            std::cout << '\033' << _escapeCode;
+        }
+    };
 
     // use POSIX/ ANSI console terminal codes
     // Implementation contributed by Adam Strzelecki (http://github.com/nanoant)
@@ -96,7 +176,7 @@ namespace {
 //    const char* DarkGrey =      "[1;30m";
 
     struct AnsiConsoleColourCodes : IConsoleColourCodes {
-    
+
         ~AnsiConsoleColourCodes() {
             set( None );
         }
@@ -124,20 +204,41 @@ namespace {
     inline bool shouldUseColourForPlatform() {
         return isatty( fileno(stdout) );
     }
-    
+
     typedef AnsiConsoleColourCodes PlatformConsoleColourCodes;
-    
-} // namespace Catch
+    PosixColourImpl platformColourImpl;
+
+} // end anon namespace
+} // end namespace Catch
 
 #endif // not Windows
 
 namespace {
-    struct NoConsoleColourCodes : IConsoleColourCodes {
+    struct NoConsoleColourCodes : Catch::IConsoleColourCodes {
         void set( Colours ) {}
     };
 }
 
 namespace Catch {
+
+    namespace {
+        struct NoColourImpl : Detail::IColourImpl {
+            void use( Colour::Code ) {}
+        };
+        NoColourImpl noColourImpl;
+        static const bool shouldUseColour = shouldUseColourForPlatform() &&
+                                            !isDebuggerActive();
+    }
+
+    Colour::Colour( Code _colourCode ){ use( _colourCode ); }
+    Colour::~Colour(){ use( None ); }
+    void Colour::use( Code _colourCode ) {
+        impl->use( _colourCode );
+    }
+
+    Detail::IColourImpl* Colour::impl = shouldUseColour
+            ? static_cast<Detail::IColourImpl*>( &platformColourImpl )
+            : static_cast<Detail::IColourImpl*>( &noColourImpl );
 
     TextColour::TextColour( Colours colour ) : m_impl( NULL ) {
         static bool s_shouldUseColour = shouldUseColourForPlatform() &&
