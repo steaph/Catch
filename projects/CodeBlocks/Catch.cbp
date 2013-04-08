@@ -93,6 +93,8 @@
 		<Unit filename="../../include/internal/catch_version.hpp" />
 		<Unit filename="../../include/internal/catch_xmlwriter.hpp" />
 		<Unit filename="../../include/reporters/00-catch_reporter_console.hpp" />
+		<Unit filename="../../include/reporters/catch_legacy_reporter_adapter.h" />
+		<Unit filename="../../include/reporters/catch_legacy_reporter_adapter.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_basic.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_console.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_junit.hpp" />
