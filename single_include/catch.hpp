@@ -1,6 +1,6 @@
 /*
- *  CATCH-VC6 v0.9 build 32 (integration branch)
- *  Generated: 2013-04-08 13:04:29.718000
+ *  CATCH-VC6 v0.9 build 33 (integration branch)
+ *  Generated: 2013-04-13 22:27:46.061000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -22,7 +22,7 @@
 #endif
 
 // Use variadic macros if the compiler supports them
-#if ( defined _MSC_VER && _MSC_VER >= 1400 && !defined __EDGE__) || \
+#if ( defined _MSC_VER && _MSC_VER > 1400 && !defined __EDGE__) || \
     ( defined __WAVE__ && __WAVE_HAS_VARIADICS ) || \
     ( defined __GNUC__ && __GNUC__ >= 3 ) || \
     ( !defined __cplusplus && __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L )
@@ -5905,7 +5905,7 @@ namespace {
 
                 case Colour::LightGrey:     return setColour( "[0;37m" );
                 case Colour::BrightRed:     return setColour( "[1;31m" );
-                case Colour::BrightGreen:   return setColour( "[1;33m" );
+                case Colour::BrightGreen:   return setColour( "[1;32m" );
                 case Colour::BrightWhite:   return setColour( "[1;37m" );
 
                 case Colour::Bright: throw std::logic_error( "not a colour" );
@@ -6307,7 +6307,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 0, 9, 32, "integration" );
+    Version libraryVersion( 0, 9, 33, "integration" );
 }
 
 // #included from: catch_line_wrap.hpp
@@ -6462,7 +6462,7 @@ namespace Catch {
 
 } // end namespace Catch
 
-// #included from: ../reporters/catch_legacy_reporter_adapter.hpp
+// #included from: catch_legacy_reporter_adapter.hpp
 #define TWOBLUECUBES_CATCH_LEGACY_REPORTER_ADAPTER_HPP_INCLUDED
 
 // #included from: catch_legacy_reporter_adapter.h
@@ -7442,10 +7442,14 @@ namespace Catch {
                     case ResultWas::Ok:
                         stats.m_element = "success";
                         break;
+                    case ResultWas::DidntThrowException:
+                        stats.m_element = "failure";
+                        m_currentStats->m_failuresCount++;
+                        break;
                     case ResultWas::Unknown:
                     case ResultWas::FailureBit:
                     case ResultWas::Exception:
-                    case ResultWas::DidntThrowException:
+                        stats.m_element = "* internal error *";
                         break;
                 }
                 testCaseStats.m_testStats.push_back( stats );
@@ -7690,18 +7694,10 @@ namespace Catch {
                         if( _stats.infoMessages.size() > 1 )
                             messageLabel = "explicitly with messages";
                         break;
-                    case ResultWas::Exception:
-                        passOrFail = "FAILED";
-                        colour = Colour::Error;
-                        if( _stats.infoMessages.size() == 1 )
-                            messageLabel = "with message";
-                        if( _stats.infoMessages.size() > 1 )
-                            messageLabel = "with messages";
-                        break;
-
                     // These cases are here to prevent compiler warnings
                     case ResultWas::Unknown:
                     case ResultWas::FailureBit:
+                    case ResultWas::Exception:
                         passOrFail = "** internal error **";
                         colour = Colour::Error;
                         break;
