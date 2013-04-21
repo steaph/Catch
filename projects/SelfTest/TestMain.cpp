@@ -10,7 +10,6 @@
 #endif
 
 #include "catch_self_test.hpp"
-#include "internal/catch_line_wrap.h"
 #include "internal/catch_text.h"
 
 #define CATCH_DIMENSION_OF( a ) ( sizeof(a) / sizeof(0[a]) )
@@ -49,7 +48,7 @@ TEST_CASE( "selftest/main", "Runs all Catch self tests and checks their results"
                     "Number of 'failing' tests is fixed" ) {
             Totals totals = runner.runMatching( "./failing/*", 1, 2 );
             CHECK( totals.assertions.passed == 1 );
-            CHECK( totals.assertions.failed == 101 );
+            CHECK( totals.assertions.failed == 102 );
         }
     }
 }
@@ -553,7 +552,7 @@ TEST_CASE( "Long strings can be wrapped", "[wrap]" ) {
     SECTION( "plain string", "" ) {
         // guide:                 123456789012345678
         std::string testString = "one two three four";
-        
+
         SECTION( "No wrapping", "" ) {
             CHECK( Text( testString, TextAttributes().setWidth( 80 ) ).toString() == testString );
             CHECK( Text( testString, TextAttributes().setWidth( 18 ) ).toString() == testString );
@@ -597,14 +596,14 @@ TEST_CASE( "Long strings can be wrapped", "[wrap]" ) {
                                         .setInitialIndent( 1 ) );
             CHECK( text.toString() == " one two\n    three\n    four" );
         }
-        
+
     }
-    
+
     SECTION( "With newlines", "" ) {
-        
+
         // guide:                 1234567890123456789
         std::string testString = "one two\nthree four";
-        
+
         SECTION( "No wrapping" , "" ) {
             CHECK( Text( testString, TextAttributes().setWidth( 80 ) ).toString() == testString );
             CHECK( Text( testString, TextAttributes().setWidth( 18 ) ).toString() == testString );
@@ -624,17 +623,17 @@ TEST_CASE( "Long strings can be wrapped", "[wrap]" ) {
             CHECK( Text( testString, TextAttributes().setWidth( 6 ) ).toString() == "one\ntwo\nthree\nfour" );
         }
     }
-    
+
     SECTION( "With tabs", "" ) {
 
         // guide:                 1234567890123456789
         std::string testString = "one two \tthree four five six";
-        
+
         CHECK( Text( testString, TextAttributes().setWidth( 15 ) ).toString()
             == "one two three\n        four\n        five\n        six" );
     }
-    
-    
+
+
 }
 
 using namespace Catch;
@@ -660,7 +659,7 @@ public:
     ColourString( std::string const& _string, std::vector<ColourIndex> const& _colours )
     : string( _string ), colours( _colours )
     {}
-    
+
     ColourString& addColour( Colour::Code colour, int _index ) {
         colours.push_back( ColourIndex( colour,
                                         resolveRelativeIndex( _index ),
@@ -673,7 +672,7 @@ public:
                                         resolveLastRelativeIndex( _toIndex ) ) );
         return *this;
     }
-    
+
     void writeToStream( std::ostream& _stream ) const {
         std::size_t last = 0;
         for( std::size_t i = 0; i < colours.size(); ++i ) {
@@ -687,7 +686,7 @@ public:
             last = index.toIndex;
         }
         if( last < string.size() )
-            _stream << string.substr( last );        
+            _stream << string.substr( last );
     }
     friend std::ostream& operator << ( std::ostream& _stream, ColourString const& _colourString ) {
         _colourString.writeToStream( _stream );
@@ -711,7 +710,7 @@ private:
 
 // !TBD: This will be folded into Text class
 TEST_CASE( "Strings can be rendered with colour", "[colour]" ) {
-    
+
     {
         ColourString cs( "hello" );
         cs  .addColour( Colour::Red, 0 )
@@ -723,18 +722,18 @@ TEST_CASE( "Strings can be rendered with colour", "[colour]" ) {
     {
         ColourString cs( "hello" );
         cs  .addColour( Colour::Blue, 1, -2 );
-        
+
         std::cout << cs << std::endl;
     }
-    
+
 }
 
 TEST_CASE( "Text can be formatted using the Text class", "" ) {
-    
+
     CHECK( Text( "hi there" ).toString() == "hi there" );
-    
+
     TextAttributes narrow;
     narrow.setWidth( 6 );
-    
+
     CHECK( Text( "hi there", narrow ).toString() == "hi\nthere" );
 }
