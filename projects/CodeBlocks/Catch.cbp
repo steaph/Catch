@@ -91,6 +91,7 @@
 		<Unit filename="../../include/internal/catch_test_case_registry_impl.hpp" />
 		<Unit filename="../../include/internal/catch_test_registry.hpp" />
 		<Unit filename="../../include/internal/catch_test_spec.h" />
+		<Unit filename="../../include/internal/catch_text.h" />
 		<Unit filename="../../include/internal/catch_tostring.hpp" />
 		<Unit filename="../../include/internal/catch_totals.hpp" />
 		<Unit filename="../../include/internal/catch_version.h" />

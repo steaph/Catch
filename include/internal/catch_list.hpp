@@ -16,12 +16,6 @@
 #include <algorithm>
 
 namespace Catch {
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-	template <typename T>
-	inline T max( const T& x, const T& y ) { return std::_cpp_max( x, y ); }
-#else
-	using std::max;
-#endif
 
     inline bool matchesFilters( const std::vector<TestCaseFilters>& filters, const TestCase& testCase ) {
         std::vector<TestCaseFilters>::const_iterator it = filters.begin();
@@ -45,8 +39,8 @@ namespace Catch {
         std::size_t maxNameLen = 0;
         for(; it != itEnd; ++it ) {
             if( matchesFilters( config.filters, *it ) ) {
-                maxTagLen = (max)( it->getTestCaseInfo().tagsAsString.size(), maxTagLen );
-                maxNameLen = (max)( it->getTestCaseInfo().name.size(), maxNameLen );
+                maxTagLen = (std::max)( it->getTestCaseInfo().tagsAsString.size(), maxTagLen );
+                maxNameLen = (std::max)( it->getTestCaseInfo().name.size(), maxNameLen );
             }
         }
 
@@ -70,7 +64,7 @@ namespace Catch {
                 LineWrapper tagsWrapper;
                 tagsWrapper.setRight( maxTagLen ).wrap( it->getTestCaseInfo().tagsAsString );
 
-                for( std::size_t i = 0; i < (max)( nameWrapper.size(), tagsWrapper.size() ); ++i ) {
+                for( std::size_t i = 0; i < (std::max)( nameWrapper.size(), tagsWrapper.size() ); ++i ) {
                     Colour::Code colour = Colour::None;
                     if( it->getTestCaseInfo().isHidden )
                         colour = Colour::SecondaryText;
@@ -126,7 +120,7 @@ namespace Catch {
                         tagIt != tagItEnd;
                         ++tagIt ) {
                     std::string tagName = *tagIt;
-                    maxTagLen = (max)( maxTagLen, tagName.size() );
+                    maxTagLen = (std::max)( maxTagLen, tagName.size() );
                     std::map<std::string, int>::iterator countIt = tagCounts.find( tagName );
                     if( countIt == tagCounts.end() )
                         tagCounts.insert( std::make_pair( tagName, 1 ) );

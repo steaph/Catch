@@ -33,7 +33,15 @@
 #include <algorithm>
 
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-namespace std { using ::size_t; }
+namespace std {
+    using ::size_t;
+
+    template <typename T>
+    inline T max( const T& x, const T& y ) { return std::_cpp_max( x, y ); }
+
+    template <typename T>
+    inline T min( const T& x, const T& y ) { return std::_cpp_min( x, y ); }
+}
 #endif
 
 namespace Catch {
@@ -131,7 +139,7 @@ namespace Catch {
         bool empty() const {
             return file.empty();
         }
-        
+
         std::string file;
         std::size_t line;
     };
@@ -139,9 +147,9 @@ namespace Catch {
     inline std::ostream& operator << ( std::ostream& os, const SourceLineInfo& info ) {
 #ifndef __GNUG__
         os << info.file << "(" << info.line << ")";
-#else                
+#else
         os << info.file << ":" << info.line;
-#endif            
+#endif
         return os;
     }
 

@@ -8,11 +8,12 @@
 #ifndef TWOBLUECUBES_CATCH_TEXT_H_INCLUDED
 #define TWOBLUECUBES_CATCH_TEXT_H_INCLUDED
 
+#include <cassert>
 #include <string>
 #include <vector>
 
 namespace Catch {
-    
+
     struct TextAttributes {
         TextAttributes()
         :   initialIndent( std::string::npos ),
@@ -20,7 +21,7 @@ namespace Catch {
             width( CATCH_CONFIG_CONSOLE_WIDTH-1 ),
             tabChar( '\t' )
         {}
-        
+
         TextAttributes& setInitialIndent( std::size_t _value )  { initialIndent = _value; return *this; }
         TextAttributes& setIndent( std::size_t _value )         { indent = _value; return *this; }
         TextAttributes& setWidth( std::size_t _value )          { width = _value; return *this; }
@@ -113,13 +114,13 @@ namespace Catch {
             oss << *this;
             return oss.str();
         }
-        
+
     private:
         std::string str;
         TextAttributes attr;
         std::vector<std::string> lines;
     };
-    
+
 } // end namespace Catch
 
 #endif // TWOBLUECUBES_CATCH_TEXT_H_INCLUDED
