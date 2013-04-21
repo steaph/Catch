@@ -19,11 +19,14 @@
 #include "catch_objc_arc.hpp"
 #endif
 
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+#include "catch_meta_vc6.hpp"
+#endif
+
 namespace Catch {
+namespace Detail {
 
 #ifdef CATCH_SFINAE
-
-namespace Detail {
 
     template<typename T>
     class IsStreamInsertableHelper {
@@ -40,76 +43,124 @@ namespace Detail {
     template<typename T>
     struct IsStreamInsertable : IsStreamInsertableHelper<T>::type {};
 
-    template<typename T>
-    void toStream( std::ostream& os, T const& value, typename IsStreamInsertable<T>::Enable* = 0 ) {
-        os << value;
-    }
-
-    template<typename T>
-    void toStream( std::ostream& os, T const&, typename IsStreamInsertable<T>::Disable* = 0 ) {
-        os << "{?}";
-    }
-
-}
-
-template<typename T>
-struct StringMaker {
-    static std::string convert( T const& value ) {
-        std::ostringstream oss;
-        Detail::toStream( oss, value );
-        return oss.str();
-    }
-};
-
 #else
 
-namespace Detail {
+    struct BorgType {
+        template<typename T> BorgType( T const& );
+    };
 
-    struct NonStreamable {
-        template<typename T> NonStreamable( const T& ){}
+    TrueType& testStreamable( std::ostream& );
+    FalseType testStreamable( FalseType );
+
+    FalseType operator<<( std::ostream const&, BorgType const& );
+
+    template<typename T>
+    struct IsStreamInsertable {
+        static std::ostream &s;
+        static T const &t;
+        enum { value = sizeof( testStreamable(s << t) ) == sizeof( TrueType ) };
+    };
+
+#endif
+
+    template<bool C>
+    struct StringMakerBase {
+        template<typename T>
+        static std::string convert( T const& ) { return "{?}"; }
+    };
+
+    template<>
+    struct StringMakerBase<true> {
+        template<typename T>
+        static std::string convert( T const& _value ) {
+            std::ostringstream oss;
+            oss << _value;
+            return oss.str();
+        }
     };
 
 } // end namespace Detail
 
-// If the type does not have its own << overload for ostream then
-// this one will be used instead
-inline std::ostream& operator << ( std::ostream& ss, Detail::NonStreamable ){
-    return ss << "{?}";
-}
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+
+/*
+ * VC6 does not support partial template specialisation, so we select the
+ * proper StringMakerVariant via StringMakerSelector<>.
+ */
 
 template<typename T>
-struct StringMaker {
-    static std::string convert( T const& value ) {
-        std::ostringstream oss;
-        oss << value;
-        return oss.str();
+struct StringMaker :
+    Detail::StringMakerBase<Detail::IsStreamInsertable<T>::value> {};
+
+namespace Detail {
+    typedef IntToType<1> valueSelector;
+    typedef IntToType<2> pointerSelector;
+    typedef IntToType<3> vectorSelector;
+
+    template < typename T >
+    struct StringMakerSelector {
+        enum {
+            value = isVector<T>::value ? (int) vectorSelector::value
+                  : isPointer<T>::value ? (int) pointerSelector::value
+                  : (int) valueSelector::value
+        };
+    };
+} // end namespace Detail
+
+template<int S>
+struct StringMakerVariant {
+    template<typename T>
+    static std::string convert( T const & value ) {
+        return StringMaker<T>::convert( value );
     }
+};
 
-#ifdef CATCH_COMPILER_IS_MSVC6
-
-    static std::string convert( T const* p ) {
+template<>
+struct StringMakerVariant<Detail::pointerSelector::value> {
+    template<typename T>
+    static std::string convert( T const * const p ) {
         if( !p )
-            return INTERNAL_CATCH_STRINGIFY( NULL );
+            return "(NULL)"; // return INTERNAL_CATCH_STRINGIFY( NULL );
         std::ostringstream oss;
         oss << p;
         return oss.str();
     }
+};
 
-    static std::string convert( std::vector<T> const& v ) {
+template<>
+struct StringMakerVariant<Detail::vectorSelector::value> {
+    template<typename T>
+    static std::string convert( std::vector<T> const & v ) {
         std::ostringstream oss;
         oss << "{ ";
         for( std::size_t i = 0; i < v.size(); ++ i ) {
-            oss << toString( v[i] );
+            oss << toString( v[i] ); // Catch::
             if( i < v.size() - 1 )
                 oss << ", ";
         }
         oss << " }";
         return oss.str();
     }
-#endif
 };
 
-#ifdef CATCH_COMPILER_IS_MSVC6
+namespace Detail {
+    template<typename T>
+    inline std::string makeString( T const & value ) {
+       return StringMakerVariant<StringMakerSelector<T>::value >::convert( value );
+    }
+} // end namespace Detail
+
+template<typename T>
+inline std::string toString( T const & value ) {
+   return Detail::makeString( value );
+}
+
+#else // INTERNAL_CATCH_COMPILER_IS_MSVC6
+
+template<typename T>
+struct StringMaker :
+    Detail::StringMakerBase<Detail::IsStreamInsertable<T>::value> {};
+
 
 template<typename T>
 struct StringMaker<T*> {
@@ -120,7 +171,10 @@ struct StringMaker<T*> {
         oss << p;
         return oss.str();
     }
+};
 
+template<typename T>
+struct StringMaker<std::vector<T> > {
     static std::string convert( std::vector<T> const& v ) {
         std::ostringstream oss;
         oss << "{ ";
@@ -133,10 +187,6 @@ struct StringMaker<T*> {
         return oss.str();
     }
 };
-#endif
-
-#endif
-
 
 namespace Detail {
     template<typename T>
@@ -156,6 +206,8 @@ template<typename T>
 std::string toString( const T& value ) {
     return StringMaker<T>::convert( value );
 }
+
+#endif // INTERNAL_CATCH_COMPILER_IS_MSVC6
 
 // Built in overloads
 
