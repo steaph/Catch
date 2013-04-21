@@ -30,13 +30,11 @@
 		<Unit filename="../../include/catch_runner.hpp" />
 		<Unit filename="../../include/catch_with_main.hpp" />
 		<Unit filename="../../include/internal/catch_approx.hpp" />
-		<Unit filename="../../include/internal/catch_approx.hpp.save" />
 		<Unit filename="../../include/internal/catch_assertionresult.h" />
 		<Unit filename="../../include/internal/catch_assertionresult.hpp" />
 		<Unit filename="../../include/internal/catch_capture.hpp" />
 		<Unit filename="../../include/internal/catch_commandline.hpp" />
 		<Unit filename="../../include/internal/catch_common.h" />
-		<Unit filename="../../include/internal/catch_common.h.save" />
 		<Unit filename="../../include/internal/catch_compiler_capabilities.h" />
 		<Unit filename="../../include/internal/catch_config.hpp" />
 		<Unit filename="../../include/internal/catch_console_colour.hpp" />
@@ -72,7 +70,6 @@
 		<Unit filename="../../include/internal/catch_message.h" />
 		<Unit filename="../../include/internal/catch_message.hpp" />
 		<Unit filename="../../include/internal/catch_meta_vc6.hpp" />
-		<Unit filename="../../include/internal/catch_meta_vc6.hpp.save" />
 		<Unit filename="../../include/internal/catch_notimplemented_exception.h" />
 		<Unit filename="../../include/internal/catch_notimplemented_exception.hpp" />
 		<Unit filename="../../include/internal/catch_objc.hpp" />
@@ -99,7 +96,6 @@
 		<Unit filename="../../include/internal/catch_text.h" />
 		<Unit filename="../../include/internal/catch_text.hpp" />
 		<Unit filename="../../include/internal/catch_tostring.hpp" />
-		<Unit filename="../../include/internal/catch_tostring.hpp.save" />
 		<Unit filename="../../include/internal/catch_totals.hpp" />
 		<Unit filename="../../include/internal/catch_version.h" />
 		<Unit filename="../../include/internal/catch_version.hpp" />
