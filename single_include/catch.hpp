@@ -1,6 +1,6 @@
 /*
- *  CATCH-VC6 v0.9 build 34 (integration branch)
- *  Generated: 2013-04-21 18:55:35.559000
+ *  CATCH-VC6 v0.9 build 35 (integration branch)
+ *  Generated: 2013-04-21 23:57:16.549000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -574,7 +574,7 @@ private:
 
 #elif __GNUC__ >= 3
 
-#define CATCH_SFINAE
+// #define CATCH_SFINAE // Taking this out completely for now
 
 #endif // __GNUC__ < 3
 
@@ -591,20 +591,20 @@ private:
 #endif // _MSC_VER
 
 
-#ifdef CATCH_SFINAE
-
 namespace Catch {
 
     struct TrueType {
-        static const bool value = true;
+        enum { value = true };
         typedef void Enable;
         char sizer[1];
     };
     struct FalseType {
-        static const bool value = false;
+        enum { value = false };
         typedef void Disable;
         char sizer[2];
     };
+
+#ifdef CATCH_SFINAE
 
     template<bool> struct NotABooleanExpression;
 
@@ -616,9 +616,9 @@ namespace Catch {
     template<> struct SizedIf<sizeof(TrueType)> : TrueType {};
     template<> struct SizedIf<sizeof(FalseType)> : FalseType {};
 
-} // end namespace Catch
-
 #endif // CATCH_SFINAE
+
+} // end namespace Catch
 
 #include <sstream>
 #include <iomanip>
@@ -670,11 +670,83 @@ inline id performOptionalSelector( id obj, SEL sel ) {
 
 #endif
 
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+// #included from: catch_meta_vc6.hpp
+#define TWOBLUECUBES_CATCH_META_VC6_H_INCLUDED
+
+#include <vector>
+
 namespace Catch {
 
-#ifdef CATCH_SFINAE
+template <int v>
+struct IntToType { enum { value = v }; };
+
+struct YesType { char c; };
+struct NoType  { char c[2]; };
+
+// is_pointer
 
 namespace Detail {
+
+struct isPointerHelper
+{
+   isPointerHelper( const volatile void* );
+};
+
+YesType isPointerTester( isPointerHelper );
+NoType  isPointerTester( ... );
+
+template <typename T>
+struct isPointerImpl
+{
+   static T& makeT();
+   enum { value = sizeof( YesType ) == sizeof( isPointerTester( makeT() ) ) };
+};
+
+} // namespace Detail
+
+template < typename T >
+struct isPointer
+{
+   enum { value = Detail::isPointerImpl<T>::value };
+};
+
+// is_vector
+
+namespace Detail {
+
+template<typename T>
+YesType isVectorTester( const std::vector<T>& );
+
+NoType isVectorTester( ... );
+
+template <typename T>
+struct isVectorImpl
+{
+   static T& makeT();
+   enum { value = sizeof( YesType ) == sizeof( isVectorTester( makeT() ) ) };
+};
+
+} // namespace Detail
+
+template <typename T>
+struct isVector
+{
+   static T& makeT();
+   enum { value = Detail::isVectorImpl<T>::value };
+};
+
+} // end namespace Catch
+
+#endif
+
+namespace Catch {
+namespace Detail {
+
+// SFINAE is currently disabled by default for all compilers.
+// If the non SFINAE version of IsStreamInsertable is ambiguous for you
+// and your compiler supports SFINAE, try #defining CATCH_SFINAE
+#ifdef CATCH_SFINAE
 
     template<typename T>
     class IsStreamInsertableHelper {
@@ -691,76 +763,118 @@ namespace Detail {
     template<typename T>
     struct IsStreamInsertable : IsStreamInsertableHelper<T>::type {};
 
-    template<typename T>
-    void toStream( std::ostream& os, T const& value, typename IsStreamInsertable<T>::Enable* = 0 ) {
-        os << value;
-    }
-
-    template<typename T>
-    void toStream( std::ostream& os, T const&, typename IsStreamInsertable<T>::Disable* = 0 ) {
-        os << "{?}";
-    }
-
-}
-
-template<typename T>
-struct StringMaker {
-    static std::string convert( T const& value ) {
-        std::ostringstream oss;
-        Detail::toStream( oss, value );
-        return oss.str();
-    }
-};
-
 #else
 
-namespace Detail {
+    struct BorgType {
+        template<typename T> BorgType( T const& );
+    };
 
-    struct NonStreamable {
-        template<typename T> NonStreamable( const T& ){}
+    TrueType& testStreamable( std::ostream& );
+    FalseType testStreamable( FalseType );
+
+    FalseType operator<<( std::ostream const&, BorgType const& );
+
+    template<typename T>
+    struct IsStreamInsertable {
+        static std::ostream &s;
+        static T const &t;
+        enum { value = sizeof( testStreamable(s << t) ) == sizeof( TrueType ) };
+    };
+
+#endif
+
+    template<bool C>
+    struct StringMakerBase {
+        template<typename T>
+        static std::string convert( T const& ) { return "{?}"; }
+    };
+
+    template<>
+    struct StringMakerBase<true> {
+        template<typename T>
+        static std::string convert( T const& _value ) {
+            std::ostringstream oss;
+            oss << _value;
+            return oss.str();
+        }
     };
 
 } // end namespace Detail
 
-// If the type does not have its own << overload for ostream then
-// this one will be used instead
-inline std::ostream& operator << ( std::ostream& ss, Detail::NonStreamable ){
-    return ss << "{?}";
-}
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 
 template<typename T>
-struct StringMaker {
-    static std::string convert( T const& value ) {
-        std::ostringstream oss;
-        oss << value;
-        return oss.str();
+struct StringMaker :
+    Detail::StringMakerBase<Detail::IsStreamInsertable<T>::value> {};
+
+namespace Detail {
+    typedef IntToType<1> valueSelector;
+    typedef IntToType<2> pointerSelector;
+    typedef IntToType<3> vectorSelector;
+
+    template < typename T >
+    struct StringMakerSelector {
+        enum {
+            value = isVector<T>::value ? (int) vectorSelector::value
+                  : isPointer<T>::value ? (int) pointerSelector::value
+                  : (int) valueSelector::value
+        };
+    };
+} // end namespace Detail
+
+template<int S>
+struct StringMakerVariant {
+    template<typename T>
+    static std::string convert( T const & value ) {
+        return StringMaker<T>::convert( value );
     }
+};
 
-#ifdef CATCH_COMPILER_IS_MSVC6
-
-    static std::string convert( T const* p ) {
+template<>
+struct StringMakerVariant<Detail::pointerSelector::value> {
+    template<typename T>
+    static std::string convert( T const * const p ) {
         if( !p )
-            return INTERNAL_CATCH_STRINGIFY( NULL );
+            return "(NULL)"; // return INTERNAL_CATCH_STRINGIFY( NULL );
         std::ostringstream oss;
         oss << p;
         return oss.str();
     }
+};
 
-    static std::string convert( std::vector<T> const& v ) {
+template<>
+struct StringMakerVariant<Detail::vectorSelector::value> {
+    template<typename T>
+    static std::string convert( std::vector<T> const & v ) {
         std::ostringstream oss;
         oss << "{ ";
         for( std::size_t i = 0; i < v.size(); ++ i ) {
-            oss << toString( v[i] );
+            oss << toString( v[i] ); // Catch::
             if( i < v.size() - 1 )
                 oss << ", ";
         }
         oss << " }";
         return oss.str();
     }
-#endif
 };
 
-#ifdef CATCH_COMPILER_IS_MSVC6
+namespace Detail {
+    template<typename T>
+    inline std::string makeString( T const & value ) {
+       return StringMakerVariant<StringMakerSelector<T>::value >::convert( value );
+    }
+} // end namespace Detail
+
+template<typename T>
+inline std::string toString( T const & value ) {
+   return Detail::makeString( value );
+}
+
+#else // INTERNAL_CATCH_COMPILER_IS_MSVC6
+
+template<typename T>
+struct StringMaker :
+    Detail::StringMakerBase<Detail::IsStreamInsertable<T>::value> {};
 
 template<typename T>
 struct StringMaker<T*> {
@@ -771,7 +885,10 @@ struct StringMaker<T*> {
         oss << p;
         return oss.str();
     }
+};
 
+template<typename T>
+struct StringMaker<std::vector<T> > {
     static std::string convert( std::vector<T> const& v ) {
         std::ostringstream oss;
         oss << "{ ";
@@ -784,9 +901,6 @@ struct StringMaker<T*> {
         return oss.str();
     }
 };
-#endif
-
-#endif
 
 namespace Detail {
     template<typename T>
@@ -806,6 +920,8 @@ template<typename T>
 std::string toString( const T& value ) {
     return StringMaker<T>::convert( value );
 }
+
+#endif // INTERNAL_CATCH_COMPILER_IS_MSVC6
 
 // Built in overloads
 
@@ -6471,7 +6587,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 0, 9, 34, "integration" );
+    Version libraryVersion( 0, 9, 35, "integration" );
 }
 
 // #included from: catch_text.hpp
