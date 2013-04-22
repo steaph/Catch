@@ -38,7 +38,14 @@ namespace Internal {
     template<> struct OperatorTraits<IsGreaterThan>         { static const char* getName(){ return ">"; } };
     template<> struct OperatorTraits<IsLessThanOrEqualTo>   { static const char* getName(){ return "<="; } };
     template<> struct OperatorTraits<IsGreaterThanOrEqualTo>{ static const char* getName(){ return ">="; } };
+    template<typename T>
+    inline T& opCast(const T& t) { return const_cast<T&>(t); }
 
+// nullptr_t support based on pull request #154 from Konstantin Baumann
+#ifdef CATCH_CONFIG_CPP11_NULLPTR
+    inline std::nullptr_t opCast(std::nullptr_t) { return nullptr; }
+#endif // CATCH_CONFIG_CPP11_NULLPTR
+    
 
     // So the compare overloads can be operator agnostic we convey the operator as a template
     // enum, which is used to specialise an Evaluator for doing the comparison.
@@ -57,7 +64,7 @@ namespace Internal {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs == rhs;
 #else
-            return const_cast<T1&>( lhs ) == const_cast<T2&>( rhs );
+            return opCast( lhs ) ==  opCast( rhs );
 #endif
         }
     };
@@ -69,7 +76,7 @@ namespace Internal {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs != rhs;
 #else
-            return const_cast<T1&>( lhs ) != const_cast<T2&>( rhs );
+            return opCast( lhs ) != opCast( rhs );
 #endif
         }
     };
@@ -81,7 +88,7 @@ namespace Internal {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs < rhs;
 #else
-            return const_cast<T1&>( lhs ) < const_cast<T2&>( rhs );
+            return opCast( lhs ) < opCast( rhs );
 #endif
         }
     };
@@ -93,7 +100,7 @@ namespace Internal {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs > rhs;
 #else
-            return const_cast<T1&>( lhs ) > const_cast<T2&>( rhs );
+            return opCast( lhs ) > opCast( rhs );
 #endif
         }
     };
@@ -105,7 +112,7 @@ namespace Internal {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs >= rhs;
 #else
-            return const_cast<T1&>( lhs ) >= const_cast<T2&>( rhs );
+            return opCast( lhs ) >= opCast( rhs );
 #endif
         }
     };
@@ -117,7 +124,7 @@ namespace Internal {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs <= rhs;
 #else
-            return const_cast<T1&>( lhs ) <= const_cast<T2&>( rhs );
+            return opCast( lhs ) <= opCast( rhs );
 #endif
         }
     };
@@ -314,6 +321,16 @@ class ::Catch::Detail::Approx;
         }
 #endif
     };
+
+#ifdef CATCH_CONFIG_CPP11_NULLPTR
+    // pointer to nullptr_t (when comparing against nullptr)
+    template<Operator Op, typename T> bool compare( std::nullptr_t, T* rhs ) {
+        return Evaluator<T*, T*, Op>::evaluate( NULL, rhs );
+    }
+    template<Operator Op, typename T> bool compare( T* lhs, std::nullptr_t ) {
+        return Evaluator<T*, T*, Op>::evaluate( lhs, NULL );
+    }
+#endif // CATCH_CONFIG_CPP11_NULLPTR
 
 } // end of namespace Internal
 } // end of namespace Catch
