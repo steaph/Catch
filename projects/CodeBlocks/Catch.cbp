@@ -147,6 +147,10 @@
 		<Unit filename="../SelfTest/catch_self_test.cpp" />
 		<Unit filename="../SelfTest/catch_self_test.hpp" />
 		<Unit filename="../Tutorial/Tutorial1.cpp" />
+		<Unit filename="../VS2005/README.md" />
+		<Unit filename="../VS2005/TestCatch/compile-debug.bat" />
+		<Unit filename="../VS2005/TestCatch/compile.bat" />
+		<Unit filename="../VS2005/Tutorial/compile.bat" />
 		<Unit filename="../VS2008/TestCatch/TestCatch/ReadMe.txt" />
 		<Unit filename="../VS2008/TestCatch/TestCatch/TestCatch.cpp" />
 		<Unit filename="../VS2008/TestCatch/_UpgradeReport_Files/UpgradeReport_Minus.gif" />
