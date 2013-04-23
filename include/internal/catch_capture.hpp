@@ -27,8 +27,8 @@ namespace Catch {
     }
 
     template<typename MatcherT>
-    ExpressionResultBuilder expressionResultBuilderFromMatcher( const MatcherT& matcher,
-                                                                const std::string& matcherCallAsString ) {
+    ExpressionResultBuilder expressionResultBuilderFromMatcher( MatcherT const& matcher,
+                                                                std::string const& matcherCallAsString ) {
         std::string matcherAsString = matcher.toString();
         if( matcherAsString == "{?}" )
             matcherAsString = matcherCallAsString;
@@ -38,9 +38,9 @@ namespace Catch {
     }
 
     template<typename MatcherT, typename ArgT>
-    ExpressionResultBuilder expressionResultBuilderFromMatcher( const MatcherT& matcher,
-                                                                const ArgT& arg,
-                                                                const std::string& matcherCallAsString ) {
+    ExpressionResultBuilder expressionResultBuilderFromMatcher( MatcherT const& matcher,
+                                                                ArgT const& arg,
+                                                                std::string const& matcherCallAsString ) {
         return expressionResultBuilderFromMatcher( matcher, matcherCallAsString )
             .setLhs( Catch::toString( arg ) )
             .setResultType( matcher.match( arg ) );
@@ -48,9 +48,9 @@ namespace Catch {
 
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     template<typename MatcherT, typename ArgT>
-    ExpressionResultBuilder expressionResultBuilderFromMatcher( const MatcherT& matcher,
+    ExpressionResultBuilder expressionResultBuilderFromMatcher( MatcherT const& matcher,
                                                                 ArgT* arg,
-                                                                const std::string& matcherCallAsString ) {
+                                                                std::string const& matcherCallAsString ) {
         return expressionResultBuilderFromMatcher( matcher, matcherCallAsString )
             .setLhs( Catch::toString( arg ) )
             .setResultType( matcher.match( arg ) );

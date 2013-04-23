@@ -24,38 +24,38 @@ struct STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison;
 // in an ExpressionResultBuilder object
 template<typename T>
 class ExpressionLhs {
-    void operator = ( const ExpressionLhs& );
+    void operator = ( ExpressionLhs const& );
 
 public:
     ExpressionLhs( T lhs ) : m_lhs( lhs ) {}
 
     template<typename RhsT>
-    ExpressionResultBuilder& operator == ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator == ( RhsT const& rhs ) {
         return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ExpressionResultBuilder& operator != ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator != ( RhsT const& rhs ) {
         return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ExpressionResultBuilder& operator < ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator < ( RhsT const& rhs ) {
         return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ExpressionResultBuilder& operator > ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator > ( RhsT const& rhs ) {
         return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ExpressionResultBuilder& operator <= ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator <= ( RhsT const& rhs ) {
         return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
     template<typename RhsT>
-    ExpressionResultBuilder& operator >= ( const RhsT& rhs ) {
+    ExpressionResultBuilder& operator >= ( RhsT const& rhs ) {
         return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
     }
 
@@ -77,14 +77,14 @@ public:
 
     // Only simple binary expressions are allowed on the LHS.
     // If more complex compositions are required then place the sub expression in parentheses
-    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator + ( const RhsT& );
-    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator - ( const RhsT& );
-    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator / ( const RhsT& );
-    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator * ( const RhsT& );
+    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator + ( RhsT const& );
+    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator - ( RhsT const& );
+    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator / ( RhsT const& );
+    template<typename RhsT> STATIC_ASSERT_Expression_Too_Complex_Please_Rewrite_As_Binary_Comparison& operator * ( RhsT const& );
 
 private:
     template<Internal::Operator Op, typename RhsT>
-    ExpressionResultBuilder& captureExpression( const RhsT& rhs ) {
+    ExpressionResultBuilder& captureExpression( RhsT const& rhs ) {
         return m_result
             .setResultType( Internal::Comparator<Op>::compare( m_lhs, rhs ) )
             .setLhs( Catch::toString( m_lhs ) )

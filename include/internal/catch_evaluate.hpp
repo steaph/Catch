@@ -39,13 +39,13 @@ namespace Internal {
     template<> struct OperatorTraits<IsLessThanOrEqualTo>   { static const char* getName(){ return "<="; } };
     template<> struct OperatorTraits<IsGreaterThanOrEqualTo>{ static const char* getName(){ return ">="; } };
     template<typename T>
-    inline T& opCast(const T& t) { return const_cast<T&>(t); }
+    inline T& opCast(T const& t) { return const_cast<T&>(t); }
 
 // nullptr_t support based on pull request #154 from Konstantin Baumann
 #ifdef CATCH_CONFIG_CPP11_NULLPTR
     inline std::nullptr_t opCast(std::nullptr_t) { return nullptr; }
 #endif // CATCH_CONFIG_CPP11_NULLPTR
-    
+
 
     // So the compare overloads can be operator agnostic we convey the operator as a template
     // enum, which is used to specialise an Evaluator for doing the comparison.
@@ -53,14 +53,14 @@ namespace Internal {
     struct Evaluator
     {
        template<typename T1, typename T2>
-       static bool evaluate( const T1& lhs, const T2& rhs);
+       static bool evaluate( T1 const& lhs, T2 const& rhs);
     };
 
     template<>
     struct Evaluator<IsEqualTo>
     {
        template<typename T1, typename T2>
-        static bool evaluate( const T1& lhs, const T2& rhs) {
+        static bool evaluate( T1 const& lhs, T2 const& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs == rhs;
 #else
@@ -72,7 +72,7 @@ namespace Internal {
     struct Evaluator<IsNotEqualTo>
     {
        template<typename T1, typename T2>
-        static bool evaluate( const T1& lhs, const T2& rhs) {
+        static bool evaluate( T1 const& lhs, T2 const& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs != rhs;
 #else
@@ -84,7 +84,7 @@ namespace Internal {
     struct Evaluator<IsLessThan>
     {
        template<typename T1, typename T2>
-        static bool evaluate( const T1& lhs, const T2& rhs) {
+        static bool evaluate( T1 const& lhs, T2 const& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs < rhs;
 #else
@@ -96,7 +96,7 @@ namespace Internal {
     struct Evaluator<IsGreaterThan>
     {
        template<typename T1, typename T2>
-        static bool evaluate( const T1& lhs, const T2& rhs) {
+        static bool evaluate( T1 const& lhs, T2 const& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs > rhs;
 #else
@@ -108,7 +108,7 @@ namespace Internal {
     struct Evaluator<IsGreaterThanOrEqualTo>
     {
        template<typename T1, typename T2>
-        static bool evaluate( const T1& lhs, const T2& rhs) {
+        static bool evaluate( T1 const& lhs, T2 const& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs >= rhs;
 #else
@@ -120,7 +120,7 @@ namespace Internal {
     struct Evaluator<IsLessThanOrEqualTo>
     {
         template<typename T1, typename T2>
-        static bool evaluate( const T1& lhs, const T2& rhs) {
+        static bool evaluate( T1 const& lhs, T2 const& rhs) {
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
             return lhs <= rhs;
 #else
@@ -135,14 +135,14 @@ namespace Internal {
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
 
         template<typename T1, typename T2>
-        static bool compare( const T1& lhs, const T2& rhs ) {
+        static bool compare( T1 const& lhs, T2 const& rhs ) {
             return Evaluator<Op>::evaluate( lhs, rhs );
         }
 #else
 class ::Catch::Detail::Approx;
 
 #define INTERNAL_CATCH_DEFINE_COMPARE( LhsT, RhsT ) \
-        static bool compare( const LhsT& lhs, const RhsT& rhs ) { \
+        static bool compare( LhsT const& lhs, RhsT const& rhs ) { \
             return Evaluator<Op>::evaluate( lhs, rhs ); \
         }
 
@@ -265,13 +265,13 @@ class ::Catch::Detail::Approx;
 
         // pointer to long (when comparing against NULL)
         template<typename T>
-        static bool compare( long lhs, const T* rhs ) {
-            return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
+        static bool compare( long lhs, T const* rhs ) {
+            return Evaluator<Op>::evaluate( reinterpret_cast<T const*>( lhs ), rhs );
         }
 
         template<typename T>
-        static bool compare( const T* lhs, long rhs ) {
-            return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
+        static bool compare( T const* lhs, long rhs ) {
+            return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T const*>( rhs ) );
         }
 
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
@@ -288,13 +288,13 @@ class ::Catch::Detail::Approx;
 
         // pointer to int (when comparing against NULL)
         template<typename T>
-        static bool compare( int lhs, const T* rhs ) {
-            return Evaluator<Op>::evaluate( reinterpret_cast<const T*>( lhs ), rhs );
+        static bool compare( int lhs, T const* rhs ) {
+            return Evaluator<Op>::evaluate( reinterpret_cast<T const*>( lhs ), rhs );
         }
 
         template<typename T>
-        static bool compare( const T* lhs, int rhs ) {
-            return Evaluator<Op>::evaluate( lhs, reinterpret_cast<const T*>( rhs ) );
+        static bool compare( T const* lhs, int rhs ) {
+            return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T const*>( rhs ) );
         }
 
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
