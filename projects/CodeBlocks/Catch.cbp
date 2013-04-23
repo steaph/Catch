@@ -110,6 +110,7 @@
 		<Unit filename="../../include/reporters/nw-catch_reporter_console.hpp" />
 		<Unit filename="../../scripts/approvalTests.py" />
 		<Unit filename="../../scripts/approve.py" />
+		<Unit filename="../../scripts/diff.py" />
 		<Unit filename="../../scripts/generateSingleHeader.py" />
 		<Unit filename="../../single_include/catch.hpp" />
 		<Unit filename="../SelfTest/ApproxTests.cpp" />
