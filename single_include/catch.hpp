@@ -1,6 +1,6 @@
 /*
- *  CATCH-VC6 v0.9 build 36 (integration branch)
- *  Generated: 2013-04-22 22:19:09.717000
+ *  CATCH-VC6 v0.9 build 37 (integration branch)
+ *  Generated: 2013-04-23 11:51:16.175000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -425,7 +425,7 @@ namespace Catch {
 #if __GNUC__ < 3
 
 #if (__GNUC_MINOR__ >= 96 )
-#define CATCH_CONFIG_SFINAE
+//#define CATCH_CONFIG_SFINAE
 #endif
 
 #elif __GNUC__ >= 3
@@ -3012,6 +3012,7 @@ namespace Catch {
             .setResultType( matcher.match( arg ) );
     }
 
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     template<typename MatcherT, typename ArgT>
     ExpressionResultBuilder expressionResultBuilderFromMatcher( const MatcherT& matcher,
                                                                 ArgT* arg,
@@ -3020,6 +3021,7 @@ namespace Catch {
             .setLhs( Catch::toString( arg ) )
             .setResultType( matcher.match( arg ) );
     }
+#endif
 
 struct TestFailureException{};
 
@@ -3641,6 +3643,9 @@ namespace Matchers {
 
     namespace StdString {
 
+        inline std::string makeString( const std::string& str ) { return str; }
+        inline std::string makeString( const char* str ) { return str ? std::string( str ) : std::string(); }
+
         struct Equals : MatcherImpl<Equals, std::string> {
             Equals( const std::string& str ) : m_str( str ){}
             Equals( const Equals& other ) : m_str( other.m_str ){}
@@ -3732,10 +3737,30 @@ namespace Matchers {
         return Impl::Generic::AnyOf<ExpressionT>().add( m1 ).add( m2 ).add( m3 );
     }
 
-    inline Impl::StdString::Equals      Equals( const std::string& str ){ return Impl::StdString::Equals( str ); }
-    inline Impl::StdString::Contains    Contains( const std::string& substr ){ return Impl::StdString::Contains( substr ); }
-    inline Impl::StdString::StartsWith  StartsWith( const std::string& substr ){ return Impl::StdString::StartsWith( substr ); }
-    inline Impl::StdString::EndsWith    EndsWith( const std::string& substr ){ return Impl::StdString::EndsWith( substr ); }
+    inline Impl::StdString::Equals      Equals( const std::string& str ) {
+        return Impl::StdString::Equals( str );
+    }
+    inline Impl::StdString::Equals      Equals( const char* str ) {
+        return Impl::StdString::Equals( Impl::StdString::makeString( str ) );
+    }
+    inline Impl::StdString::Contains    Contains( const std::string& substr ) {
+        return Impl::StdString::Contains( substr );
+    }
+    inline Impl::StdString::Contains    Contains( const char* substr ) {
+        return Impl::StdString::Contains( Impl::StdString::makeString( substr ) );
+    }
+    inline Impl::StdString::StartsWith  StartsWith( const std::string& substr ) {
+        return Impl::StdString::StartsWith( substr );
+    }
+    inline Impl::StdString::StartsWith  StartsWith( const char* substr ) {
+        return Impl::StdString::StartsWith( Impl::StdString::makeString( substr ) );
+    }
+    inline Impl::StdString::EndsWith    EndsWith( const std::string& substr ) {
+        return Impl::StdString::EndsWith( substr );
+    }
+    inline Impl::StdString::EndsWith    EndsWith( const char* substr ) {
+        return Impl::StdString::EndsWith( Impl::StdString::makeString( substr ) );
+    }
 
 } // namespace Matchers
 
@@ -6603,7 +6628,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 0, 9, 36, "integration" );
+    Version libraryVersion( 0, 9, 37, "integration" );
 }
 
 // #included from: catch_text.hpp
