@@ -116,6 +116,7 @@
 		<Unit filename="../SelfTest/Baselines/approvedResults.txt" />
 		<Unit filename="../SelfTest/Baselines/results.txt" />
 		<Unit filename="../SelfTest/BasicTests.cpp" />
+		<Unit filename="../SelfTest/BDDTests.cpp" />
 		<Unit filename="../SelfTest/ClassTests.cpp" />
 		<Unit filename="../SelfTest/ConditionTests.cpp" />
 		<Unit filename="../SelfTest/ExceptionTests.cpp" />
