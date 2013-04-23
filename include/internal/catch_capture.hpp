@@ -59,10 +59,6 @@ namespace Catch {
 
 struct TestFailureException{};
 
-
-// This is just here to avoid compiler warnings with macro constants and boolean literals
-inline bool isTrue( bool value ){ return value; }
-
 } // end namespace Catch
 
 ///////////////////////////////////////////////////////////////////////////////
