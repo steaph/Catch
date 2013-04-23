@@ -161,8 +161,8 @@ TEST_CASE( "./succeeding/Basic/mixedstring", "C and std::string comparison" )
     SUCCEED( "VC6: skip succeeding require" );
 #endif
 
-    char * ch = "hello" ;
-    char * cw = "world" ;
+    char const * const ch = "hello" ;
+    char const * const cw = "world" ;
     std::string h = "hello" ;
     std::string w = "world" ;
 
@@ -202,8 +202,8 @@ TEST_CASE( "./failing/Basic/mixedstring", "C and std::string comparison" )
     CHECK( "VC6 skip failing check" == NULL );
 #endif
 
-    char * ch = "hello" ;
-    char * cw = "world" ;
+    char const * const ch = "hello" ;
+    char const * const cw = "world" ;
     std::string h = "hello" ;
     std::string w = "world" ;
 
@@ -232,9 +232,9 @@ TEST_CASE( "./failing/Basic/mixedstring", "C and std::string comparison" )
 
 TEST_CASE( "./succeeding/Basic/pointer", "pointer--NULL comparison" )
 {
-    char * p = NULL;
-    char * cp = NULL;
+    char const * const p = NULL;
+    char const * const cp = NULL;
 
-//    REQUIRE( p == NULL );
-//    REQUIRE( cp == NULL );
+    REQUIRE( p == NULL );
+    REQUIRE( cp == NULL );
 }
