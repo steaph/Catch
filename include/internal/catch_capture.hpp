@@ -46,6 +46,7 @@ namespace Catch {
             .setResultType( matcher.match( arg ) );
     }
 
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     template<typename MatcherT, typename ArgT>
     ExpressionResultBuilder expressionResultBuilderFromMatcher( const MatcherT& matcher,
                                                                 ArgT* arg,
@@ -54,6 +55,7 @@ namespace Catch {
             .setLhs( Catch::toString( arg ) )
             .setResultType( matcher.match( arg ) );
     }
+#endif
 
 struct TestFailureException{};
 
