@@ -48,7 +48,7 @@ def main():
           content="text/html; charset=ISO-8859-1" />
     <title></title>
     <style type="text/css">
-        table.diff {font-family:Consolas; font-size:11px; border:medium;}
+        table.diff {font-family:Consolas, monospace; font-size:11px; border:medium;}
         .diff_header {background-color:#e0e0e0}
         td.diff_header {text-align:right}
         .diff_next {background-color:#c0c0c0}
