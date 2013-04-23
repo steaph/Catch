@@ -61,11 +61,7 @@ namespace Internal {
     {
        template<typename T1, typename T2>
         static bool evaluate( T1 const& lhs, T2 const& rhs) {
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs == rhs;
-#else
             return opCast( lhs ) ==  opCast( rhs );
-#endif
         }
     };
     template<>
@@ -73,11 +69,7 @@ namespace Internal {
     {
        template<typename T1, typename T2>
         static bool evaluate( T1 const& lhs, T2 const& rhs) {
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs != rhs;
-#else
             return opCast( lhs ) != opCast( rhs );
-#endif
         }
     };
     template<>
@@ -85,11 +77,7 @@ namespace Internal {
     {
        template<typename T1, typename T2>
         static bool evaluate( T1 const& lhs, T2 const& rhs) {
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs < rhs;
-#else
             return opCast( lhs ) < opCast( rhs );
-#endif
         }
     };
     template<>
@@ -97,11 +85,7 @@ namespace Internal {
     {
        template<typename T1, typename T2>
         static bool evaluate( T1 const& lhs, T2 const& rhs) {
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs > rhs;
-#else
             return opCast( lhs ) > opCast( rhs );
-#endif
         }
     };
     template<>
@@ -109,11 +93,7 @@ namespace Internal {
     {
        template<typename T1, typename T2>
         static bool evaluate( T1 const& lhs, T2 const& rhs) {
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs >= rhs;
-#else
             return opCast( lhs ) >= opCast( rhs );
-#endif
         }
     };
     template<>
@@ -121,11 +101,7 @@ namespace Internal {
     {
         template<typename T1, typename T2>
         static bool evaluate( T1 const& lhs, T2 const& rhs) {
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            return lhs <= rhs;
-#else
             return opCast( lhs ) <= opCast( rhs );
-#endif
         }
     };
 
