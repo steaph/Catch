@@ -197,6 +197,9 @@
 		<Unit filename="../XCode4/OCTest/OCTest/CatchOCTestCase.h" />
 		<Unit filename="../XCode4/OCTest/OCTest/TestObj.h" />
 		<Unit filename="../XCode4/iOSTest/iOSTest/TestObj.h" />
+		<Unit filename="../clang/TestCatch/compile-00-basic.bat" />
+		<Unit filename="../clang/TestCatch/compile.bat" />
+		<Unit filename="../clang/Tutorial/compile.bat" />
 		<Unit filename="../gcc/TestCatch/compile-00-basic.bat" />
 		<Unit filename="../gcc/TestCatch/compile.bat" />
 		<Unit filename="../gcc/TestCatch/fail-gcc.txt" />
