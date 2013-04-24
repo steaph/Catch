@@ -114,10 +114,10 @@
 		<Unit filename="../../scripts/generateSingleHeader.py" />
 		<Unit filename="../../single_include/catch.hpp" />
 		<Unit filename="../SelfTest/ApproxTests.cpp" />
+		<Unit filename="../SelfTest/BDDTests.cpp" />
 		<Unit filename="../SelfTest/Baselines/approvedResults.txt" />
 		<Unit filename="../SelfTest/Baselines/results.txt" />
 		<Unit filename="../SelfTest/BasicTests.cpp" />
-		<Unit filename="../SelfTest/BDDTests.cpp" />
 		<Unit filename="../SelfTest/ClassTests.cpp" />
 		<Unit filename="../SelfTest/ConditionTests.cpp" />
 		<Unit filename="../SelfTest/ExceptionTests.cpp" />
@@ -199,6 +199,7 @@
 		<Unit filename="../XCode4/OCTest/OCTest/CatchOCTestCase.h" />
 		<Unit filename="../XCode4/OCTest/OCTest/TestObj.h" />
 		<Unit filename="../XCode4/iOSTest/iOSTest/TestObj.h" />
+		<Unit filename="../clang/TestCatch/clang++.bat" />
 		<Unit filename="../clang/TestCatch/compile-00-basic.bat" />
 		<Unit filename="../clang/TestCatch/compile.bat" />
 		<Unit filename="../clang/Tutorial/compile.bat" />
