@@ -112,6 +112,7 @@
 		<Unit filename="../../scripts/approve.py" />
 		<Unit filename="../../scripts/diff.py" />
 		<Unit filename="../../scripts/generateSingleHeader.py" />
+		<Unit filename="../../scripts/scriptCommon.py" />
 		<Unit filename="../../single_include/catch.hpp" />
 		<Unit filename="../SelfTest/ApproxTests.cpp" />
 		<Unit filename="../SelfTest/BDDTests.cpp" />
