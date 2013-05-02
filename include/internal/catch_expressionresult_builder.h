@@ -57,6 +57,10 @@ private:
 
 namespace Internal {
 
+    // help VC6 partial ordering:
+    struct Basic {};
+    struct Preferred : Basic {};
+
     template<Operator Op>
     class Apply
     {
@@ -65,7 +69,7 @@ namespace Internal {
         : m_result( result ) {}
 
         template<typename T1, typename T2>
-        ExpressionResultBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
+        ExpressionResultBuilder& captureExpression( const T1& lhs, const T2& rhs, Basic const &  ) {
             m_result.setResultType( Comparator<Op>::compare( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
             m_result.m_exprComponents.lhs = Catch::toString( lhs );
             m_result.m_exprComponents.rhs = Catch::toString( rhs );
@@ -75,11 +79,20 @@ namespace Internal {
 
         template<typename T>
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-        ExpressionResultBuilder& captureExpression( const T*& lhs, const int& rhs ) {
+        ExpressionResultBuilder& captureExpression( const T* lhs, const int& rhs, Preferred const & ) {
 #else
-        ExpressionResultBuilder& captureExpression( const T*  lhs, const int& rhs ) {
+        ExpressionResultBuilder& captureExpression( const T* lhs, const int& rhs, Basic const & ) {
 #endif
-            return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
+            return captureExpression( lhs, reinterpret_cast<const T*>( rhs ), Basic() );
+        }
+
+        template<typename T>
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        ExpressionResultBuilder& captureExpression( const int& lhs, const T* rhs, Preferred const & ) {
+#else
+        ExpressionResultBuilder& captureExpression( const int& lhs, const T* rhs, Basic const & ) {
+#endif
+            return captureExpression( reinterpret_cast<const T*>( lhs ), rhs, Basic() );
         }
 
     private:

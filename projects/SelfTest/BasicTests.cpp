@@ -153,13 +153,8 @@ TEST_CASE( "./succeeding/Basic/mixedstring", "C and std::string comparison" )
     REQUIRE( std::string("hello") == "hello" );
     REQUIRE( std::string("hello") != "world" );
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     REQUIRE( "hello" == std::string("hello") );
     REQUIRE( "hello" != std::string("world") );
-#else
-    SUCCEED( "VC6: skip succeeding require" );
-    SUCCEED( "VC6: skip succeeding require" );
-#endif
 
     char const * const ch = "hello" ;
     char const * const cw = "world" ;
@@ -169,24 +164,14 @@ TEST_CASE( "./succeeding/Basic/mixedstring", "C and std::string comparison" )
     REQUIRE( h == ch );
     REQUIRE( w == cw );
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     REQUIRE( ch == h );
     REQUIRE( cw == w );
-#else
-    SUCCEED( "VC6: skip succeeding require" );
-    SUCCEED( "VC6: skip succeeding require" );
-#endif
 
     REQUIRE( h != cw );
     REQUIRE( w != ch );
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     REQUIRE( ch != w );
     REQUIRE( cw != h );
-#else
-    SUCCEED( "VC6: skip succeeding require" );
-    SUCCEED( "VC6: skip succeeding require" );
-#endif
 }
 
 TEST_CASE( "./failing/Basic/mixedstring", "C and std::string comparison" )
@@ -194,13 +179,8 @@ TEST_CASE( "./failing/Basic/mixedstring", "C and std::string comparison" )
     CHECK( std::string("hello") != "hello" );
     CHECK( std::string("hello") == "world" );
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     CHECK( "hello" != std::string("hello") );
     CHECK( "hello" == std::string("world") );
-#else
-    CHECK( "VC6 skip failing check" == NULL );
-    CHECK( "VC6 skip failing check" == NULL );
-#endif
 
     char const * const ch = "hello" ;
     char const * const cw = "world" ;
@@ -210,24 +190,14 @@ TEST_CASE( "./failing/Basic/mixedstring", "C and std::string comparison" )
     CHECK( h != ch );
     CHECK( w != cw );
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     CHECK( ch != h );
     CHECK( cw != w );
-#else
-    CHECK( "VC6 skip failing check" == NULL );
-    CHECK( "VC6 skip failing check" == NULL );
-#endif
 
     CHECK( h == cw );
     CHECK( w == ch );
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     CHECK( ch == w );
     CHECK( cw == h );
-#else
-    CHECK( "VC6 skip failing check" == NULL );
-    CHECK( "VC6 skip failing check" == NULL );
-#endif
 }
 
 TEST_CASE( "./succeeding/Basic/pointer", "pointer--NULL comparison" )

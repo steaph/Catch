@@ -1,6 +1,6 @@
 /*
  *  CATCH-VC6 v0.9 build 38 (integration branch)
- *  Generated: 2013-04-24 21:26:25.306000
+ *  Generated: 2013-05-02 11:52:38.794000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -1220,93 +1220,11 @@ namespace Internal {
     template<Operator Op>
     struct Comparator
     {
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-
         template<typename T1, typename T2>
         static bool compare( T1 const& lhs, T2 const& rhs ) {
             return Evaluator<Op>::evaluate( lhs, rhs );
         }
-#else
-class ::Catch::Detail::Approx;
 
-#define INTERNAL_CATCH_DEFINE_COMPARE( LhsT, RhsT ) \
-        static bool compare( LhsT const& lhs, RhsT const& rhs ) { \
-            return Evaluator<Op>::evaluate( lhs, rhs ); \
-        }
-
-        INTERNAL_CATCH_DEFINE_COMPARE( int, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( int, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( int, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( int, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( int, ::Catch::Detail::Approx )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( long, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( long, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( long, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( long, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( long, ::Catch::Detail::Approx )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( float, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, ::Catch::Detail::Approx )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( double, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, ::Catch::Detail::Approx )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, double )
-
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, int )
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, ::Catch::Detail::Approx )
-
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, ::Catch::Detail::Approx )
-
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( int, unsigned int )
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( int, unsigned long )
-
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( long, unsigned int )
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( long, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( float, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( double, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( std::string, std::string )
-
-#undef INTERNAL_CATCH_DEFINE_COMPARE
-#endif
         // unsigned X to int
         static bool compare( unsigned int lhs, int rhs ) {
             return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
@@ -1362,7 +1280,6 @@ class ::Catch::Detail::Approx;
             return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T const*>( rhs ) );
         }
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         template<typename T>
         static bool compare( long lhs, T* rhs ) {
             return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
@@ -1372,7 +1289,6 @@ class ::Catch::Detail::Approx;
         static bool compare( T* lhs, long rhs ) {
             return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
         }
-#endif
 
         // pointer to int (when comparing against NULL)
         template<typename T>
@@ -1385,7 +1301,6 @@ class ::Catch::Detail::Approx;
             return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T const*>( rhs ) );
         }
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         template<typename T>
         static bool compare( int lhs, T* rhs ) {
             return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
@@ -1395,19 +1310,6 @@ class ::Catch::Detail::Approx;
         static bool compare( T* lhs, int rhs ) {
             return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
         }
-#endif
-
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-        template<typename T>
-        static bool compare( T* const & lhs, T* const & rhs ) {
-            return Evaluator<Op>::evaluate( lhs, rhs );
-        }
-
-        template<typename T>
-        static bool compare( const std::vector<T>& lhs, const std::vector<T>& rhs ) { \
-            return Evaluator<Op>::evaluate( lhs, rhs ); \
-        }
-#endif
     };
 
 #ifdef CATCH_CONFIG_CPP11_NULLPTR
@@ -1470,6 +1372,10 @@ private:
 
 namespace Internal {
 
+    // help VC6 partial ordering:
+    struct Basic {};
+    struct Preferred : Basic {};
+
     template<Operator Op>
     class Apply
     {
@@ -1478,7 +1384,7 @@ namespace Internal {
         : m_result( result ) {}
 
         template<typename T1, typename T2>
-        ExpressionResultBuilder& captureExpression( const T1& lhs, const T2& rhs ) {
+        ExpressionResultBuilder& captureExpression( const T1& lhs, const T2& rhs, Basic const &  ) {
             m_result.setResultType( Comparator<Op>::compare( lhs, rhs ) ? ResultWas::Ok : ResultWas::ExpressionFailed );
             m_result.m_exprComponents.lhs = Catch::toString( lhs );
             m_result.m_exprComponents.rhs = Catch::toString( rhs );
@@ -1488,11 +1394,20 @@ namespace Internal {
 
         template<typename T>
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-        ExpressionResultBuilder& captureExpression( const T*& lhs, const int& rhs ) {
+        ExpressionResultBuilder& captureExpression( const T* lhs, const int& rhs, Preferred const & ) {
 #else
-        ExpressionResultBuilder& captureExpression( const T*  lhs, const int& rhs ) {
+        ExpressionResultBuilder& captureExpression( const T* lhs, const int& rhs, Basic const & ) {
 #endif
-            return captureExpression( lhs, reinterpret_cast<const T*>( rhs ) );
+            return captureExpression( lhs, reinterpret_cast<const T*>( rhs ), Basic() );
+        }
+
+        template<typename T>
+#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        ExpressionResultBuilder& captureExpression( const int& lhs, const T* rhs, Preferred const & ) {
+#else
+        ExpressionResultBuilder& captureExpression( const int& lhs, const T* rhs, Basic const & ) {
+#endif
+            return captureExpression( reinterpret_cast<const T*>( lhs ), rhs, Basic() );
         }
 
     private:
@@ -1522,40 +1437,40 @@ public:
 
     template<typename RhsT>
     ExpressionResultBuilder& operator == ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator != ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator < ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator > ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator <= ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator >= ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     ExpressionResultBuilder& operator == ( bool rhs ) {
-        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     ExpressionResultBuilder& operator != ( bool rhs ) {
-        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     ExpressionResultBuilder& endExpression( ResultDisposition::Flags resultDisposition ) {
