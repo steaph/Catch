@@ -31,42 +31,42 @@ public:
 
     template<typename RhsT>
     ExpressionResultBuilder& operator == ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator != ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator < ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsLessThan>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator > ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsGreaterThan>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator <= ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsLessThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     template<typename RhsT>
     ExpressionResultBuilder& operator >= ( RhsT const& rhs ) {
-        return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsGreaterThanOrEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     ExpressionResultBuilder& operator == ( bool rhs ) {
-        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
 
     ExpressionResultBuilder& operator != ( bool rhs ) {
-        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs );
+        return Internal::Apply<Internal::IsNotEqualTo>(m_result).captureExpression( m_lhs, rhs, Internal::Preferred() );
     }
-    
+
     ExpressionResultBuilder& endExpression( ResultDisposition::Flags resultDisposition ) {
         bool value = m_lhs ? true : false;
         return m_result

@@ -108,93 +108,11 @@ namespace Internal {
     template<Operator Op>
     struct Comparator
     {
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-
         template<typename T1, typename T2>
         static bool compare( T1 const& lhs, T2 const& rhs ) {
             return Evaluator<Op>::evaluate( lhs, rhs );
         }
-#else
-class ::Catch::Detail::Approx;
 
-#define INTERNAL_CATCH_DEFINE_COMPARE( LhsT, RhsT ) \
-        static bool compare( LhsT const& lhs, RhsT const& rhs ) { \
-            return Evaluator<Op>::evaluate( lhs, rhs ); \
-        }
-
-        INTERNAL_CATCH_DEFINE_COMPARE( int, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( int, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( int, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( int, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( int, ::Catch::Detail::Approx )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( long, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( long, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( long, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( long, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( long, ::Catch::Detail::Approx )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( float, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, ::Catch::Detail::Approx )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( double, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, ::Catch::Detail::Approx )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, double )
-
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, int )
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, ::Catch::Detail::Approx )
-
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, int )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, long )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, float )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, double )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, ::Catch::Detail::Approx )
-
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( int, unsigned int )
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( int, unsigned long )
-
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( long, unsigned int )
-//      exclude: error C2668: 'compare' : ambiguous call to overloaded function
-//        INTERNAL_CATCH_DEFINE_COMPARE( long, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned int, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( unsigned long, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( float, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( float, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( double, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( double, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, unsigned int )
-        INTERNAL_CATCH_DEFINE_COMPARE( ::Catch::Detail::Approx, unsigned long )
-
-        INTERNAL_CATCH_DEFINE_COMPARE( std::string, std::string )
-
-#undef INTERNAL_CATCH_DEFINE_COMPARE
-#endif
         // unsigned X to int
         static bool compare( unsigned int lhs, int rhs ) {
             return Evaluator<Op>::evaluate( lhs, static_cast<unsigned int>( rhs ) );
@@ -250,7 +168,6 @@ class ::Catch::Detail::Approx;
             return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T const*>( rhs ) );
         }
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         template<typename T>
         static bool compare( long lhs, T* rhs ) {
             return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
@@ -260,7 +177,6 @@ class ::Catch::Detail::Approx;
         static bool compare( T* lhs, long rhs ) {
             return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
         }
-#endif
 
         // pointer to int (when comparing against NULL)
         template<typename T>
@@ -273,7 +189,6 @@ class ::Catch::Detail::Approx;
             return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T const*>( rhs ) );
         }
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         template<typename T>
         static bool compare( int lhs, T* rhs ) {
             return Evaluator<Op>::evaluate( reinterpret_cast<T*>( lhs ), rhs );
@@ -283,19 +198,6 @@ class ::Catch::Detail::Approx;
         static bool compare( T* lhs, int rhs ) {
             return Evaluator<Op>::evaluate( lhs, reinterpret_cast<T*>( rhs ) );
         }
-#endif
-
-#ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
-        template<typename T>
-        static bool compare( T* const & lhs, T* const & rhs ) {
-            return Evaluator<Op>::evaluate( lhs, rhs );
-        }
-
-        template<typename T>
-        static bool compare( const std::vector<T>& lhs, const std::vector<T>& rhs ) { \
-            return Evaluator<Op>::evaluate( lhs, rhs ); \
-        }
-#endif
     };
 
 #ifdef CATCH_CONFIG_CPP11_NULLPTR
