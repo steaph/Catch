@@ -181,9 +181,7 @@ namespace Catch {
                 return 0;
             }
 
-            AllOptions options;
-
-            options.parseIntoConfig( parser, configData );
+            parseCommandLine( argc, argv, configData );
         }
         catch( std::exception& ex ) {
             std::cerr << ex.what() << "\n\nUsage: ...\n\n";
