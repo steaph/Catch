@@ -23,7 +23,7 @@
 #endif
 
 namespace Catch {
-    
+
     struct ConfigData {
 
         struct Verbosity { enum Level {
@@ -47,7 +47,7 @@ namespace Catch {
             cutoff( -1 ),
             warnings( WarnAbout::Nothing )
         {}
-        
+
         bool listTests;
         bool listTags;
         bool listReporters;
@@ -65,12 +65,12 @@ namespace Catch {
         std::string outputFilename;
         std::string name;
 
-        std::vector<TestCaseFilters> filters; // !TBD strings
+        std::vector<std::string> testsOrTags;
 
         std::string stream;
     };
-    
-    
+
+
     class Config : public SharedImpl<IConfig> {
     private:
         Config( Config const& other );
@@ -81,41 +81,56 @@ namespace Catch {
         Config()
         :   m_os( std::cout.rdbuf() )
         {}
-        
+
         Config( ConfigData const& data )
         :   m_data( data ),
-            m_os( std::cout.rdbuf() ),
-            m_filters( data.filters )
-        {}
-        
+            m_os( std::cout.rdbuf() )
+        {
+            std::string groupName;
+            for( std::size_t i = 0; i < data.testsOrTags.size(); ++i ) {
+                if( i != 0 )
+                    groupName += " ";
+                groupName += data.testsOrTags[i];
+            }
+            TestCaseFilters filters( groupName );
+            {for( std::size_t i = 0; i < data.testsOrTags.size(); ++i ) {
+                std::string filter = data.testsOrTags[i];
+                if( startsWith( filter, "[" ) || startsWith( filter, "~[" ) )
+                    filters.addTags( filter );
+                else
+                    filters.addFilter( TestCaseFilter( filter ) );
+            }}
+            m_filterSets.push_back( filters );
+        }
+
         virtual ~Config() {
             m_os.rdbuf( std::cout.rdbuf() );
             m_stream.release();
         }
-        
+
         void setFilename( std::string const& filename ) {
             m_data.outputFilename = filename;
         }
-        
+
         std::string const& getFilename() const {
             return m_data.outputFilename ;
         }
-        
+
         bool listTests() const { return m_data.listTests; }
         bool listTags() const { return m_data.listTags; }
         bool listReporters() const { return m_data.listReporters; }
-        
+
         std::string getName() const {
             return m_data.name;
         }
-        
+
         bool shouldDebugBreak() const {
             return m_data.shouldDebugBreak;
         }
-        
+
         void setStreamBuf( std::streambuf* buf ) {
             m_os.rdbuf( buf ? buf : std::cout.rdbuf() );
-        }        
+        }
 
         void useStream( std::string const& streamName ) {
             Stream stream = createStream( streamName );
@@ -123,7 +138,7 @@ namespace Catch {
             m_stream.release();
             m_stream = stream;
         }
-        
+
         std::string getStreamName() const { return m_data.stream; }
 
         std::string getReporterName() const { return m_data.reporter; }
@@ -131,15 +146,15 @@ namespace Catch {
         void addTestSpec( std::string const& testSpec ) {
             TestCaseFilters filters( testSpec );
             filters.addFilter( TestCaseFilter( testSpec ) );
-            m_data.filters.push_back( filters );
+            m_filterSets.push_back( filters );
         }
-                
+
         int abortAfter() const {
             return m_data.cutoff;
         }
-        
+
         std::vector<TestCaseFilters> const& filters() const {
-            return m_filters;
+            return m_filterSets;
         }
 
         // IConfig interface
@@ -151,13 +166,13 @@ namespace Catch {
 
     private:
         ConfigData m_data;
-        
+
         Stream m_stream;
         mutable std::ostream m_os;
-        std::vector<TestCaseFilters> m_filters;
+        std::vector<TestCaseFilters> m_filterSets;
     };
-        
-    
+
+
 } // end namespace Catch
 
 #endif // TWOBLUECUBES_CATCH_CONFIG_HPP_INCLUDED
