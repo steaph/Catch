@@ -117,7 +117,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 
         CHECK( config.shouldDebugBreak == false );
         CHECK( config.cutoff == -1 );
-        CHECK( config.allowThrows == true );
+        CHECK( config.noThrow == false );
         CHECK( config.reporter.empty() );
     }
 
@@ -338,7 +338,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
             CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
 #endif
 
-            REQUIRE( config.allowThrows == false );
+            REQUIRE( config.noThrow == true );
         }
         SECTION( "--nothrow", "" ) {
             const char* argv[] = { "test", "--nothrow" };
@@ -348,7 +348,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
             CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
 #endif
 
-            REQUIRE( config.allowThrows == false );
+            REQUIRE( config.noThrow == true );
         }
     }
 
@@ -395,7 +395,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 
             CHECK( config.cutoff == 1 );
             CHECK( config.shouldDebugBreak );
-            CHECK( config.allowThrows == false );
+            CHECK( config.noThrow == true );
         }
     }
 }
