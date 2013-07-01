@@ -358,7 +358,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
         }
     }
 
-    SECTION( "streams", "" ) {
+    SECTION( "output filename", "" ) {
         SECTION( "-o filename", "" ) {
             const char* argv[] = { "test", "-o", "filename.ext" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
@@ -367,17 +367,6 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
             CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
 #endif
             REQUIRE( config.outputFilename == "filename.ext" );
-            REQUIRE( config.stream.empty() );
-        }
-        SECTION( "-o %stdout", "" ) {
-            const char* argv[] = { "test", "-o", "%stdout" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
-            REQUIRE( config.stream == "stdout" );
-            REQUIRE( config.outputFilename.empty() );
         }
         SECTION( "--out", "" ) {
             const char* argv[] = { "test", "--out", "filename.ext" };

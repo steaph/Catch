@@ -69,8 +69,6 @@ namespace Catch {
         std::string name;
 
         std::vector<std::string> testsOrTags;
-
-        std::string stream;
     };
 
 
@@ -141,8 +139,6 @@ namespace Catch {
             m_stream.release();
             m_stream = stream;
         }
-
-        std::string getStreamName() const { return m_data.stream; }
 
         std::string getReporterName() const { return m_data.reporter; }
 
