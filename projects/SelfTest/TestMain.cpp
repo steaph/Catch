@@ -77,8 +77,8 @@ void parseIntoConfig( const char * (&argv)[size], Catch::ConfigData& config ) {
 #else
 void parseIntoConfig( size_t size, const char * argv[], Catch::ConfigData& config ) {
 #endif
-    static Catch::AllOptions options;
-    options.parseIntoConfig( Catch::CommandParser( size, argv ), config );
+    Clara::CommandLine<Catch::ConfigData> parser = Catch::makeCommandLineParser();
+    parser.parseInto( size, argv, config );
 }
 
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
@@ -103,11 +103,11 @@ std::string parseIntoConfigAndReturnError( size_t size, const char * argv[], Cat
 
 inline Catch::TestCase fakeTestCase( const char* name ){ return Catch::makeTestCase( NULL, "", name, "", CATCH_INTERNAL_LINEINFO ); }
 
-TEST_CASE( "selftest/parser/2", "ConfigData" ) {
+TEST_CASE( "Process can be configured on command line", "[config][command-line]" ) {
 
     Catch::ConfigData config;
 
-    SECTION( "default", "" ) {
+    SECTION( "default - no arguments", "" ) {
         const char* argv[] = { "test" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         CHECK_NOTHROW( parseIntoConfig( argv, config ) );
@@ -122,8 +122,8 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
     }
 
     SECTION( "test lists", "" ) {
-        SECTION( "-t/1", "Specify one test case using -t" ) {
-            const char* argv[] = { "test", "-t", "test1" };
+        SECTION( "1 test", "Specify one test case using" ) {
+            const char* argv[] = { "test", "test1" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
@@ -135,8 +135,8 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
             REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "notIncluded" ) ) == false );
             REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test1" ) ) );
         }
-        SECTION( "-t/exclude:1", "Specify one test case exclusion using -t exclude:" ) {
-            const char* argv[] = { "test", "-t", "exclude:test1" };
+        SECTION( "Specify one test case exclusion using exclude:", "" ) {
+            const char* argv[] = { "test", "exclude:test1" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
@@ -149,22 +149,8 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
             REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "alwaysIncluded" ) ) );
         }
 
-        SECTION( "--test/1", "Specify one test case using --test" ) {
-            const char* argv[] = { "test", "--test", "test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
-
-            Catch::Config cfg( config );
-            REQUIRE( cfg.filters().size() == 1 );
-            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "notIncluded" ) ) == false );
-            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test1" ) ) );
-        }
-
-        SECTION( "--test/exclude:1", "Specify one test case exclusion using --test exclude:" ) {
-            const char* argv[] = { "test", "--test", "exclude:test1" };
+        SECTION( "Specify one test case exclusion using ~", "" ) {
+            const char* argv[] = { "test", "~test1" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
@@ -177,21 +163,7 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
             REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "alwaysIncluded" ) ) );
         }
 
-        SECTION( "--test/exclude:2", "Specify one test case exclusion using --test ~" ) {
-            const char* argv[] = { "test", "--test", "~test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
-
-            Catch::Config cfg( config );
-            REQUIRE( cfg.filters().size() == 1 );
-            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test1" ) ) == false );
-            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "alwaysIncluded" ) ) );
-        }
-
-        SECTION( "-t/2", "Specify two test cases using -t" ) {
+        SECTION( "Specify two test cases using -t", "" ) {
             const char* argv[] = { "test", "-t", "test1", "test2" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
@@ -204,15 +176,6 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
             REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "notIncluded" ) ) == false );
             REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test1" ) ) );
             REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test2" ) ) );
-        }
-
-        SECTION( "-t/0", "When no test names are supplied it is an error" ) {
-            const char* argv[] = { "test", "-t" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "at least 1" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "at least 1" ) );
-#endif
         }
     }
 
@@ -247,14 +210,6 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 
             REQUIRE( config.reporterName == "junit" );
         }
-        SECTION( "-r/error", "reporter config only accepts one argument" ) {
-            const char* argv[] = { "test", "-r", "one", "two" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "1 argument" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "1 argument" ) );
-#endif
-        }
     }
 
     SECTION( "debugger", "" ) {
@@ -278,18 +233,10 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 
             REQUIRE( config.shouldDebugBreak );
         }
-        SECTION( "-b", "break option has no arguments" ) {
-            const char* argv[] = { "test", "-b", "unexpected" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "0 arguments" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "0 arguments" ) );
-#endif
-        }
     }
 
     SECTION( "abort", "" ) {
-        SECTION( "-a", "" ) {
+        SECTION( "-a aborts after first failure", "" ) {
             const char* argv[] = { "test", "-a" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
@@ -299,8 +246,8 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 
             REQUIRE( config.abortAfter == 1 );
         }
-        SECTION( "-a/2", "" ) {
-            const char* argv[] = { "test", "-a", "2" };
+        SECTION( "-x 2 aborts after two failures", "" ) {
+            const char* argv[] = { "test", "-x", "2" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
@@ -309,35 +256,27 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
 
             REQUIRE( config.abortAfter == 2 );
         }
-        SECTION( "-a/error/0", "" ) {
-            const char* argv[] = { "test", "-a", "0" };
+        SECTION( "-x must be greater than zero", "" ) {
+            const char* argv[] = { "test", "-x", "0" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "greater than zero" ) );
 #else
             REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "greater than zero" ) );
 #endif
         }
-        SECTION( "-a/error/non numeric", "" ) {
-            const char* argv[] = { "test", "-a", "oops" };
+        SECTION( "-x must be numeric", "" ) {
+            const char* argv[] = { "test", "-x", "oops" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "greater than zero" ) );
+            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "-x" ) );
 #else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "greater than zero" ) );
-#endif
-        }
-        SECTION( "-a/error/two args", "abortAfter only takes one argument" ) {
-            const char* argv[] = { "test", "-a", "1", "2" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "0 and 1 argument" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "0 and 1 argument" ) );
+            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "-x" ) );
 #endif
         }
     }
 
     SECTION( "nothrow", "" ) {
-        SECTION( "-nt", "" ) {
-            const char* argv[] = { "test", "-nt" };
+        SECTION( "-e", "" ) {
+            const char* argv[] = { "test", "-e" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
@@ -380,8 +319,8 @@ TEST_CASE( "selftest/parser/2", "ConfigData" ) {
     }
 
     SECTION( "combinations", "" ) {
-        SECTION( "-a -b", "" ) {
-            const char* argv[] = { "test", "-a", "-b", "-nt" };
+        SECTION( "Single character flags can be combined", "" ) {
+            const char* argv[] = { "test", "-abe" };
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
 #else
