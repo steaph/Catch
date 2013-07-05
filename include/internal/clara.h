@@ -11,14 +11,39 @@
 #include "catch_text.h" // This will get moved out too
 
 namespace Clara {
+
     namespace Detail {
         template<typename T> struct RemoveConstRef{ typedef T type; };
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         template<typename T> struct RemoveConstRef<T&>{ typedef T type; };
         template<typename T> struct RemoveConstRef<T const&>{ typedef T type; };
         template<typename T> struct RemoveConstRef<T const>{ typedef T type; };
+#else
+        #define CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( T ) \
+            template<> struct RemoveConstRef< T &                > { typedef T type; }; \
+            template<> struct RemoveConstRef< T const            > { typedef T type; }; \
+            template<> struct RemoveConstRef< T const *          > { typedef T*type; }; \
+            template<> struct RemoveConstRef< T const &          > { typedef T type; }; \
+            template<> struct RemoveConstRef< T const *&         > { typedef T*type; }; \
+            template<> struct RemoveConstRef< T const volatile   > { typedef T volatile type; }; \
+            template<> struct RemoveConstRef< T const volatile & > { typedef T volatile type; };
 
-        template<typename T>    struct IsBool       { static const bool value = false; };
-        template<>              struct IsBool<bool> { static const bool value = true; };
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( bool   )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( char   )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( short  )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( int    )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( long   )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( float  )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( double )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( unsigned char  )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( unsigned short )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( unsigned int   )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( unsigned long  )
+        CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( std::string    )
+#endif
+        template<typename T>    struct IsBool       { enum { value = false }; };
+        template<>              struct IsBool<bool> { enum { value = true }; };
 
         template<typename T>
         void convertInto( std::string const& _source, T& _dest ) {
@@ -154,7 +179,7 @@ namespace Clara {
             virtual IArgFunction<C>* clone() const { return new BoundUnaryFunction( *this ); }
             void (*function)( C& );
         };
-        
+
         template<typename C, typename T>
         struct BoundBinaryFunction : IArgFunction<C>{
             BoundBinaryFunction( void (*_function)( C&, T ) ) : function( _function ) {}
@@ -172,7 +197,7 @@ namespace Clara {
             virtual IArgFunction<C>* clone() const { return new BoundBinaryFunction( *this ); }
             void (*function)( C&, T );
         };
-        
+
         template<typename C, typename M>
         BoundArgFunction<C> makeBoundField( M C::* _member ) {
             return BoundArgFunction<C>( new BoundDataMember<C,M>( _member ) );
@@ -181,12 +206,12 @@ namespace Clara {
         BoundArgFunction<C> makeBoundField( void (C::*_member)( M ) ) {
             return BoundArgFunction<C>( new BoundUnaryMethod<C,M>( _member ) );
         }
-        template<typename C>
-        BoundArgFunction<C> makeBoundField( void (C::*_member)() ) {
+        template<typename C, typename U>
+        BoundArgFunction<C> makeBoundField( void (C::*_member)(), U u=U() ) {
             return BoundArgFunction<C>( new BoundNullaryMethod<C>( _member ) );
         }
-        template<typename C>
-        BoundArgFunction<C> makeBoundField( void (*_function)( C& ) ) {
+        template<typename C, typename U>
+        BoundArgFunction<C> makeBoundField( void (*_function)( C& ), U u=U() ) {
             return BoundArgFunction<C>( new BoundUnaryFunction<C>( _function ) );
         }
         template<typename C, typename T>
@@ -205,27 +230,27 @@ namespace Clara {
             std::string data;
         };
 
-        void parseIntoTokens( int argc, char const * const * argv, std::vector<Parser::Token>& tokens ) const {
+        void parseIntoTokens( int argc, char const * const * argv, std::vector<Token>& tokens ) const {
             for( int i = 1; i < argc; ++i )
                 parseIntoTokens( argv[i] , tokens);
-        }        
-        void parseIntoTokens( std::string arg, std::vector<Parser::Token>& tokens ) const {
+        }
+        void parseIntoTokens( std::string arg, std::vector<Token>& tokens ) const {
             while( !arg.empty() ) {
-                Parser::Token token( Parser::Token::Positional, arg );
+                Token token( Token::Positional, arg );
                 arg = "";
                 if( token.data[0] == '-' ) {
                     if( token.data.size() > 1 && token.data[1] == '-' ) {
-                        token = Parser::Token( Parser::Token::LongOpt, token.data.substr( 2 ) );
+                        token = Token( Token::LongOpt, token.data.substr( 2 ) );
                     }
                     else {
-                        token = Parser::Token( Parser::Token::ShortOpt, token.data.substr( 1 ) );
+                        token = Token( Token::ShortOpt, token.data.substr( 1 ) );
                         if( token.data.size() > 1 && separators.find( token.data[1] ) == std::string::npos ) {
                             arg = "-" + token.data.substr( 1 );
                             token.data = token.data.substr( 0, 1 );
                         }
                     }
                 }
-                if( token.type != Parser::Token::Positional ) {
+                if( token.type != Token::Positional ) {
                     std::size_t pos = token.data.find_first_of( separators );
                     if( pos != std::string::npos ) {
                         arg = token.data.substr( pos+1 );
@@ -275,7 +300,7 @@ namespace Clara {
             void validate() const {
                 if( boundField.takesArg() && !takesArg() )
                     throw std::logic_error( dbgName() + " must specify an arg name" );
-            }        
+            }
             std::string commands() const {
                 std::ostringstream oss;
                 bool first = true;
@@ -296,7 +321,7 @@ namespace Clara {
                     oss << " <" << argName << ">";
                 return oss.str();
             }
-        
+
             Detail::BoundArgFunction<ConfigT> boundField;
             std::vector<std::string> shortNames;
             std::string longName;
@@ -307,11 +332,50 @@ namespace Clara {
 
         class ArgBinder {
         public:
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             template<typename F>
-            ArgBinder( CommandLine* cl, F f )
+            ArgBinder( CommandLine<ConfigT>* cl, F f )
             :   m_cl( cl ),
                 m_arg( Detail::makeBoundField( f ) )
             {}
+#else
+            template<typename C, typename M>
+            ArgBinder( CommandLine<ConfigT>* cl, M C::* _member  )
+            :   m_cl( cl )
+            ,  m_arg( Detail::makeBoundField<C,M>( _member ) )
+            {
+            }
+
+            template<typename C, typename M>
+            ArgBinder( CommandLine<ConfigT>* cl, void (C::*_member)( M ) )
+            :   m_cl( cl )
+            ,  m_arg( Detail::makeBoundField<C,M>( _member ) )
+            {
+            }
+
+            template<typename C>
+            ArgBinder( CommandLine<ConfigT>* cl, void (C::*_member)() )
+            :   m_cl( cl )
+            ,  m_arg( Detail::makeBoundField<C,int>( _member ) )
+            {
+            }
+
+            // NTS: problematic: use Catch::ConfigData type explicitly
+            ArgBinder( CommandLine<ConfigT>* cl, void (*_function)( Catch::ConfigData& ) )
+            :   m_cl( cl )
+            ,  m_arg( Detail::makeBoundField<Catch::ConfigData,int>( _function ) )
+            {
+            }
+
+            // NTS: problematic: use Catch::ConfigData type explicitly
+            template<typename T>
+            ArgBinder( CommandLine<ConfigT>* cl, void (*_function)( Catch::ConfigData&, T ) )
+            :   m_cl( cl )
+            ,  m_arg( Detail::makeBoundField<Catch::ConfigData,T>( _function ) )
+            {
+            }
+#endif
             ArgBinder( ArgBinder& other )
             :   m_cl( other.m_cl ),
                 m_arg( other.m_arg )
@@ -356,12 +420,12 @@ namespace Clara {
                 return *this;
             }
         private:
-            CommandLine* m_cl;
+            CommandLine<ConfigT>* m_cl;
             Arg m_arg;
         };
 
     public:
-    
+
         CommandLine()
         :   m_boundProcessName( new Detail::NullBinder<ConfigT>() ),
             m_highestSpecifiedArgPosition( 0 )
@@ -408,15 +472,15 @@ namespace Clara {
                         os  << std::string( indent + 2 + maxWidth - usageCol.size(), ' ' )
                             << desc[i];
                     os << "\n";
-                }                
-            }            
+                }
+            }
         }
         std::string optUsage() const {
             std::ostringstream oss;
             optUsage( oss );
             return oss.str();
         }
-        
+
         void argSynopsis( std::ostream& os ) const {
             for( int i = 1; i <= m_highestSpecifiedArgPosition; ++i ) {
                 if( i > 1 )
@@ -441,13 +505,13 @@ namespace Clara {
             argSynopsis( oss );
             return oss.str();
         }
-        
+
         void usage( std::ostream& os, std::string const& procName ) const {
             os << "usage:\n  " << procName << " ";
             argSynopsis( os );
             if( !m_options.empty() ) {
                 os << " [options]\n\nwhere options are: \n";
-                optUsage( os, 2 );                
+                optUsage( os, 2 );
             }
             os << "\n";
         }
@@ -455,8 +519,8 @@ namespace Clara {
             std::ostringstream oss;
             usage( oss, procName );
             return oss.str();
-        }        
-        
+        }
+
         std::vector<Parser::Token> parseInto( int argc, char const * const * argv, ConfigT& config ) const {
             m_boundProcessName.set( config, argv[0] );
             std::vector<Parser::Token> tokens;
@@ -482,7 +546,7 @@ namespace Clara {
                 typename std::vector<Arg>::const_iterator it = m_options.begin(), itEnd = m_options.end();
                 for(; it != itEnd; ++it ) {
                     Arg const& arg = *it;
-                        
+
                     try {
                         if( ( token.type == Parser::Token::ShortOpt && arg.hasShortName( token.data ) ) ||
                             ( token.type == Parser::Token::LongOpt && arg.hasLongName( token.data ) ) ) {
@@ -517,7 +581,7 @@ namespace Clara {
                 else
                     unusedTokens.push_back( token );
                 if( token.type == Parser::Token::Positional )
-                    position++;                
+                    position++;
             }
             return unusedTokens;
         }
@@ -534,15 +598,15 @@ namespace Clara {
             }
             return unusedTokens;
         }
-        
-    private:
+
+//    private:
         Detail::BoundArgFunction<ConfigT> m_boundProcessName;
         std::vector<Arg> m_options;
         std::map<int, Arg> m_positionalArgs;
         std::auto_ptr<Arg> m_arg;
         int m_highestSpecifiedArgPosition;
     };
-    
+
 } // end namespace Clara
 
 
