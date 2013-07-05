@@ -20,14 +20,14 @@ namespace Clara {
         template<typename T> struct RemoveConstRef<T const&>{ typedef T type; };
         template<typename T> struct RemoveConstRef<T const>{ typedef T type; };
 #else
-        #define CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( T ) \
-            template<> struct RemoveConstRef< T &                > { typedef T type; }; \
-            template<> struct RemoveConstRef< T const            > { typedef T type; }; \
-            template<> struct RemoveConstRef< T const *          > { typedef T*type; }; \
-            template<> struct RemoveConstRef< T const &          > { typedef T type; }; \
-            template<> struct RemoveConstRef< T const *&         > { typedef T*type; }; \
-            template<> struct RemoveConstRef< T const volatile   > { typedef T volatile type; }; \
-            template<> struct RemoveConstRef< T const volatile & > { typedef T volatile type; };
+# define CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( T ) \
+        template<> struct RemoveConstRef< T &                > { typedef T type; }; \
+        template<> struct RemoveConstRef< T const            > { typedef T type; }; \
+        template<> struct RemoveConstRef< T const *          > { typedef T*type; }; \
+        template<> struct RemoveConstRef< T const &          > { typedef T type; }; \
+        template<> struct RemoveConstRef< T const *&         > { typedef T*type; }; \
+        template<> struct RemoveConstRef< T const volatile   > { typedef T volatile type; }; \
+        template<> struct RemoveConstRef< T const volatile & > { typedef T volatile type; };
 
         CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( bool   )
         CATCH_VC6_DEFINE_REMOVE_CONST_REFERENCE( char   )
@@ -344,37 +344,35 @@ namespace Clara {
             ArgBinder( CommandLine<ConfigT>* cl, M C::* _member  )
             :   m_cl( cl )
             ,  m_arg( Detail::makeBoundField<C,M>( _member ) )
-            {
-            }
+            {}
 
             template<typename C, typename M>
             ArgBinder( CommandLine<ConfigT>* cl, void (C::*_member)( M ) )
             :   m_cl( cl )
             ,  m_arg( Detail::makeBoundField<C,M>( _member ) )
-            {
-            }
+            {}
 
             template<typename C>
             ArgBinder( CommandLine<ConfigT>* cl, void (C::*_member)() )
             :   m_cl( cl )
             ,  m_arg( Detail::makeBoundField<C,int>( _member ) )
-            {
-            }
+            {}
+
+            // Using template parameter deduction in the following
+            // two methods leads to C*& instead of C&
 
             // NTS: problematic: use Catch::ConfigData type explicitly
             ArgBinder( CommandLine<ConfigT>* cl, void (*_function)( Catch::ConfigData& ) )
             :   m_cl( cl )
             ,  m_arg( Detail::makeBoundField<Catch::ConfigData,int>( _function ) )
-            {
-            }
+            {}
 
             // NTS: problematic: use Catch::ConfigData type explicitly
             template<typename T>
             ArgBinder( CommandLine<ConfigT>* cl, void (*_function)( Catch::ConfigData&, T ) )
             :   m_cl( cl )
             ,  m_arg( Detail::makeBoundField<Catch::ConfigData,T>( _function ) )
-            {
-            }
+            {}
 #endif
             ArgBinder( ArgBinder& other )
             :   m_cl( other.m_cl ),
