@@ -86,8 +86,8 @@ class Version:
 		f.close()
 		f = open( readmePath, 'w' )
 		for line in lines:
-			if line.startswith( "## CATCH" ):
-				f.write( '## CATCH-VC6 v{0}.{1} build {2} ({3} branch)\n'.format( self.majorVersion, self.minorVersion, self.buildNumber, self.branchName ) )
+			if line.startswith( "*CATCH-VC6 v" ):
+				f.write( '*CATCH-VC6 v{0}.{1} build {2} ({3} branch)\n'.format( self.majorVersion, self.minorVersion, self.buildNumber, self.branchName ) )
 			else:
 				f.write( line + "\n" )
 
@@ -109,9 +109,9 @@ def generateSingleInclude():
 	out.write( " */\n" )
 	out.write( "#ifndef TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED\n" )
 	out.write( "#define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED\n" )
-	
+
 	parseFile( rootPath, 'catch.hpp' )
-	
+
 	out.write( "#endif // TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED\n\n" )
 
 generateSingleInclude()
