@@ -1,6 +1,6 @@
 ![catch logo](catch-logo-small.png)
 
-* CATCH-VC6 v0.9 build 38 (integration branch)*
+## CATCH-VC6 v0.9 build 38 (integration branch)*
 
 ## What's the Catch?
 
