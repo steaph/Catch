@@ -71,28 +71,16 @@ TEST_CASE( "meta/Misc/Sections", "looped tests" ) {
 #include "../../include/reporters/catch_reporter_xml.hpp"
 #include "../../include/reporters/catch_reporter_junit.hpp"
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-template<size_t size>
-void parseIntoConfig( const char * (&argv)[size], Catch::ConfigData& config ) {
-#else
-void parseIntoConfig( size_t size, const char * argv[], Catch::ConfigData& config ) {
-#endif
+template<typename T>
+void parseIntoConfig( T const & argv, Catch::ConfigData& config ) {
     Clara::CommandLine<Catch::ConfigData> parser = Catch::makeCommandLineParser();
-    parser.parseInto( size, argv, config );
+    parser.parseInto( CATCH_DIMENSION_OF(argv), argv, config );
 }
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-template<size_t size>
-std::string parseIntoConfigAndReturnError( const char * (&argv)[size], Catch::ConfigData& config ) {
-#else
-std::string parseIntoConfigAndReturnError( size_t size, const char * argv[], Catch::ConfigData& config ) {
-#endif
+template<typename T>
+std::string parseIntoConfigAndReturnError( T const & argv, Catch::ConfigData& config ) {
     try {
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         parseIntoConfig( argv, config );
-#else
-        parseIntoConfig( size, argv, config );
-#endif
         FAIL( "expected exception" );
     }
     catch( std::exception& ex ) {
@@ -109,11 +97,7 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
 
     SECTION( "default - no arguments", "" ) {
         const char* argv[] = { "test" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-        CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
         CHECK( config.shouldDebugBreak == false );
         CHECK( config.abortAfter == -1 );
@@ -124,11 +108,7 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
     SECTION( "test lists", "" ) {
         SECTION( "1 test", "Specify one test case using" ) {
             const char* argv[] = { "test", "test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             Catch::Config cfg( config );
             REQUIRE( cfg.filters().size() == 1 );
@@ -137,11 +117,7 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
         }
         SECTION( "Specify one test case exclusion using exclude:", "" ) {
             const char* argv[] = { "test", "exclude:test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             Catch::Config cfg( config );
             REQUIRE( cfg.filters().size() == 1 );
@@ -151,11 +127,7 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
 
         SECTION( "Specify one test case exclusion using ~", "" ) {
             const char* argv[] = { "test", "~test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             Catch::Config cfg( config );
             REQUIRE( cfg.filters().size() == 1 );
@@ -165,11 +137,7 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
 
         SECTION( "Specify two test cases using -t", "" ) {
             const char* argv[] = { "test", "-t", "test1", "test2" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             Catch::Config cfg( config );
             REQUIRE( cfg.filters().size() == 1 );
@@ -182,31 +150,19 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
     SECTION( "reporter", "" ) {
         SECTION( "-r/console", "" ) {
             const char* argv[] = { "test", "-r", "console" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.reporterName == "console" );
         }
         SECTION( "-r/xml", "" ) {
             const char* argv[] = { "test", "-r", "xml" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.reporterName == "xml" );
         }
         SECTION( "--reporter/junit", "" ) {
             const char* argv[] = { "test", "--reporter", "junit" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.reporterName == "junit" );
         }
@@ -215,21 +171,13 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
     SECTION( "debugger", "" ) {
         SECTION( "-b", "" ) {
             const char* argv[] = { "test", "-b" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.shouldDebugBreak == true );
         }
         SECTION( "--break", "" ) {
             const char* argv[] = { "test", "--break" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.shouldDebugBreak );
         }
@@ -238,60 +186,36 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
     SECTION( "abort", "" ) {
         SECTION( "-a aborts after first failure", "" ) {
             const char* argv[] = { "test", "-a" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.abortAfter == 1 );
         }
         SECTION( "-x 2 aborts after two failures", "" ) {
             const char* argv[] = { "test", "-x", "2" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.abortAfter == 2 );
         }
         SECTION( "-x must be greater than zero", "" ) {
             const char* argv[] = { "test", "-x", "0" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "greater than zero" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "greater than zero" ) );
-#endif
         }
         SECTION( "-x must be numeric", "" ) {
             const char* argv[] = { "test", "-x", "oops" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "-x" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "-x" ) );
-#endif
         }
     }
 
     SECTION( "nothrow", "" ) {
         SECTION( "-e", "" ) {
             const char* argv[] = { "test", "-e" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.noThrow == true );
         }
         SECTION( "--nothrow", "" ) {
             const char* argv[] = { "test", "--nothrow" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.noThrow == true );
         }
@@ -300,20 +224,12 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
     SECTION( "output filename", "" ) {
         SECTION( "-o filename", "" ) {
             const char* argv[] = { "test", "-o", "filename.ext" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
             REQUIRE( config.outputFilename == "filename.ext" );
         }
         SECTION( "--out", "" ) {
             const char* argv[] = { "test", "--out", "filename.ext" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
             REQUIRE( config.outputFilename == "filename.ext" );
         }
     }
@@ -321,11 +237,7 @@ TEST_CASE( "Process can be configured on command line", "[config][command-line]"
     SECTION( "combinations", "" ) {
         SECTION( "Single character flags can be combined", "" ) {
             const char* argv[] = { "test", "-abe" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             CHECK( config.abortAfter == 1 );
             CHECK( config.shouldDebugBreak );
@@ -382,12 +294,10 @@ TEST_CASE( "selftest/filter/wildcard at both ends", "Individual filters with wil
 }
 
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-template<size_t size>
-int getArgc( const char * (&)[size] ) {
-    return size;
+template<typename T>
+int getArgc( T const & argv ) {
+    return CATCH_DIMENSION_OF( argv );
 }
-#endif
 
 TEST_CASE( "selftest/option parsers", "" )
 {
@@ -398,11 +308,7 @@ TEST_CASE( "selftest/option parsers", "" )
 
     const char* argv[] = { "test", "-t", "test1" };
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
     Catch::CommandParser parser( getArgc( argv ), argv );
-#else
-    Catch::CommandParser parser( CATCH_DIMENSION_OF(argv), argv );
-#endif
 
     CHECK_NOTHROW( opt.parseIntoConfig( parser, config ) );
 
