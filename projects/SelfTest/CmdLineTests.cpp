@@ -15,9 +15,9 @@
 
 
 // Helper to deduce size from array literals and pass on to parser
-template<size_t size, typename ConfigT>
-std::vector<Clara::Parser::Token> parseInto( Clara::CommandLine<ConfigT>& cli, char const * (&argv)[size], ConfigT& config ) {
-    return cli.parseInto( size, argv, config );
+template<typename ArgvT, typename ConfigT>
+std::vector<Clara::Parser::Token> parseInto( Clara::CommandLine<ConfigT>& cli, ArgvT argv, ConfigT& config ) {
+    return cli.parseInto( INTERNAL_CATCH_DIMENSION_OF(argv), argv, config );
 }
 
 
@@ -32,7 +32,7 @@ struct TestOpt {
     std::string firstPos;
     std::string secondPos;
     std::string unpositional;
-    
+
     void setValidIndex( int i ) {
         if( i < 0 || i > 10 )
             throw std::domain_error( "index must be between 0 and 10" );
@@ -60,13 +60,13 @@ TEST_CASE( "cmdline" ) {
     SECTION( "process name" ) {
         char const * argv[] = { "test", "-o filename.ext" };
         parseInto( cli, argv, config );
-        
+
         CHECK( config.processName == "test" );
     }
     SECTION( "arg separated by spaces" ) {
         char const * argv[] = { "test", "-o filename.ext" };
         parseInto( cli, argv, config );
-        
+
         CHECK( config.fileName == "filename.ext" );
     }
     SECTION( "arg separated by colon" ) {
@@ -87,11 +87,11 @@ TEST_CASE( "cmdline" ) {
 
         CHECK( config.fileName == "%stdout" );
     }
-    
+
     cli.bind( &TestOpt::number )
             .shortOpt( "n" )
             .argName( "an integral value" );
-    
+
     SECTION( "a number" ) {
         const char* argv[] = { "test", "-n 42" };
         parseInto( cli, argv, config );
@@ -104,7 +104,7 @@ TEST_CASE( "cmdline" ) {
 
         CHECK( config.number == 0 );
     }
-    
+
     SECTION( "two parsers" ) {
 
         TestOpt config1;
@@ -116,7 +116,7 @@ TEST_CASE( "cmdline" ) {
             .shortOpt( "d" )
             .longOpt( "description" )
             .argName( "some text" );
-        
+
         const char* argv[] = { "test", "-n 42", "-d some text" };
         std::vector<Clara::Parser::Token> unusedTokens = parseInto( cli, argv, config1 );
 
@@ -124,7 +124,7 @@ TEST_CASE( "cmdline" ) {
 
         REQUIRE_FALSE( unusedTokens.empty() );
         cli2.populate( unusedTokens, config2 );
-        CHECK( config2.description == "some text" );        
+        CHECK( config2.description == "some text" );
     }
 
     SECTION( "methods" ) {
@@ -145,12 +145,12 @@ TEST_CASE( "cmdline" ) {
             REQUIRE_THROWS( parseInto( cli, argv, config ) );
         }
     }
-    
+
     SECTION( "flags" ) {
         cli.bind( &TestOpt::flag )
             .describe( "A flag" )
             .shortOpt( "f" );
-        
+
         SECTION( "set" ) {
             const char* argv[] = { "test", "-f" };
             parseInto( cli, argv, config );
