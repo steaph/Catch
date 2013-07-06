@@ -10,6 +10,7 @@
 
 #include "catch_capture.hpp"
 #include "catch_totals.hpp"
+#include "catch_compiler_capabilities.h"
 
 #include <string>
 
@@ -17,9 +18,9 @@ namespace Catch {
 
     class Section {
     public:
-        Section(    const std::string& name, 
-                    const std::string& description,
-                    const SourceLineInfo& lineInfo )
+        Section(    SourceLineInfo const& lineInfo,
+                    std::string const& name,
+                    std::string const& description = "" )
         :   m_info( name, description, lineInfo ),
             m_sectionIncluded( getCurrentContext().getResultCapture().sectionStarted( m_info, m_assertions ) )
         {}
@@ -44,7 +45,12 @@ namespace Catch {
     
 } // end namespace Catch
 
-#define INTERNAL_CATCH_SECTION( name, desc ) \
-    if( Catch::Section INTERNAL_CATCH_UNIQUE_NAME( catch_internal_Section ) = Catch::Section( name, desc, CATCH_INTERNAL_LINEINFO ) )
+#ifdef CATCH_CONFIG_VARIADIC_MACROS
+    #define INTERNAL_CATCH_SECTION( ... ) \
+        if( Catch::Section INTERNAL_CATCH_UNIQUE_NAME( catch_internal_Section ) = Catch::Section( CATCH_INTERNAL_LINEINFO, __VA_ARGS__ ) )
+#else
+    #define INTERNAL_CATCH_SECTION( name, desc ) \
+        if( Catch::Section INTERNAL_CATCH_UNIQUE_NAME( catch_internal_Section ) = Catch::Section( CATCH_INTERNAL_LINEINFO, name, desc ) )
+#endif
 
 #endif // TWOBLUECUBES_CATCH_SECTION_HPP_INCLUDED

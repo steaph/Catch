@@ -6,10 +6,6 @@
  *  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wpadded"
-#endif
-
 #define CATCH_CONFIG_MAIN
 #include "catch_self_test.hpp"
 
@@ -17,17 +13,17 @@ namespace Catch{
     
     NullStreamingReporter::~NullStreamingReporter() {}
 
-    Totals EmbeddedRunner::runMatching( const std::string& rawTestSpec, const std::string& ) {
+    Totals EmbeddedRunner::runMatching( const std::string& rawTestSpec, std::size_t groupIndex, std::size_t groupsCount, const std::string& ) {
         std::ostringstream oss;
-        Config config;
-        config.setStreamBuf( oss.rdbuf() );
+        Ptr<Config> config = new Config();
+        config->setStreamBuf( oss.rdbuf() );
         
         Totals totals;
 
-        // Scoped because Runner doesn't report EndTesting until its destructor
+        // Scoped because RunContext doesn't report EndTesting until its destructor
         {
-            Runner runner( config, m_reporter.get() );
-            totals = runner.runMatching( rawTestSpec );
+            RunContext runner( config.get(), m_reporter.get() );
+            totals = runner.runMatching( rawTestSpec, groupIndex, groupsCount );
         }
         return totals;
     }

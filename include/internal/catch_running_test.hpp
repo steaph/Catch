@@ -24,7 +24,7 @@ namespace Catch {
         };
         
     public:
-        explicit RunningTest( const TestCase& info )
+        explicit RunningTest( TestCase const& info )
         :   m_info( info ),
             m_runStatus( RanAtLeastOneSection ),
             m_rootSection( info.getTestCaseInfo().name ),
@@ -64,7 +64,7 @@ namespace Catch {
             }
         }
         
-        bool addSection( const std::string& name ) {
+        bool addSection( std::string const& name ) {
             if( m_runStatus == NothingRun )
                 m_runStatus = EncounteredASection;
             
@@ -78,19 +78,21 @@ namespace Catch {
             return false;
         }
         
-        void endSection( const std::string& ) {
+        void endSection( std::string const&, bool stealth ) {
             if( m_currentSection->ran() ) {
-                m_runStatus = RanAtLeastOneSection;
+                if( !stealth )
+                    m_runStatus = RanAtLeastOneSection;
                 m_changed = true;
             }
             else if( m_runStatus == EncounteredASection ) {
-                m_runStatus = RanAtLeastOneSection;
+                if( !stealth )
+                    m_runStatus = RanAtLeastOneSection;
                 m_lastSectionToRun = m_currentSection;
             }
             m_currentSection = m_currentSection->getParent();
         }
         
-        const TestCase& getTestCase() const {
+        TestCase const& getTestCase() const {
             return m_info;
         }
 
@@ -100,7 +102,10 @@ namespace Catch {
         }
         
     private:
-        const TestCase& m_info;
+		RunningTest( RunningTest const& );
+		void operator=( RunningTest const& );
+
+        TestCase const& m_info;
         RunStatus m_runStatus;
         RunningSection m_rootSection;
         RunningSection* m_currentSection;

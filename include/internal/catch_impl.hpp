@@ -27,6 +27,9 @@
 #include "catch_test_case_info.hpp"
 #include "catch_tags.hpp"
 #include "catch_version.hpp"
+#include "catch_text.hpp"
+#include "catch_message.hpp"
+#include "catch_legacy_reporter_adapter.hpp"
 
 #include "../reporters/catch_reporter_basic.hpp"
 #include "../reporters/catch_reporter_xml.hpp"
@@ -49,16 +52,17 @@ namespace Catch {
     IReporterFactory::~IReporterFactory() {}
     IReporterRegistry::~IReporterRegistry() {}
     IStreamingReporter::~IStreamingReporter() {}
-    LegacyReporterAdapter::~LegacyReporterAdapter() {}
     AssertionStats::~AssertionStats() {}
     SectionStats::~SectionStats() {}
     TestCaseStats::~TestCaseStats() {}
     TestGroupStats::~TestGroupStats() {}
     TestRunStats::~TestRunStats() {}
     ThreadedSectionInfo::~ThreadedSectionInfo() {}
+    TestGroupNode::~TestGroupNode() {}
+    TestRunNode::~TestRunNode() {}
 
     BasicReporter::~BasicReporter() {}
-    AccumulatingReporter::~AccumulatingReporter() {}
+    StreamingReporterBase::~StreamingReporterBase() {}
     ConsoleReporter::~ConsoleReporter() {}
     IRunner::~IRunner() {}
     IMutableContext::~IMutableContext() {}

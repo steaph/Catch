@@ -2,7 +2,8 @@ import os
 import sys
 import shutil
 
-catchPath = os.path.realpath(os.path.dirname(sys.argv[0]))
+from scriptCommon import catchPath
+
 baselinesPath = os.path.join( catchPath, 'projects/SelfTest/Baselines/approvedResults.txt' )
 filteredResultsPath = os.path.join( catchPath, 'projects/SelfTest/Baselines/unapprovedResults.txt' )
 

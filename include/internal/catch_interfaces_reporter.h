@@ -14,6 +14,7 @@
 #include "catch_config.hpp"
 #include "catch_test_case_info.h"
 #include "catch_assertionresult.h"
+#include "catch_message.h"
 #include "catch_option.hpp"
 
 #include <string>
@@ -23,17 +24,18 @@
 namespace Catch
 {
     struct ReporterConfig {
-        ReporterConfig( std::ostream& _stream, ConfigData const& _fullConfig )
+        explicit ReporterConfig( Ptr<IConfig> const& _fullConfig )
+        :   m_stream( &_fullConfig->stream() ), m_fullConfig( _fullConfig ) {}
+
+        ReporterConfig( Ptr<IConfig> const& _fullConfig, std::ostream& _stream )
         :   m_stream( &_stream ), m_fullConfig( _fullConfig ) {}
 
-        std::ostream& stream() const            { return *m_stream; }
-        std::string name() const                { return m_fullConfig.name; }
-        bool includeSuccessfulResults() const   { return m_fullConfig.includeWhichResults == Include::SuccessfulResults; }
-        bool warnAboutMissingAssertions() const { return m_fullConfig.warnings & ConfigData::WarnAbout::NoAssertions; }
+        std::ostream& stream() const    { return *m_stream; }
+        Ptr<IConfig> fullConfig() const { return m_fullConfig; }
 
     private:
         std::ostream* m_stream;
-        ConfigData m_fullConfig;
+        Ptr<IConfig> m_fullConfig;
     };
 
     struct ReporterPreferences {
@@ -49,8 +51,17 @@ namespace Catch
         std::string name;
     };
     struct GroupInfo {
-        GroupInfo( std::string const& _name ) : name( _name ) {}
+        GroupInfo(  std::string const& _name,
+                    std::size_t _groupIndex,
+                    std::size_t _groupsCount )
+        :   name( _name ),
+            groupIndex( _groupIndex ),
+            groupsCounts( _groupsCount )
+        {}
+
         std::string name;
+        std::size_t groupIndex;
+        std::size_t groupsCounts;
     };
 
     struct SectionInfo {
@@ -68,31 +79,40 @@ namespace Catch
     };
 
     struct ThreadedSectionInfo : SectionInfo, SharedImpl<> {
-        ThreadedSectionInfo( SectionInfo const& _sectionInfo, Ptr<ThreadedSectionInfo> const& _parent = Ptr<ThreadedSectionInfo>() )
+        ThreadedSectionInfo( SectionInfo const& _sectionInfo, ThreadedSectionInfo* _parent = NULL )
         :   SectionInfo( _sectionInfo ),
-            parent( _parent ),
-            printed( false )
+            parent( _parent )
         {}
         virtual ~ThreadedSectionInfo();
 
         std::vector<Ptr<ThreadedSectionInfo> > children;
-        Ptr<ThreadedSectionInfo> parent;
-        bool printed;
+        ThreadedSectionInfo* parent;
     };
 
-    struct AssertionStats : SharedImpl<> {
+    struct AssertionStats {
         AssertionStats( AssertionResult const& _assertionResult,
+                        std::vector<MessageInfo> const& _infoMessages,
                         Totals const& _totals )
         :   assertionResult( _assertionResult ),
+            infoMessages( _infoMessages ),
             totals( _totals )
-        {}
+        {
+            if( assertionResult.hasMessage() ) {
+                // Copy message into messages list.
+                // !TBD This should have been done earlier, somewhere
+                MessageBuilder builder( assertionResult.getTestMacroName(), assertionResult.getSourceInfo(), assertionResult.getResultType() );
+                builder << assertionResult.getMessage();
+                infoMessages.push_back( builder.build() );
+            }
+        }
         virtual ~AssertionStats();
         
         AssertionResult assertionResult;
+        std::vector<MessageInfo> infoMessages;
         Totals totals;
     };
 
-    struct SectionStats : SharedImpl<> {
+    struct SectionStats {
         SectionStats(   SectionInfo const& _sectionInfo,
                         Counts const& _assertions,
                         bool _missingAssertions )
@@ -107,7 +127,7 @@ namespace Catch
         bool missingAssertions;
     };
 
-    struct TestCaseStats : SharedImpl<> {
+    struct TestCaseStats {
         TestCaseStats(  TestCaseInfo const& _testInfo,
                         Totals const& _totals,
                         std::string const& _stdOut,
@@ -131,13 +151,17 @@ namespace Catch
         bool aborting;
     };
     
-    struct TestGroupStats : SharedImpl<> {
+    struct TestGroupStats {
         TestGroupStats( GroupInfo const& _groupInfo,
                         Totals const& _totals,
                         bool _aborting )
         :   groupInfo( _groupInfo ),
             totals( _totals ),
             aborting( _aborting )
+        {}
+        TestGroupStats( GroupInfo const& _groupInfo )
+        :   groupInfo( _groupInfo ),
+            aborting( false )
         {}
         virtual ~TestGroupStats();
 
@@ -146,7 +170,7 @@ namespace Catch
         bool aborting;
     };
     
-    struct TestRunStats : SharedImpl<> {
+    struct TestRunStats {
         TestRunStats(   TestRunInfo const& _runInfo,
                         Totals const& _totals,
                         bool _aborting )
@@ -154,21 +178,27 @@ namespace Catch
             totals( _totals ),
             aborting( _aborting )
         {}
+        TestRunStats( TestRunStats const& _other )
+        :   runInfo( _other.runInfo ),
+            totals( _other.totals ),
+            aborting( _other.aborting )
+        {}
         virtual ~TestRunStats();
-        
+
         TestRunInfo runInfo;
         Totals totals;
         bool aborting;
     };
 
-    // !Work In progress
     struct IStreamingReporter : IShared {
         virtual ~IStreamingReporter();
 
-        // Implementing class must also provide the following static methid:
+        // Implementing class must also provide the following static method:
         // static std::string getDescription();
 
         virtual ReporterPreferences getPreferences() const = 0;
+        
+        virtual void noMatchingTestCases( std::string const& spec ) = 0;
 
         virtual void testRunStarting( TestRunInfo const& testRunInfo ) = 0;
         virtual void testGroupStarting( GroupInfo const& groupInfo ) = 0;
@@ -178,25 +208,23 @@ namespace Catch
 
         virtual void assertionStarting( AssertionInfo const& assertionInfo ) = 0;
 
-        virtual void assertionEnded( Ptr<AssertionStats const> const& assertionStats ) = 0;
-        virtual void sectionEnded( Ptr<SectionStats const> const& sectionStats ) = 0;
-        virtual void testCaseEnded( Ptr<TestCaseStats const> const& testCaseStats ) = 0;
-        virtual void testGroupEnded( Ptr<TestGroupStats const> const& testGroupStats ) = 0;
-        virtual void testRunEnded( Ptr<TestRunStats const> const& testRunStats ) = 0;
+        virtual void assertionEnded( AssertionStats const& assertionStats ) = 0;
+        virtual void sectionEnded( SectionStats const& sectionStats ) = 0;
+        virtual void testCaseEnded( TestCaseStats const& testCaseStats ) = 0;
+        virtual void testGroupEnded( TestGroupStats const& testGroupStats ) = 0;
+        virtual void testRunEnded( TestRunStats const& testRunStats ) = 0;
     };
-    // !TBD: Derived helper that implements the streaming interface but holds the stats
-    // - declares a new interface where methods are called at the end of each event
-    // - this would be used by the JUnit reporter, for example.
-    // - it may be used by the basic reporter, too, but that would clear down the stack
-    //   as it goes
-    struct AccumulatingReporter : SharedImpl<IStreamingReporter> {
 
-        AccumulatingReporter( ReporterConfig const& _config )
-        :   m_config( _config ),
+    struct StreamingReporterBase : SharedImpl<IStreamingReporter> {
+
+        StreamingReporterBase( ReporterConfig const& _config )
+        :   m_config( _config.fullConfig() ),
             stream( _config.stream() )
         {}
 
-        virtual ~AccumulatingReporter();
+        virtual ~StreamingReporterBase();
+        
+        virtual void noMatchingTestCases( std::string const& ) {}
 
         virtual void testRunStarting( TestRunInfo const& _testRunInfo ) {
             testRunInfo = _testRunInfo;
@@ -210,42 +238,59 @@ namespace Catch
         }
         virtual void sectionStarting( SectionInfo const& _sectionInfo ) {
             Ptr<ThreadedSectionInfo> sectionInfo = new ThreadedSectionInfo( _sectionInfo );
-            unusedSectionInfo = sectionInfo;
             if( !currentSectionInfo ) {
                 currentSectionInfo = sectionInfo;
+                m_rootSections.push_back( currentSectionInfo );
             }
             else {
                 currentSectionInfo->children.push_back( sectionInfo );
-                sectionInfo->parent = currentSectionInfo;
+                sectionInfo->parent = currentSectionInfo.get();
                 currentSectionInfo = sectionInfo;
             }
         }
 
-        virtual void sectionEnded( Ptr<SectionStats const> const& /* _sectionStats */ ) {
+        virtual void sectionEnded( SectionStats const& /* _sectionStats */ ) {
             currentSectionInfo = currentSectionInfo->parent;
-            unusedSectionInfo = currentSectionInfo;
         }
-        virtual void testCaseEnded( Ptr<TestCaseStats const> const& /* _testCaseStats */ ) {
+        virtual void testCaseEnded( TestCaseStats const& /* _testCaseStats */ ) {
             unusedTestCaseInfo.reset();
         }
-        virtual void testGroupEnded( Ptr<TestGroupStats const> const& /* _testGroupStats */ ) {
+        virtual void testGroupEnded( TestGroupStats const& /* _testGroupStats */ ) {
             unusedGroupInfo.reset();
         }
-        virtual void testRunEnded( Ptr<TestRunStats const> const& /* _testRunStats */ ) {
+        virtual void testRunEnded( TestRunStats const& /* _testRunStats */ ) {
+            currentSectionInfo.reset();
+            unusedTestCaseInfo.reset();
+            unusedGroupInfo.reset();
+            testRunInfo.reset();
         }
 
-        ReporterConfig m_config;
+        Ptr<IConfig> m_config;
         Option<TestRunInfo> testRunInfo;
         Option<GroupInfo> unusedGroupInfo;
         Option<TestCaseInfo> unusedTestCaseInfo;
-        Ptr<ThreadedSectionInfo> unusedSectionInfo;
         Ptr<ThreadedSectionInfo> currentSectionInfo;
-        bool currentSectionOpen;
         std::ostream& stream;
+        
+        // !TBD: This should really go in the TestCaseStats class
+        std::vector<Ptr<ThreadedSectionInfo> > m_rootSections;        
     };
 
+    struct TestGroupNode : TestGroupStats {
+        TestGroupNode( TestGroupStats const& _stats ) : TestGroupStats( _stats ) {}
+//        TestGroupNode( GroupInfo const& _info ) : TestGroupStats( _stats ) {}
+        ~TestGroupNode();
 
+    };
 
+    struct TestRunNode : TestRunStats {
+
+        TestRunNode( TestRunStats const& _stats ) : TestRunStats( _stats ) {}
+        ~TestRunNode();
+        
+        std::vector<TestGroupNode> groups;
+    };
+    
     // Deprecated
     struct IReporter : IShared {
         virtual ~IReporter();
@@ -259,73 +304,11 @@ namespace Catch
         virtual void StartTestCase( TestCaseInfo const& testInfo ) = 0;
         virtual void EndTestCase( TestCaseInfo const& testInfo, Totals const& totals, std::string const& stdOut, std::string const& stdErr ) = 0;
         virtual void StartSection( std::string const& sectionName, std::string const& description ) = 0;
-        virtual void EndSection( std::string const& sectionName, const Counts& assertions ) = 0;
+        virtual void EndSection( std::string const& sectionName, Counts const& assertions ) = 0;
         virtual void NoAssertionsInSection( std::string const& sectionName ) = 0;
         virtual void NoAssertionsInTestCase( std::string const& testName ) = 0;
         virtual void Aborted() = 0;
-        virtual void Result( const AssertionResult& result ) = 0;
-    };
-
-    class LegacyReporterAdapter : public SharedImpl<IStreamingReporter>
-    {
-    public:
-        LegacyReporterAdapter( Ptr<IReporter> const& legacyReporter, ReporterConfig const& config )
-        :   m_legacyReporter( legacyReporter ),
-            m_config( config )
-        {}
-        virtual ~LegacyReporterAdapter();
-
-        virtual ReporterPreferences getPreferences() const {
-            ReporterPreferences prefs;
-            prefs.shouldRedirectStdOut = m_legacyReporter->shouldRedirectStdout();
-            return prefs;
-        }
-
-        virtual void testRunStarting( TestRunInfo const& ) {
-            m_legacyReporter->StartTesting();
-        }
-        virtual void testGroupStarting( GroupInfo const& groupInfo ) {
-            m_legacyReporter->StartGroup( groupInfo.name );
-        }
-        virtual void testCaseStarting( TestCaseInfo const& testInfo ) {
-            m_legacyReporter->StartTestCase( testInfo );
-        }
-        virtual void sectionStarting( SectionInfo const& sectionInfo ) {
-            m_legacyReporter->StartSection( sectionInfo.name, sectionInfo.description );
-        }
-        virtual void assertionStarting( AssertionInfo const& ) {
-            // Not on legacy interface
-        }
-
-        virtual void assertionEnded( Ptr<AssertionStats const> const& assertionStats ) {
-            m_legacyReporter->Result( assertionStats->assertionResult );
-        }
-        virtual void sectionEnded( Ptr<SectionStats const> const& sectionStats ) {
-            if( sectionStats->missingAssertions )
-                m_legacyReporter->NoAssertionsInSection( sectionStats->sectionInfo.name );
-            m_legacyReporter->EndSection( sectionStats->sectionInfo.name, sectionStats->assertions );
-        }
-        virtual void testCaseEnded( Ptr<TestCaseStats const> const& testCaseStats ) {
-            if( testCaseStats->missingAssertions )
-                m_legacyReporter->NoAssertionsInTestCase( testCaseStats->testInfo.name );
-            m_legacyReporter->EndTestCase
-                (   testCaseStats->testInfo,
-                    testCaseStats->totals,
-                    testCaseStats->stdOut,
-                    testCaseStats->stdErr );
-        }
-        virtual void testGroupEnded( Ptr<TestGroupStats const> const& testGroupStats ) {
-            if( testGroupStats->aborting )
-                m_legacyReporter->Aborted();
-            m_legacyReporter->EndGroup( testGroupStats->groupInfo.name, testGroupStats->totals );
-        }
-        virtual void testRunEnded( Ptr<TestRunStats const> const& testRunStats ) {
-            m_legacyReporter->EndTesting( testRunStats->totals );
-        }
-
-    private:
-        Ptr<IReporter> m_legacyReporter;
-        ReporterConfig m_config;
+        virtual void Result( AssertionResult const& result ) = 0;
     };
 
     
@@ -339,8 +322,8 @@ namespace Catch
         typedef std::map<std::string, IReporterFactory*> FactoryMap;
 
         virtual ~IReporterRegistry();
-        virtual IStreamingReporter* create( std::string const& name, ReporterConfig const& config ) const = 0;        
-        virtual const FactoryMap& getFactories() const = 0;
+        virtual IStreamingReporter* create( std::string const& name, Ptr<IConfig> const& config ) const = 0;        
+        virtual FactoryMap const& getFactories() const = 0;
     };
     
     inline std::string trim( std::string const& str ) {

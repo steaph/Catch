@@ -6,10 +6,6 @@
  *  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wpadded"
-#endif
-
 #include "catch.hpp"
 #include "catch_self_test.hpp"
 
@@ -239,12 +235,15 @@ TEST_CASE("./failing/matchers/Equals", "")
 {
     CHECK_THAT( testStringForMatching(), Equals( "something else" ) );
 }
-
-TEST_CASE("/succeeding/matchers/AllOf", "")
+TEST_CASE("string", "Equals with NULL")
+{
+    REQUIRE_THAT("", Equals(NULL));
+}
+TEST_CASE("./succeeding/matchers/AllOf", "")
 {
     CHECK_THAT( testStringForMatching(), AllOf( Catch::Contains( "string" ), Catch::Contains( "abc" ) ) );
 }
-TEST_CASE("/succeeding/matchers/AnyOf", "")
+TEST_CASE("./succeeding/matchers/AnyOf", "")
 {
     CHECK_THAT( testStringForMatching(), AnyOf( Catch::Contains( "string" ), Catch::Contains( "not there" ) ) );
     CHECK_THAT( testStringForMatching(), AnyOf( Catch::Contains( "not there" ), Catch::Contains( "string" ) ) );
@@ -261,8 +260,7 @@ inline unsigned int Factorial( unsigned int number )
   return number > 1 ? Factorial(number-1)*number : 1;
 }
 
-TEST_CASE( "example/factorial", "The Factorial function should return the factorial of the number passed in" )
-{
+TEST_CASE( "Factorials are computed", "[factorial]" ) {
   REQUIRE( Factorial(0) == 1 );
   REQUIRE( Factorial(1) == 1 );
   REQUIRE( Factorial(2) == 2 );
@@ -292,6 +290,56 @@ TEST_CASE( "second tag", "[tag2]" )
 //    FILE* output = popen("./CatchSelfTest ./failing/matchers/StartsWith", "r");
 //    while ( fgets(line, 199, output) )
 //        std::cout << line;
+//}
+
+TEST_CASE( "vectors can be sized and resized", "[vector]" ) {
+
+    std::vector<int> v( 5 );
+    
+    REQUIRE( v.size() == 5 );
+    REQUIRE( v.capacity() >= 5 );
+    
+    SECTION( "resizing bigger changes size and capacity", "" ) {
+        v.resize( 10 );
+        
+        REQUIRE( v.size() == 10 );
+        REQUIRE( v.capacity() >= 10 );
+    }
+    SECTION( "resizing smaller changes size but not capacity", "" ) {
+        v.resize( 0 );
+        
+        REQUIRE( v.size() == 0 );
+        REQUIRE( v.capacity() >= 5 );
+        
+        SECTION( "We can use the 'swap trick' to reset the capacity", "" ) {
+            std::vector<int> empty;
+            empty.swap( v );
+            
+            REQUIRE( v.capacity() == 0 );
+        }
+    }
+    SECTION( "reserving bigger changes capacity but not size", "" ) {
+        v.reserve( 10 );
+        
+        REQUIRE( v.size() == 5 );
+        REQUIRE( v.capacity() >= 10 );
+    }
+    SECTION( "reserving smaller does not change size or capacity", "" ) {
+        v.reserve( 0 );
+        
+        REQUIRE( v.size() == 5 );
+        REQUIRE( v.capacity() >= 5 );
+    }
+}
+
+// https://github.com/philsquared/Catch/issues/166
+//TEST_CASE("CatchSectionInfiniteLoop", "")
+//{
+//    SECTION("Outer", "")
+//        SECTION("Inner", "")
+//            SUCCEED("that's not flying - that's failing in style");
+//
+//    FAIL("to infinity and beyond");
 //}
 
 ANON_TEST_CASE()

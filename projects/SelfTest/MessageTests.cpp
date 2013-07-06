@@ -28,11 +28,11 @@ TEST_CASE( "./failing/message/info/1", "INFO gets logged on failure" )
 
 TEST_CASE( "./mixed/message/info/2", "INFO gets logged on failure" )
 {
-    INFO( "this message should be logged" );
+    INFO( "this message should not be logged" );
     int a = 2;
     CHECK( a == 2 );
 
-    INFO( "this message should be logged, too" );
+    INFO( "this message should be logged" );
     
     CHECK( a == 1 );
 
@@ -47,7 +47,7 @@ TEST_CASE( "./mixed/message/info/2", "INFO gets logged on failure" )
 
 TEST_CASE( "./failing/message/fail", "FAIL aborts the test" )
 {
-    if( true )
+	if( Catch::isTrue( true ) )
         FAIL( "This is a " << "failure" );    // This should output the message and abort
 }
 
@@ -90,4 +90,13 @@ TEST_CASE( "./mixed/message/scoped", "" )
 TEST_CASE( "./succeeding/nofail", "The NO_FAIL macro reports a failure but does not fail the test" )
 {
     CHECK_NOFAIL( 1 == 2 );
+}
+
+TEST_CASE( "just info", "[info][isolated info][hide]" )
+{
+    INFO( "this should never be seen" );
+}
+TEST_CASE( "just failure", "[fail][isolated info][hide]" )
+{
+    FAIL( "Previous info should not be seen" );
 }

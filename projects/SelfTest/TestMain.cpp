@@ -10,8 +10,7 @@
 #endif
 
 #include "catch_self_test.hpp"
-
-#define CATCH_DIMENSION_OF( a ) ( sizeof(a) / sizeof(0[a]) )
+#include "internal/catch_text.h"
 
 TEST_CASE( "selftest/main", "Runs all Catch self tests and checks their results" ) {
     using namespace Catch;
@@ -22,12 +21,12 @@ TEST_CASE( "selftest/main", "Runs all Catch self tests and checks their results"
 
         SECTION(    "selftest/expected result/failing tests",
                     "Tests in the 'failing' branch fail" ) {
-            MetaTestRunner::runMatching( "./failing/*",  MetaTestRunner::Expected::ToFail );
+            MetaTestRunner::runMatching( "./failing/*",  MetaTestRunner::Expected::ToFail, 0, 2 );
         }
 
         SECTION(    "selftest/expected result/succeeding tests",
                     "Tests in the 'succeeding' branch succeed" ) {
-            MetaTestRunner::runMatching( "./succeeding/*",  MetaTestRunner::Expected::ToSucceed );
+            MetaTestRunner::runMatching( "./succeeding/*",  MetaTestRunner::Expected::ToSucceed, 1, 2 );
         }
     }
 
@@ -38,16 +37,16 @@ TEST_CASE( "selftest/main", "Runs all Catch self tests and checks their results"
 
         SECTION(    "selftest/test counts/succeeding tests",
                     "Number of 'succeeding' tests is fixed" ) {
-            Totals totals = runner.runMatching( "./succeeding/*" );
-            CHECK( totals.assertions.passed == 373 );
+            Totals totals = runner.runMatching( "./succeeding/*", 0, 2 );
+            CHECK( totals.assertions.passed == 380 );
             CHECK( totals.assertions.failed == 0 );
         }
 
         SECTION(    "selftest/test counts/failing tests",
                     "Number of 'failing' tests is fixed" ) {
-            Totals totals = runner.runMatching( "./failing/*" );
+            Totals totals = runner.runMatching( "./failing/*", 1, 2 );
             CHECK( totals.assertions.passed == 1 );
-            CHECK( totals.assertions.failed == 100 );
+            CHECK( totals.assertions.failed == 102 );
         }
     }
 }
@@ -55,7 +54,7 @@ TEST_CASE( "selftest/main", "Runs all Catch self tests and checks their results"
 TEST_CASE( "meta/Misc/Sections", "looped tests" ) {
     Catch::EmbeddedRunner runner;
 
-    Catch::Totals totals = runner.runMatching( "./mixed/Misc/Sections/nested2" );
+    Catch::Totals totals = runner.runMatching( "./mixed/Misc/Sections/nested2", 0, 1 );
     CHECK( totals.assertions.passed == 2 );
     CHECK( totals.assertions.failed == 1 );
 }
@@ -70,28 +69,16 @@ TEST_CASE( "meta/Misc/Sections", "looped tests" ) {
 #include "../../include/reporters/catch_reporter_xml.hpp"
 #include "../../include/reporters/catch_reporter_junit.hpp"
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-template<size_t size>
-void parseIntoConfig( const char * (&argv)[size], Catch::ConfigData& config ) {
-#else
-void parseIntoConfig( size_t size, const char * argv[], Catch::ConfigData& config ) {
-#endif
-    static Catch::AllOptions options;
-    options.parseIntoConfig( Catch::CommandParser( size, argv ), config );
+template<typename ArgvT>
+void parseIntoConfig( ArgvT const & argv, Catch::ConfigData& config ) {
+    Clara::CommandLine<Catch::ConfigData> parser = Catch::makeCommandLineParser();
+    parser.parseInto( CATCH_DIMENSION_OF(argv), argv, config );
 }
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-template<size_t size>
-std::string parseIntoConfigAndReturnError( const char * (&argv)[size], Catch::ConfigData& config ) {
-#else
-std::string parseIntoConfigAndReturnError( size_t size, const char * argv[], Catch::ConfigData& config ) {
-#endif
+template<typename T>
+std::string parseIntoConfigAndReturnError( T const & argv, Catch::ConfigData& config ) {
     try {
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         parseIntoConfig( argv, config );
-#else
-        parseIntoConfig( size, argv, config );
-#endif
         FAIL( "expected exception" );
     }
     catch( std::exception& ex ) {
@@ -102,299 +89,157 @@ std::string parseIntoConfigAndReturnError( size_t size, const char * argv[], Cat
 
 inline Catch::TestCase fakeTestCase( const char* name ){ return Catch::makeTestCase( NULL, "", name, "", CATCH_INTERNAL_LINEINFO ); }
 
-TEST_CASE( "selftest/parser/2", "ConfigData" ) {
+TEST_CASE( "Process can be configured on command line", "[config][command-line]" ) {
 
     Catch::ConfigData config;
 
-    SECTION( "default", "" ) {
+    SECTION( "default - no arguments", "" ) {
         const char* argv[] = { "test" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
         CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-        CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
         CHECK( config.shouldDebugBreak == false );
-        CHECK( config.cutoff == -1 );
-        CHECK( config.allowThrows == true );
-        CHECK( config.reporter.empty() );
+        CHECK( config.abortAfter == -1 );
+        CHECK( config.noThrow == false );
+        CHECK( config.reporterName.empty() );
     }
 
     SECTION( "test lists", "" ) {
-        SECTION( "-t/1", "Specify one test case using -t" ) {
-            const char* argv[] = { "test", "-t", "test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        SECTION( "1 test", "Specify one test case using" ) {
+            const char* argv[] = { "test", "test1" };
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.filters.size() == 1 );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "notIncluded" ) ) == false );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "test1" ) ) );
+            Catch::Config cfg( config );
+            REQUIRE( cfg.filters().size() == 1 );
+            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "notIncluded" ) ) == false );
+            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test1" ) ) );
         }
-        SECTION( "-t/exclude:1", "Specify one test case exclusion using -t exclude:" ) {
-            const char* argv[] = { "test", "-t", "exclude:test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        SECTION( "Specify one test case exclusion using exclude:", "" ) {
+            const char* argv[] = { "test", "exclude:test1" };
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.filters.size() == 1 );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "test1" ) ) == false );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "alwaysIncluded" ) ) );
+            Catch::Config cfg( config );
+            REQUIRE( cfg.filters().size() == 1 );
+            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test1" ) ) == false );
+            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "alwaysIncluded" ) ) );
         }
 
-        SECTION( "--test/1", "Specify one test case using --test" ) {
-            const char* argv[] = { "test", "--test", "test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        SECTION( "Specify one test case exclusion using ~", "" ) {
+            const char* argv[] = { "test", "~test1" };
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.filters.size() == 1 );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "notIncluded" ) ) == false );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "test1" ) ) );
+            Catch::Config cfg( config );
+            REQUIRE( cfg.filters().size() == 1 );
+            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test1" ) ) == false );
+            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "alwaysIncluded" ) ) );
         }
 
-        SECTION( "--test/exclude:1", "Specify one test case exclusion using --test exclude:" ) {
-            const char* argv[] = { "test", "--test", "exclude:test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
-
-            REQUIRE( config.filters.size() == 1 );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "test1" ) ) == false );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "alwaysIncluded" ) ) );
-        }
-
-        SECTION( "--test/exclude:2", "Specify one test case exclusion using --test ~" ) {
-            const char* argv[] = { "test", "--test", "~test1" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
-
-            REQUIRE( config.filters.size() == 1 );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "test1" ) ) == false );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "alwaysIncluded" ) ) );
-        }
-
-        SECTION( "-t/2", "Specify two test cases using -t" ) {
+        SECTION( "Specify two test cases using -t", "" ) {
             const char* argv[] = { "test", "-t", "test1", "test2" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.filters.size() == 1 );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "notIncluded" ) ) == false );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "test1" ) ) );
-            REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "test2" ) ) );
-        }
-
-        SECTION( "-t/0", "When no test names are supplied it is an error" ) {
-            const char* argv[] = { "test", "-t" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "at least 1" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "at least 1" ) );
-#endif
+            Catch::Config cfg( config );
+            REQUIRE( cfg.filters().size() == 1 );
+            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "notIncluded" ) ) == false );
+            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test1" ) ) );
+            REQUIRE( cfg.filters()[0].shouldInclude( fakeTestCase( "test2" ) ) );
         }
     }
 
     SECTION( "reporter", "" ) {
-        SECTION( "-r/basic", "" ) {
+        SECTION( "-r/console", "" ) {
             const char* argv[] = { "test", "-r", "console" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.reporter == "console" );
+            REQUIRE( config.reporterName == "console" );
         }
         SECTION( "-r/xml", "" ) {
             const char* argv[] = { "test", "-r", "xml" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.reporter == "xml" );
+            REQUIRE( config.reporterName == "xml" );
         }
         SECTION( "--reporter/junit", "" ) {
             const char* argv[] = { "test", "--reporter", "junit" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.reporter == "junit" );
-        }
-        SECTION( "-r/error", "reporter config only accepts one argument" ) {
-            const char* argv[] = { "test", "-r", "one", "two" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "1 argument" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "1 argument" ) );
-#endif
+            REQUIRE( config.reporterName == "junit" );
         }
     }
 
     SECTION( "debugger", "" ) {
         SECTION( "-b", "" ) {
             const char* argv[] = { "test", "-b" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.shouldDebugBreak == true );
         }
         SECTION( "--break", "" ) {
             const char* argv[] = { "test", "--break" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
             REQUIRE( config.shouldDebugBreak );
-        }
-        SECTION( "-b", "break option has no arguments" ) {
-            const char* argv[] = { "test", "-b", "unexpected" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "0 arguments" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "0 arguments" ) );
-#endif
         }
     }
 
     SECTION( "abort", "" ) {
-        SECTION( "-a", "" ) {
+        SECTION( "-a aborts after first failure", "" ) {
             const char* argv[] = { "test", "-a" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.cutoff == 1 );
+            REQUIRE( config.abortAfter == 1 );
         }
-        SECTION( "-a/2", "" ) {
-            const char* argv[] = { "test", "-a", "2" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        SECTION( "-x 2 aborts after two failures", "" ) {
+            const char* argv[] = { "test", "-x", "2" };
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.cutoff == 2 );
+            REQUIRE( config.abortAfter == 2 );
         }
-        SECTION( "-a/error/0", "" ) {
-            const char* argv[] = { "test", "-a", "0" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        SECTION( "-x must be greater than zero", "" ) {
+            const char* argv[] = { "test", "-x", "0" };
             REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "greater than zero" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "greater than zero" ) );
-#endif
         }
-        SECTION( "-a/error/non numeric", "" ) {
-            const char* argv[] = { "test", "-a", "oops" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "greater than zero" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "greater than zero" ) );
-#endif
-        }
-        SECTION( "-a/error/two args", "cutoff only takes one argument" ) {
-            const char* argv[] = { "test", "-a", "1", "2" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "0 and 1 argument" ) );
-#else
-            REQUIRE_THAT( parseIntoConfigAndReturnError( CATCH_DIMENSION_OF(argv), argv, config ), Contains( "0 and 1 argument" ) );
-#endif
+        SECTION( "-x must be numeric", "" ) {
+            const char* argv[] = { "test", "-x", "oops" };
+            REQUIRE_THAT( parseIntoConfigAndReturnError( argv, config ), Contains( "-x" ) );
         }
     }
 
     SECTION( "nothrow", "" ) {
-        SECTION( "-nt", "" ) {
-            const char* argv[] = { "test", "-nt" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        SECTION( "-e", "" ) {
+            const char* argv[] = { "test", "-e" };
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.allowThrows == false );
+            REQUIRE( config.noThrow == true );
         }
         SECTION( "--nothrow", "" ) {
             const char* argv[] = { "test", "--nothrow" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            REQUIRE( config.allowThrows == false );
+            REQUIRE( config.noThrow == true );
         }
     }
 
-    SECTION( "streams", "" ) {
+    SECTION( "output filename", "" ) {
         SECTION( "-o filename", "" ) {
             const char* argv[] = { "test", "-o", "filename.ext" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
             REQUIRE( config.outputFilename == "filename.ext" );
-            REQUIRE( config.stream.empty() );
-        }
-        SECTION( "-o %stdout", "" ) {
-            const char* argv[] = { "test", "-o", "%stdout" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-            CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
-            REQUIRE( config.stream == "stdout" );
-            REQUIRE( config.outputFilename.empty() );
         }
         SECTION( "--out", "" ) {
             const char* argv[] = { "test", "--out", "filename.ext" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
             REQUIRE( config.outputFilename == "filename.ext" );
         }
     }
 
     SECTION( "combinations", "" ) {
-        SECTION( "-a -b", "" ) {
-            const char* argv[] = { "test", "-a", "-b", "-nt" };
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        SECTION( "Single character flags can be combined", "" ) {
+            const char* argv[] = { "test", "-abe" };
             CHECK_NOTHROW( parseIntoConfig( argv, config ) );
-#else
-            CHECK_NOTHROW( parseIntoConfig( CATCH_DIMENSION_OF(argv), argv, config ) );
-#endif
 
-            CHECK( config.cutoff == 1 );
+            CHECK( config.abortAfter == 1 );
             CHECK( config.shouldDebugBreak );
-            CHECK( config.allowThrows == false );
+            CHECK( config.noThrow == true );
         }
     }
 }
@@ -447,33 +292,9 @@ TEST_CASE( "selftest/filter/wildcard at both ends", "Individual filters with wil
 }
 
 
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-template<size_t size>
-int getArgc( const char * (&)[size] ) {
-    return size;
-}
-#endif
-
-TEST_CASE( "selftest/option parsers", "" )
-{
-    Catch::ConfigData config;
-
-    Catch::SharedImpl<Catch::Options::TestCaseOptionParser> tcOpt;
-    Catch::OptionParser& opt = tcOpt;
-
-    const char* argv[] = { "test", "-t", "test1" };
-
-#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
-    Catch::CommandParser parser( getArgc( argv ), argv );
-#else
-    Catch::CommandParser parser( CATCH_DIMENSION_OF(argv), argv );
-#endif
-
-    CHECK_NOTHROW( opt.parseIntoConfig( parser, config ) );
-
-    REQUIRE( config.filters.size() == 1 );
-    REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "notIncluded" ) ) == false );
-    REQUIRE( config.filters[0].shouldInclude( fakeTestCase( "test1" ) ) );
+template<typename ArgvT>
+int getArgc( ArgvT const & argv ) {
+    return CATCH_DIMENSION_OF( argv );
 }
 
 TEST_CASE( "selftest/tags", "" ) {
@@ -504,6 +325,7 @@ TEST_CASE( "selftest/tags", "" ) {
         CHECK( twoTags.getTestCaseInfo().description == "" );
         CHECK( twoTags.hasTag( "one" ) );
         CHECK( twoTags.hasTag( "two" ) );
+        CHECK( twoTags.hasTag( "Two" ) );
         CHECK( twoTags.hasTag( "three" ) == false );
         CHECK( twoTags.getTags().size() == 2 );
 
@@ -542,5 +364,196 @@ TEST_CASE( "selftest/tags", "" ) {
         CHECK( oneTag.matchesTags( "~[hide]" ) == false );
 
     }
+}
 
+TEST_CASE( "Long strings can be wrapped", "[wrap]" ) {
+
+    using namespace Catch;
+    SECTION( "plain string", "" ) {
+        // guide:                 123456789012345678
+        std::string testString = "one two three four";
+
+        SECTION( "No wrapping", "" ) {
+            CHECK( Text( testString, TextAttributes().setWidth( 80 ) ).toString() == testString );
+            CHECK( Text( testString, TextAttributes().setWidth( 18 ) ).toString() == testString );
+        }
+        SECTION( "Wrapped once", "" ) {
+            CHECK( Text( testString, TextAttributes().setWidth( 17 ) ).toString() == "one two three\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 16 ) ).toString() == "one two three\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 14 ) ).toString() == "one two three\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 13 ) ).toString() == "one two three\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 12 ) ).toString() == "one two\nthree four" );
+        }
+        SECTION( "Wrapped twice", "" ) {
+            CHECK( Text( testString, TextAttributes().setWidth( 9 ) ).toString() == "one two\nthree\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 8 ) ).toString() == "one two\nthree\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 7 ) ).toString() == "one two\nthree\nfour" );
+        }
+        SECTION( "Wrapped three times", "" ) {
+            CHECK( Text( testString, TextAttributes().setWidth( 6 ) ).toString() == "one\ntwo\nthree\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 5 ) ).toString() == "one\ntwo\nthree\nfour" );
+        }
+        SECTION( "Short wrap", "" ) {
+            CHECK( Text( "abcdef", TextAttributes().setWidth( 4 ) ).toString() == "abc-\ndef" );
+            CHECK( Text( "abcdefg", TextAttributes().setWidth( 4 ) ).toString() == "abc-\ndefg" );
+            CHECK( Text( "abcdefgh", TextAttributes().setWidth( 4 ) ).toString() == "abc-\ndef-\ngh" );
+
+            CHECK( Text( testString, TextAttributes().setWidth( 4 ) ).toString() == "one\ntwo\nthr-\nee\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 3 ) ).toString() == "one\ntwo\nth-\nree\nfo-\nur" );
+        }
+        SECTION( "As container", "" ) {
+            Text text( testString, TextAttributes().setWidth( 6 ) );
+            REQUIRE( text.size() == 4 );
+            CHECK( text[0] == "one" );
+            CHECK( text[1] == "two" );
+            CHECK( text[2] == "three" );
+            CHECK( text[3] == "four" );
+        }
+        SECTION( "Indent first line differently", "" ) {
+            Text text( testString, TextAttributes()
+                                        .setWidth( 10 )
+                                        .setIndent( 4 )
+                                        .setInitialIndent( 1 ) );
+            CHECK( text.toString() == " one two\n    three\n    four" );
+        }
+
+    }
+
+    SECTION( "With newlines", "" ) {
+
+        // guide:                 1234567890123456789
+        std::string testString = "one two\nthree four";
+
+        SECTION( "No wrapping" , "" ) {
+            CHECK( Text( testString, TextAttributes().setWidth( 80 ) ).toString() == testString );
+            CHECK( Text( testString, TextAttributes().setWidth( 18 ) ).toString() == testString );
+            CHECK( Text( testString, TextAttributes().setWidth( 10 ) ).toString() == testString );
+        }
+        SECTION( "Trailing newline" , "" ) {
+            CHECK( Text( "abcdef\n", TextAttributes().setWidth( 10 ) ).toString() == "abcdef\n" );
+            CHECK( Text( "abcdef", TextAttributes().setWidth( 6 ) ).toString() == "abcdef" );
+            CHECK( Text( "abcdef\n", TextAttributes().setWidth( 6 ) ).toString() == "abcdef\n" );
+        }
+        SECTION( "Wrapped once", "" ) {
+            CHECK( Text( testString, TextAttributes().setWidth( 9 ) ).toString() == "one two\nthree\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 8 ) ).toString() == "one two\nthree\nfour" );
+            CHECK( Text( testString, TextAttributes().setWidth( 7 ) ).toString() == "one two\nthree\nfour" );
+        }
+        SECTION( "Wrapped twice", "" ) {
+            CHECK( Text( testString, TextAttributes().setWidth( 6 ) ).toString() == "one\ntwo\nthree\nfour" );
+        }
+    }
+
+    SECTION( "With tabs", "" ) {
+
+        // guide:                 1234567890123456789
+        std::string testString = "one two \tthree four five six";
+
+        CHECK( Text( testString, TextAttributes().setWidth( 15 ) ).toString()
+            == "one two three\n        four\n        five\n        six" );
+    }
+
+
+}
+
+using namespace Catch;
+
+class ColourString {
+public:
+
+    struct ColourIndex {
+        ColourIndex( Colour::Code _colour, std::size_t _fromIndex, std::size_t _toIndex )
+        :   colour( _colour ),
+            fromIndex( _fromIndex ),
+            toIndex( _toIndex )
+        {}
+
+        Colour::Code colour;
+        std::size_t fromIndex;
+        std::size_t toIndex;
+    };
+
+    ColourString( std::string const& _string )
+    : string( _string )
+    {}
+    ColourString( std::string const& _string, std::vector<ColourIndex> const& _colours )
+    : string( _string ), colours( _colours )
+    {}
+
+    ColourString& addColour( Colour::Code colour, int _index ) {
+        colours.push_back( ColourIndex( colour,
+                                        resolveRelativeIndex( _index ),
+                                        resolveRelativeIndex( _index )+1 ) );
+        return *this;
+    }
+    ColourString& addColour( Colour::Code colour, int _fromIndex, int _toIndex ) {
+        colours.push_back( ColourIndex( colour,
+                                        resolveRelativeIndex(_fromIndex),
+                                        resolveLastRelativeIndex( _toIndex ) ) );
+        return *this;
+    }
+
+    void writeToStream( std::ostream& _stream ) const {
+        std::size_t last = 0;
+        for( std::size_t i = 0; i < colours.size(); ++i ) {
+            ColourIndex const& index = colours[i];
+            if( index.fromIndex > last )
+                _stream << string.substr( last, index.fromIndex-last );
+            {
+                Colour colourGuard( index.colour );
+                _stream << string.substr( index.fromIndex, index.toIndex-index.fromIndex );
+            }
+            last = index.toIndex;
+        }
+        if( last < string.size() )
+            _stream << string.substr( last );
+    }
+    friend std::ostream& operator << ( std::ostream& _stream, ColourString const& _colourString ) {
+        _colourString.writeToStream( _stream );
+        return _stream;
+    }
+
+private:
+
+    std::size_t resolveLastRelativeIndex( int _index ) {
+        std::size_t index = resolveRelativeIndex( _index );
+        return index == 0 ? string.size() : index;
+    }
+    std::size_t resolveRelativeIndex( int _index ) {
+        return static_cast<std::size_t>( _index >= 0
+            ? _index
+            : static_cast<int>( string.size() )+_index );
+    }
+    std::string string;
+    std::vector<ColourIndex> colours;
+};
+
+// !TBD: This will be folded into Text class
+TEST_CASE( "Strings can be rendered with colour", "[colour]" ) {
+
+    {
+        ColourString cs( "hello" );
+        cs  .addColour( Colour::Red, 0 )
+            .addColour( Colour::Green, -1 );
+
+        std::cout << cs << std::endl;
+    }
+
+    {
+        ColourString cs( "hello" );
+        cs  .addColour( Colour::Blue, 1, -2 );
+
+        std::cout << cs << std::endl;
+    }
+
+}
+
+TEST_CASE( "Text can be formatted using the Text class", "" ) {
+
+    CHECK( Text( "hi there" ).toString() == "hi there" );
+
+    TextAttributes narrow;
+    narrow.setWidth( 6 );
+
+    CHECK( Text( "hi there", narrow ).toString() == "hi\nthere" );
 }

@@ -18,6 +18,11 @@
 
 #include "set"
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 namespace Catch {
 
     class NullStreamingReporter : public SharedImpl<IStreamingReporter> {
@@ -35,16 +40,17 @@ namespace Catch {
             return ReporterPreferences();
         }
 
+        virtual void noMatchingTestCases( std::string const& ) {}
         virtual void testRunStarting( TestRunInfo const& ) {}
         virtual void testGroupStarting( GroupInfo const& ) {}
         virtual void testCaseStarting( TestCaseInfo const& ) {}
         virtual void sectionStarting( SectionInfo const& ) {}
         virtual void assertionStarting( AssertionInfo const& ) {}
-        virtual void assertionEnded( Ptr<AssertionStats const> const& ) {}
-        virtual void sectionEnded( Ptr<SectionStats const> const& ) {}
-        virtual void testCaseEnded( Ptr<TestCaseStats const> const& ) {}
-        virtual void testGroupEnded( Ptr<TestGroupStats const> const& ) {}
-        virtual void testRunEnded( Ptr<TestRunStats const> const& ) {}
+        virtual void assertionEnded( AssertionStats const& ) {}
+        virtual void sectionEnded( SectionStats const& ) {}
+        virtual void testCaseEnded( TestCaseStats const& ) {}
+        virtual void testGroupEnded( TestGroupStats const& ) {}
+        virtual void testRunEnded( TestRunStats const& ) {}
     };
 
     class EmbeddedRunner {
@@ -53,6 +59,8 @@ namespace Catch {
         EmbeddedRunner() : m_reporter( new NullStreamingReporter() ) {}
         
         Totals runMatching( const std::string& rawTestSpec,
+                            std::size_t groupIndex,
+                            std::size_t groupsCount,
                             const std::string& reporter = "console" );
         
     private:
@@ -67,12 +75,18 @@ namespace Catch {
             ToFail
         }; };
         
-        MetaTestRunner( Expected::Result expectedResult ) : m_expectedResult( expectedResult ) {}
+        MetaTestRunner( Expected::Result expectedResult, std::size_t groupIndex, std::size_t groupsCount )
+        :   m_expectedResult( expectedResult ),
+            m_groupIndex( groupIndex ),
+            m_groupsCount( groupsCount )
+        {}
         
         static void runMatching(    const std::string& testSpec, 
-                                    Expected::Result expectedResult ) {
+                                    Expected::Result expectedResult,
+                                    std::size_t groupIndex,
+                                    std::size_t groupsCount ) {
             forEach(    getRegistryHub().getTestCaseRegistry().getMatchingTestCases( testSpec ), 
-                        MetaTestRunner( expectedResult ) );
+                        MetaTestRunner( expectedResult, groupIndex, groupsCount ) );
         }
         
         void operator()( const TestCase& testCase ) {
@@ -81,7 +95,7 @@ namespace Catch {
             {
                 EmbeddedRunner runner;
                 name = testCase.getTestCaseInfo().name;
-                totals = runner.runMatching( name );
+                totals = runner.runMatching( name, m_groupIndex, m_groupsCount );
             }
             switch( m_expectedResult ) {
                 case Expected::ToSucceed:
@@ -107,10 +121,12 @@ namespace Catch {
                     }
                     break;
             }        
-        };
+        }
 
     private:
         Expected::Result m_expectedResult;
+        std::size_t m_groupIndex;
+        std::size_t m_groupsCount;
     };
     
 
@@ -150,6 +166,10 @@ namespace Catch {
     };
     
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #define CATCH_REGISTER_LINE_INFO( name ) ::Catch::LineInfoRegistrar INTERNAL_CATCH_UNIQUE_NAME( lineRegistrar )( name, ::Catch::SourceLineInfo( __FILE__, __LINE__ ) );
 #define CATCH_GET_LINE_INFO( name ) ::Catch::LineInfoRegistry::get().infoForName( name )

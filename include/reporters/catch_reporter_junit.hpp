@@ -65,7 +65,7 @@ namespace Catch {
         };
 
     public:
-        JunitReporter( const ReporterConfig& config )
+        JunitReporter( ReporterConfig const& config )
         :   m_config( config ),
             m_testSuiteStats( "AllTests" ),
             m_currentStats( &m_testSuiteStats )
@@ -86,7 +86,7 @@ namespace Catch {
 
         virtual void StartGroup( const std::string& groupName ) {
             if( groupName.empty() )
-                m_statsForSuites.push_back( Stats( m_config.name() ) );
+                m_statsForSuites.push_back( Stats( m_config.fullConfig()->name() ) );
             else
                 m_statsForSuites.push_back( Stats( groupName ) );
             m_currentStats = &m_statsForSuites.back();
@@ -110,7 +110,7 @@ namespace Catch {
         }
 
         virtual void Result( const Catch::AssertionResult& assertionResult ) {
-            if( assertionResult.getResultType() != ResultWas::Ok || m_config.includeSuccessfulResults() ) {
+            if( assertionResult.getResultType() != ResultWas::Ok || m_config.fullConfig()->includeSuccessfulResults() ) {
                 TestCaseStats& testCaseStats = m_currentStats->m_testCaseStats.back();
                 TestStats stats;
                 std::ostringstream oss;
@@ -143,10 +143,14 @@ namespace Catch {
                     case ResultWas::Ok:
                         stats.m_element = "success";
                         break;
+                    case ResultWas::DidntThrowException:
+                        stats.m_element = "failure";
+                        m_currentStats->m_failuresCount++;
+                        break;
                     case ResultWas::Unknown:
                     case ResultWas::FailureBit:
                     case ResultWas::Exception:
-                    case ResultWas::DidntThrowException:
+                        stats.m_element = "* internal error *";
                         break;
                 }
                 testCaseStats.m_testStats.push_back( stats );
@@ -171,13 +175,13 @@ namespace Catch {
 
         virtual void EndTesting( const Totals& ) {
             XmlWriter xml( m_config.stream() );
-            
+
             if( m_statsForSuites.size() > 0 )
                 xml.startElement( "testsuites" );
-                        
+
             std::vector<Stats>::const_iterator it = m_statsForSuites.begin();
             std::vector<Stats>::const_iterator itEnd = m_statsForSuites.end();
-            
+
             for(; it != itEnd; ++it ) {
                 XmlWriter::ScopedElement e = xml.scopedElement( "testsuite" );
                 xml.writeAttribute( "name", it->m_name );
@@ -190,7 +194,7 @@ namespace Catch {
 
                 OutputTestCases( xml, *it );
             }
-  
+
             xml.scopedElement( "system-out" ).writeText( trim( m_stdOut.str() ), false );
             xml.scopedElement( "system-err" ).writeText( trim( m_stdErr.str() ), false );
         }
@@ -234,7 +238,6 @@ namespace Catch {
 
     private:
         ReporterConfig m_config;
-        bool m_currentTestSuccess;
 
         Stats m_testSuiteStats;
         Stats* m_currentStats;
