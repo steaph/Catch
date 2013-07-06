@@ -1,6 +1,6 @@
 /*
- *  CATCH-VC6 v1.0 build 2 (master branch)
- *  Generated: 2013-07-06 15:56:57.161000
+ *  CATCH-VC6 v1.0 build 3 (master branch)
+ *  Generated: 2013-07-06 16:00:57.036000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -6122,7 +6122,9 @@ namespace Catch { namespace Detail {
 
 #if defined ( CATCH_PLATFORM_WINDOWS ) /////////////////////////////////////////
 
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 
 namespace Catch {
@@ -6608,7 +6610,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 1, 0, 2, "master" );
+    Version libraryVersion( 1, 0, 3, "master" );
 }
 
 // #included from: catch_text.hpp
