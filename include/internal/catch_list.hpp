@@ -67,7 +67,7 @@ namespace Catch {
                                         .setWidth( maxTagLen )
                                         .setInitialIndent(0)
                                         .setIndent( 2 ) );
-
+                
                 for( std::size_t i = 0; i < (std::max)( nameWrapper.size(), tagsWrapper.size() ); ++i ) {
                     Colour::Code colour = Colour::None;
                     if( it->getTestCaseInfo().isHidden )
