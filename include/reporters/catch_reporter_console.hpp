@@ -244,7 +244,7 @@ namespace Catch {
             stream  << "\n" << getTildes() << "\n";
             Colour colour( Colour::SecondaryText );
             stream  << testRunInfo->name
-                    << " is a Catch v"  << libraryVersion.majorVersion << "."
+                    << " is a Catch-VC6 v"  << libraryVersion.majorVersion << "."
                     << libraryVersion.minorVersion << " b"
                     << libraryVersion.buildNumber;
             if( libraryVersion.branchName != "master" )
@@ -281,7 +281,7 @@ namespace Catch {
             SourceLineInfo lineInfo = currentSectionInfo
                                     ? currentSectionInfo->lineInfo
                                     : unusedTestCaseInfo->lineInfo;
-            
+
             if( !lineInfo.empty() ){
                 stream << getDashes() << "\n";
                 Colour colourGuard( Colour::FileName );
