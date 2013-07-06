@@ -2,6 +2,10 @@
 
 *CATCH-VC6 v1.0 build 1 (master branch)*
 
+# New release with significant changes
+
+[Please see this page for details - including some breaking changes](docs/whats-changed.md)
+
 ## What's the Catch?
 
 Catch stands for C++ Automated Test Cases in Headers and is a multi-paradigm automated test framework for C++ and Objective-C (and, maybe, C). It is implemented entirely in a set of header files, but is packaged up as a single header for extra convenience.
