@@ -17,11 +17,7 @@ This documentation comprises these three parts:
 * [Tutorial](docs/tutorial.md) - getting started
 * [Reference section](docs/reference-index.md) - all the details
 
-## What state is Catch in - can I use it now?
-
-For now Catch is still classed as "in developer preview". However it has already been widely used for over two years. It has proven fairly stable and is in use in some demanding projects. Think of it in the same way that Google uses the term "beta".
-At time of writing I'm working towards locking down the public facing interfaces so I can finally give it a 1.0 designation.
-
+The documentation will continue until morale improves
 
 ## More
 * CATCH-VC6 related issues and bugs can be raised on this [Issue tracker on GitHub](https://github.com/martinmoene/Catch/issues)
