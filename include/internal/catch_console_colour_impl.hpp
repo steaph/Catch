@@ -19,6 +19,7 @@ namespace Catch { namespace Detail {
 
 #if defined ( CATCH_PLATFORM_WINDOWS ) /////////////////////////////////////////
 
+#define NOMINMAX
 #include <windows.h>
 
 namespace Catch {
