@@ -62,7 +62,7 @@ TEST_CASE
 {
     std::pair<int, int> aNicePair( 1, 2 );
 
-    REQUIRE( (std::pair<int, int>( 1, 2 )) == aNicePair );    
+    REQUIRE( (std::pair<int, int>( 1, 2 )) == aNicePair );
 }
 #endif  // defined( INTERNAL_CATCH_COMPILER_IS_MSVC6 )
 
@@ -411,6 +411,9 @@ TEST_CASE( "non streamable - with conv. op", "" )
     REQUIRE( s == "7" );
 }
 
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+// NTS:this needs work in catch_tostring.hpp
+
 inline void foo() {}
 
 typedef void (*fooptr_t)();
@@ -432,6 +435,8 @@ TEST_CASE( "pointer to class", "" )
    ClassName *p = 0;
    REQUIRE( p != 0 );
 }
+
+#endif
 
 #ifdef CATCH_CONFIG_CPP11_NULLPTR
 

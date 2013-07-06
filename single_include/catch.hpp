@@ -1,6 +1,6 @@
 /*
  *  CATCH-VC6 v1.0 build 3 (master branch)
- *  Generated: 2013-07-06 16:00:57.036000
+ *  Generated: 2013-07-06 16:03:53.830000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -875,7 +875,8 @@ struct StringMaker :
 
 template<typename T>
 struct StringMaker<T*> {
-    static std::string convert( T const* p ) {
+	template<typename U>
+	static std::string convert( U* p ) {
         if( !p )
             return INTERNAL_CATCH_STRINGIFY( NULL );
         std::ostringstream oss;
@@ -6125,7 +6126,12 @@ namespace Catch { namespace Detail {
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+
+#ifdef __AFXDLL
+#include <AfxWin.h>
+#else
 #include <windows.h>
+#endif
 
 namespace Catch {
 namespace {
