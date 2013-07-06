@@ -1,6 +1,6 @@
 /*
  *  CATCH-VC6 v1.0 build 1 (master branch)
- *  Generated: 2013-07-06 00:35:12.493000
+ *  Generated: 2013-07-06 13:04:19.627000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -125,6 +125,8 @@
 #endif
 
 #endif
+
+#define CATCH_DIMENSION_OF( a ) ( sizeof(a) / sizeof(0[a]) )
 
 #ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 namespace std {
@@ -1599,19 +1601,17 @@ namespace Catch {
 namespace Catch {
 
     struct Counts {
-        Counts() : passed( 0 ), failed( 0 ), info( 0 ) {}
+        Counts() : passed( 0 ), failed( 0 ) {}
 
         Counts operator - ( Counts const& other ) const {
             Counts diff;
             diff.passed = passed - other.passed;
             diff.failed = failed - other.failed;
-            diff.info = info - other.info;
             return diff;
         }
         Counts& operator += ( Counts const& other ) {
             passed += other.passed;
             failed += other.failed;
-            info += other.info;
             return *this;
         }
 
@@ -1621,7 +1621,6 @@ namespace Catch {
 
         std::size_t passed;
         std::size_t failed;
-        std::size_t info;
     };
 
     struct Totals {
@@ -4150,6 +4149,17 @@ namespace Clara {
         BoundArgFunction<C> makeBoundField( void (C::*_member)( M ) ) {
             return BoundArgFunction<C>( new BoundUnaryMethod<C,M>( _member ) );
         }
+
+#ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
+        template<typename C>
+        BoundArgFunction<C> makeBoundField( void (C::*_member)() ) {
+            return BoundArgFunction<C>( new BoundNullaryMethod<C>( _member ) );
+        }
+        template<typename C>
+        BoundArgFunction<C> makeBoundField( void (*_function)( C& ) ) {
+            return BoundArgFunction<C>( new BoundUnaryFunction<C>( _function ) );
+        }
+#else
         template<typename C, typename U>
         BoundArgFunction<C> makeBoundField( void (C::*_member)(), U u=U() ) {
             return BoundArgFunction<C>( new BoundNullaryMethod<C>( _member ) );
@@ -4158,6 +4168,7 @@ namespace Clara {
         BoundArgFunction<C> makeBoundField( void (*_function)( C& ), U u=U() ) {
             return BoundArgFunction<C>( new BoundUnaryFunction<C>( _function ) );
         }
+#endif
         template<typename C, typename T>
         BoundArgFunction<C> makeBoundField( void (*_function)( C&, T ) ) {
             return BoundArgFunction<C>( new BoundBinaryFunction<C, T>( _function ) );
@@ -4279,7 +4290,7 @@ namespace Clara {
 
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             template<typename F>
-            ArgBinder( CommandLine<ConfigT>* cl, F f )
+            ArgBinder( CommandLine* cl, F f )
             :   m_cl( cl ),
                 m_arg( Detail::makeBoundField( f ) )
             {}
@@ -5571,9 +5582,9 @@ namespace Catch {
         }
 
         void showHelp( std::string const& processName ) {
-            std::cout << "\nCatch v"    << libraryVersion.majorVersion << "."
-                                        << libraryVersion.minorVersion << " build "
-                                        << libraryVersion.buildNumber;
+            std::cout << "\nCatch-VC6 v" << libraryVersion.majorVersion << "."
+                                         << libraryVersion.minorVersion << " build "
+                                         << libraryVersion.buildNumber;
             if( libraryVersion.branchName != "master" )
                 std::cout << " (" << libraryVersion.branchName << " branch)";
             std::cout << "\n";

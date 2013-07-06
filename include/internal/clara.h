@@ -347,7 +347,7 @@ namespace Clara {
 
 #ifndef INTERNAL_CATCH_COMPILER_IS_MSVC6
             template<typename F>
-            ArgBinder( CommandLine<ConfigT>* cl, F f )
+            ArgBinder( CommandLine* cl, F f )
             :   m_cl( cl ),
                 m_arg( Detail::makeBoundField( f ) )
             {}
