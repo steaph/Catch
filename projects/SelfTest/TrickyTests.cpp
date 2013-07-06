@@ -428,15 +428,15 @@ TEST_CASE( "Comparing function pointers", "[function pointer]" )
     REQUIRE( a == &foo );
 }
 
+#endif
+
 class ClassName {};
 
 TEST_CASE( "pointer to class", "" )
 {
    ClassName *p = 0;
-   REQUIRE( p != 0 );
+   REQUIRE( p == 0 );
 }
-
-#endif
 
 #ifdef CATCH_CONFIG_CPP11_NULLPTR
 
@@ -449,3 +449,8 @@ TEST_CASE( "null_ptr", "" )
 }
 
 #endif
+
+TEST_CASE( "X/level/0/a", "" ) { SUCCEED(""); }
+TEST_CASE( "X/level/0/b", "[fizz]" ) { SUCCEED(""); }
+TEST_CASE( "X/level/1/a", "" ) { SUCCEED(""); }
+TEST_CASE( "X/level/1/b", "" ) { SUCCEED("");}
