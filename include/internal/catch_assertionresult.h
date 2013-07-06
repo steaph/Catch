@@ -41,7 +41,7 @@ namespace Catch {
         AssertionResult();
         AssertionResult( AssertionInfo const& info, AssertionResultData const& data );
         ~AssertionResult();
-        
+
         bool isOk() const;
         bool succeeded() const;
         ResultWas::OfType getResultType() const;

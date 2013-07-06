@@ -58,7 +58,7 @@ namespace Catch {
         T* operator->() const { return m_p; }
         bool operator !() const { return m_p == NULL; }
         operator SafeBool::type() const { return SafeBool::makeSafe( m_p != NULL ); }
-        
+
     private:
         T* m_p;
     };

@@ -124,7 +124,7 @@ namespace Catch {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    
+
     AutoReg::AutoReg(   TestFunction function,
                         SourceLineInfo const& lineInfo,
                         NameAndDesc const& nameAndDesc ) {

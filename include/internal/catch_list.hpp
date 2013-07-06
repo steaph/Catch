@@ -67,7 +67,7 @@ namespace Catch {
                                         .setWidth( maxTagLen )
                                         .setInitialIndent(0)
                                         .setIndent( 2 ) );
-                
+
                 for( std::size_t i = 0; i < (std::max)( nameWrapper.size(), tagsWrapper.size() ); ++i ) {
                     Colour::Code colour = Colour::None;
                     if( it->getTestCaseInfo().isHidden )
@@ -166,7 +166,7 @@ namespace Catch {
         std::size_t maxNameLen = 0;
         for(it = itBegin; it != itEnd; ++it )
             maxNameLen = (std::max)( maxNameLen, it->first.size() );
-    
+
         for(it = itBegin; it != itEnd; ++it ) {
             Text wrapper( it->second->getDescription(), TextAttributes()
                                                         .setInitialIndent( 0 )
