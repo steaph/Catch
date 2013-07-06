@@ -1,6 +1,6 @@
 /*
- *  CATCH-VC6 v1.0 build 3 (master branch)
- *  Generated: 2013-07-06 16:03:53.830000
+ *  CATCH-VC6 v1.0 build 4 (master branch)
+ *  Generated: 2013-07-06 16:16:53
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -6616,7 +6616,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 1, 0, 3, "master" );
+    Version libraryVersion( 1, 0, 4, "master" );
 }
 
 // #included from: catch_text.hpp
