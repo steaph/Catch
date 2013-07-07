@@ -22,12 +22,6 @@
 #endif
 #endif
 
-#ifdef __GNUC__
-#define CATCH_ATTRIBUTE_NORETURN __attribute__ ((noreturn))
-#else
-#define CATCH_ATTRIBUTE_NORETURN
-#endif
-
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
