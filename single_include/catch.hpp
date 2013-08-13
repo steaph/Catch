@@ -1,6 +1,6 @@
 /*
  *  CATCH-VC6 v1.0 build 5 (master branch)
- *  Generated: 2013-07-06 16:44:00.961000
+ *  Generated: 2013-08-13 19:56:41.234000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -39,12 +39,6 @@
 #if ( _MSC_VER >= 1200 ) && ( _MSC_VER < 1300 )
 #define INTERNAL_CATCH_COMPILER_IS_MSVC6
 #endif
-#endif
-
-#ifdef __GNUC__
-#define CATCH_ATTRIBUTE_NORETURN __attribute__ ((noreturn))
-#else
-#define CATCH_ATTRIBUTE_NORETURN
 #endif
 
 #include <sstream>
@@ -3803,7 +3797,8 @@ namespace Catch {
                 Equals( NSString* substr ) : StringHolder( substr ){}
 
                 virtual bool match( ExpressionType const& str ) const {
-                    return [str isEqualToString:m_substr];
+                    return  (str != nil || m_substr == nil ) &&
+                            [str isEqualToString:m_substr];
                 }
 
                 virtual std::string toString() const {
@@ -3815,7 +3810,8 @@ namespace Catch {
                 Contains( NSString* substr ) : StringHolder( substr ){}
 
                 virtual bool match( ExpressionType const& str ) const {
-                    return [str rangeOfString:m_substr].location != NSNotFound;
+                    return  (str != nil || m_substr == nil ) &&
+                            [str rangeOfString:m_substr].location != NSNotFound;
                 }
 
                 virtual std::string toString() const {
@@ -3827,7 +3823,8 @@ namespace Catch {
                 StartsWith( NSString* substr ) : StringHolder( substr ){}
 
                 virtual bool match( ExpressionType const& str ) const {
-                    return [str rangeOfString:m_substr].location == 0;
+                    return  (str != nil || m_substr == nil ) &&
+                            [str rangeOfString:m_substr].location == 0;
                 }
 
                 virtual std::string toString() const {
@@ -3838,7 +3835,8 @@ namespace Catch {
                 EndsWith( NSString* substr ) : StringHolder( substr ){}
 
                 virtual bool match( ExpressionType const& str ) const {
-                    return [str rangeOfString:m_substr].location == [str length] - [m_substr length];
+                    return  (str != nil || m_substr == nil ) &&
+                            [str rangeOfString:m_substr].location == [str length] - [m_substr length];
                 }
 
                 virtual std::string toString() const {
@@ -5398,6 +5396,8 @@ namespace Catch {
                 exResult << translateActiveException();
                 actOnCurrentResult( exResult.buildResult( m_lastAssertionInfo )  );
             }
+            // If sections ended prematurely due to an exception we stored their
+            // infos here so we can tear them down outside the unwind process.
             for( std::vector<UnfinishedSections>::const_iterator it = m_unfinishedSections.begin(),
                         itEnd = m_unfinishedSections.end();
                     it != itEnd;
@@ -6064,8 +6064,8 @@ namespace Catch {
             std::map<std::string, IGeneratorsForTest*>::const_iterator it =
             m_generatorsByTestName.find( testName );
             return it != m_generatorsByTestName.end()
-            ? it->second
-            : NULL;
+                ? it->second
+                : NULL;
         }
 
         IGeneratorsForTest& getGeneratorsForCurrentTest() {
@@ -8053,7 +8053,7 @@ namespace Catch {
             stream  << "\n" << getTildes() << "\n";
             Colour colour( Colour::SecondaryText );
             stream  << testRunInfo->name
-                    << " is a Catch v"  << libraryVersion.majorVersion << "."
+                    << " is a Catch-VC6 v"  << libraryVersion.majorVersion << "."
                     << libraryVersion.minorVersion << " b"
                     << libraryVersion.buildNumber;
             if( libraryVersion.branchName != "master" )
