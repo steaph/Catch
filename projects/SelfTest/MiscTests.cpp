@@ -333,21 +333,11 @@ TEST_CASE( "vectors can be sized and resized", "[vector]" ) {
 }
 
 // https://github.com/philsquared/Catch/issues/166
-//TEST_CASE("CatchSectionInfiniteLoop", "")
-//{
-//    SECTION("Outer", "")
-//        SECTION("Inner", "")
-//            SUCCEED("that's not flying - that's failing in style");
-//
-//    FAIL("to infinity and beyond");
-//}
-
-ANON_TEST_CASE()
+TEST_CASE("./failing/CatchSectionInfiniteLoop", "")
 {
-	REQUIRE( 1 == 1 );
-}
+    SECTION("Outer", "")
+        SECTION("Inner", "")
+            SUCCEED("that's not flying - that's failing in style");
 
-ANON_TEST_CASE()
-{
-	REQUIRE( 2 == 2 );
+    FAIL("to infinity and beyond");
 }

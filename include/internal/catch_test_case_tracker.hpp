@@ -28,8 +28,13 @@ namespace SectionTracking {
         };
 
         TrackedSection( std::string const& name, TrackedSection* parent )
-        :   m_name( name ), m_runState( NotStarted ), m_parent( parent )
+        : m_name( name ), m_runState( NotStarted ), m_children( * new TrackedSections() ), m_parent( parent )
         {}
+        
+        // Note: TrackedSection is used via Option<> (catch_option.hpp) in 
+        //       catch_runner_impl.h and  possibly destructed there, so do not 
+        //       destruct it here (again).
+        // ~TrackedSection() { delete m_children; }
 
         RunState runState() const { return m_runState; }
 
@@ -57,11 +62,14 @@ namespace SectionTracking {
         TrackedSection* getParent() {
             return m_parent;
         }
+        bool hasChildren() const {
+            return !m_children.empty();
+        }
 
     private:
         std::string m_name;
         RunState m_runState;
-        TrackedSections m_children;
+        TrackedSections& m_children;
         TrackedSection* m_parent;
         
     };
@@ -98,6 +106,9 @@ namespace SectionTracking {
             m_completedASectionThisRun = true;
         }
 
+        bool currentSectinHasChildren() const {
+            return m_currentSection->hasChildren();
+        }
 
     private:
         TrackedSection* m_currentSection;
@@ -109,11 +120,11 @@ namespace SectionTracking {
 
         TestCaseTracker( std::string const& testCaseName )
         :   m_testCase( testCaseName, NULL ),
-            sections( m_testCase )
+            m_sections( m_testCase )
         {}
 
         void enter() {
-            sections = SectionTracker( m_testCase );
+            m_sections = SectionTracker( m_testCase );
             m_testCase.enter();
         }
         void leave() {
@@ -121,19 +132,23 @@ namespace SectionTracking {
         }
 
         bool enterSection( std::string const& name ) {
-            return sections.enterSection( name );
+            return m_sections.enterSection( name );
         }
         void leaveSection() {
-            sections.leaveSection();
+            m_sections.leaveSection();
         }
         
         bool isCompleted() const {
             return m_testCase.runState() == TrackedSection::Completed;
         }
 
+        bool currentSectionHasChildren() const {
+            return m_sections.currentSectinHasChildren();
+        }
+
     private:
         TrackedSection m_testCase;
-        SectionTracker sections;
+        SectionTracker m_sections;
     };
 
 } // namespace SectionTracking
