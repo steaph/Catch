@@ -87,7 +87,7 @@ class Version:
 		f = open( readmePath, 'w' )
 		for line in lines:
 			if line.startswith( "*CATCH-VC6 v" ):
-				f.write( '*CATCH-VC6 v{0}.{1} build {2} ({3} branch)\n'.format( self.majorVersion, self.minorVersion, self.buildNumber, self.branchName ) )
+				f.write( '*CATCH-VC6 v{0}.{1} build {2} ({3} branch)*\n'.format( self.majorVersion, self.minorVersion, self.buildNumber, self.branchName ) )
 			else:
 				f.write( line + "\n" )
 
