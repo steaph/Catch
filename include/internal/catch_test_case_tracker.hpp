@@ -127,7 +127,7 @@ namespace SectionTracking {
             TestCaseTracker& m_tracker;
         };
 
-    private:
+    public: // VC6
         void enterTestCase() {
             m_currentSection = &m_testCase;
             m_completedASectionThisRun = false;
@@ -137,6 +137,7 @@ namespace SectionTracking {
             m_testCase.leave();
         }
 
+    private:
         TrackedSection m_testCase;
         TrackedSection* m_currentSection;
         bool m_completedASectionThisRun;
