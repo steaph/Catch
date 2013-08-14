@@ -1,6 +1,6 @@
 /*
  *  CATCH-VC6 v1.0 build 6 (master branch)
- *  Generated: 2013-08-14 20:27:18.207000
+ *  Generated: 2013-08-14 20:34:29.407000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -5047,6 +5047,8 @@ namespace SectionTracking {
                 m_tracker.leaveTestCase();
             }
         private:
+            Guard( Guard const& );
+            void operator = ( Guard const& );
             TestCaseTracker& m_tracker;
         };
 

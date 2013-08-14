@@ -124,6 +124,8 @@ namespace SectionTracking {
                 m_tracker.leaveTestCase();
             }
         private:
+            Guard( Guard const& );
+            void operator = ( Guard const& );
             TestCaseTracker& m_tracker;
         };
 
