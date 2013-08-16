@@ -13,7 +13,7 @@
 #pragma clang diagnostic ignored "-Wc++11-long-long"
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <sys/time.h>
