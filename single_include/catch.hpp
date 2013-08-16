@@ -1,6 +1,6 @@
 /*
  *  CATCH-VC6 v1.0 build 8 (master branch)
- *  Generated: 2013-08-16 23:08:37.229000
+ *  Generated: 2013-08-16 23:18:05.616000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -1698,11 +1698,14 @@ namespace Catch {
 
 #include <iostream>
 
+// #included from: catch_platform.h
+#define TWOBLUECUBES_CATCH_PLATFORM_H_INCLUDED
+
 #if defined(__MAC_OS_X_VERSION_MIN_REQUIRED)
 #define CATCH_PLATFORM_MAC
 #elif  defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
 #define CATCH_PLATFORM_IPHONE
-#elif defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER)
+#elif defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER)
 #define CATCH_PLATFORM_WINDOWS
 #endif
 
@@ -3183,7 +3186,7 @@ struct TestFailureException{};
 // #included from: catch_timer.h
 #define TWOBLUECUBES_CATCH_TIMER_H_INCLUDED
 
-#ifdef _WIN32
+#ifdef CATCH_PLATFORM_WINDOWS
 # ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 typedef signed   __int64 int64_t;
 typedef unsigned __int64 uint64_t;
@@ -6965,7 +6968,7 @@ namespace Catch
 #pragma clang diagnostic ignored "-Wc++11-long-long"
 #endif
 
-#ifdef _WIN32
+#ifdef CATCH_PLATFORM_WINDOWS
 #include <windows.h>
 #else
 #include <sys/time.h>
@@ -6974,7 +6977,7 @@ namespace Catch
 namespace Catch {
 
     namespace {
-#ifdef _WIN32
+#ifdef CATCH_PLATFORM_WINDOWS
         uint64_t getCurrentTicks() {
             static uint64_t hz=0, hzo=0;
             if (!hz) {
