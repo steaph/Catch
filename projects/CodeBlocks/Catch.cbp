@@ -101,7 +101,6 @@
 		<Unit filename="../../include/internal/catch_version.hpp" />
 		<Unit filename="../../include/internal/catch_xmlwriter.hpp" />
 		<Unit filename="../../include/internal/clara.h" />
-		<Unit filename="../../include/reporters/catch_reporter_basic.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_console.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_junit.hpp" />
 		<Unit filename="../../include/reporters/catch_reporter_xml.hpp" />
