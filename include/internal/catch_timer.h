@@ -8,7 +8,9 @@
 #ifndef TWOBLUECUBES_CATCH_TIMER_H_INCLUDED
 #define TWOBLUECUBES_CATCH_TIMER_H_INCLUDED
 
-#ifdef _WIN32
+#include "catch_platform.h"
+
+#ifdef CATCH_PLATFORM_WINDOWS
 # ifdef INTERNAL_CATCH_COMPILER_IS_MSVC6
 typedef signed   __int64 int64_t;
 typedef unsigned __int64 uint64_t;
