@@ -20,7 +20,7 @@
 #include <string>
 #include <ostream>
 #include <map>
-#include <assert.h> 
+#include <assert.h>
 
 namespace Catch
 {
