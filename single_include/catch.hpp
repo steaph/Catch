@@ -1,6 +1,6 @@
 /*
- *  CATCH-VC6 v1.0 build 7 (master branch)
- *  Generated: 2013-08-16 13:58:20.729000
+ *  CATCH-VC6 v1.0 build 8 (master branch)
+ *  Generated: 2013-08-16 23:08:37.229000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -4165,12 +4165,12 @@ namespace Clara {
         inline void convertInto( std::string const& _source, bool& _dest ) {
             std::string sourceLC = _source;
             std::transform( sourceLC.begin(), sourceLC.end(), sourceLC.begin(), ::tolower );
-            if( sourceLC == "1" || sourceLC == "true" || sourceLC == "yes" || sourceLC == "on" )
+            if( sourceLC == "y" || sourceLC == "1" || sourceLC == "true" || sourceLC == "yes" || sourceLC == "on" )
                 _dest = true;
-            else if( sourceLC == "0" || sourceLC == "false" || sourceLC == "no" || sourceLC == "off" )
+            else if( sourceLC == "n" || sourceLC == "0" || sourceLC == "false" || sourceLC == "no" || sourceLC == "off" )
                 _dest = false;
             else
-                throw std::runtime_error( "Expected a boolean value but did recognise: '" + _source + "'" );
+                throw std::runtime_error( "Expected a boolean value but did not recognise:\n  '" + _source + "'" );
         }
         inline void convertInto( bool _source, bool& _dest ) {
             _dest = _source;
@@ -4399,7 +4399,7 @@ namespace Clara {
                 return _longName == longName;
             }
             bool takesArg() const {
-                return !argName.empty();
+                return !hint.empty();
             }
             bool isFixedPositional() const {
                 return position != -1;
@@ -4434,8 +4434,8 @@ namespace Clara {
                         oss << ", ";
                     oss << "--" << longName;
                 }
-                if( !argName.empty() )
-                    oss << " <" << argName << ">";
+                if( !hint.empty() )
+                    oss << " <" << hint << ">";
                 return oss.str();
             }
 
@@ -4443,7 +4443,7 @@ namespace Clara {
             std::vector<std::string> shortNames;
             std::string longName;
             std::string description;
-            std::string argName;
+            std::string hint;
             int position;
         };
 
@@ -4526,8 +4526,8 @@ namespace Clara {
                 m_arg.description = description;
                 return *this;
             }
-            ArgBinder& argName( std::string const& argName ) {
-                m_arg.argName = argName;
+            ArgBinder& hint( std::string const& hint ) {
+                m_arg.hint = hint;
                 return *this;
             }
             ArgBinder& position( int position ) {
@@ -4602,9 +4602,9 @@ namespace Clara {
                     os << " ";
                 typename std::map<int, Arg>::const_iterator it = m_positionalArgs.find( i );
                 if( it != m_positionalArgs.end() )
-                    os << "<" << it->second.argName << ">";
+                    os << "<" << it->second.hint << ">";
                 else if( m_arg.get() )
-                    os << "<" << m_arg->argName << ">";
+                    os << "<" << m_arg->hint << ">";
                 else
                     throw std::logic_error( "non consecutive positional arguments with no floating args" );
             }
@@ -4612,7 +4612,7 @@ namespace Clara {
             if( m_arg.get() ) {
                 if( m_highestSpecifiedArgPosition > 1 )
                     os << " ";
-                os << "[<" << m_arg->argName << "> ...]";
+                os << "[<" << m_arg->hint << "> ...]";
             }
         }
         std::string argSynopsis() const {
@@ -4681,7 +4681,7 @@ namespace Clara {
                         }
                     }
                     catch( std::exception& ex ) {
-                        throw std::runtime_error( std::string( ex.what() ) + " while parsing: (" + arg.commands() + ")" );
+                        throw std::runtime_error( std::string( ex.what() ) + "\n- while parsing: (" + arg.commands() + ")" );
                     }
                 }
                 if( it == itEnd )
@@ -4800,20 +4800,20 @@ namespace Catch {
             .describe( "output filename" )
             .shortOpt( "o")
             .longOpt( "out" )
-            .argName( "filename" );
+            .hint( "filename" );
 
         cli.bind( &ConfigData::reporterName )
             .describe( "reporter to use - defaults to console" )
             .shortOpt( "r")
             .longOpt( "reporter" )
-//            .argName( "name[:filename]" );
-            .argName( "name" );
+//            .hint( "name[:filename]" );
+            .hint( "name" );
 
         cli.bind( &ConfigData::name )
             .describe( "suite name" )
             .shortOpt( "n")
             .longOpt( "name" )
-            .argName( "name" );
+            .hint( "name" );
 
         cli.bind( &abortAfterFirst )
             .describe( "abort at first failure" )
@@ -4824,29 +4824,29 @@ namespace Catch {
             .describe( "abort after x failures" )
             .shortOpt( "x")
             .longOpt( "abortx" )
-            .argName( "number of failures" );
+            .hint( "number of failures" );
 
         cli.bind( &addWarning )
             .describe( "enable warnings" )
             .shortOpt( "w")
             .longOpt( "warn" )
-            .argName( "warning name" );
+            .hint( "warning name" );
 
 //        cli.bind( &setVerbosity )
 //            .describe( "level of verbosity (0=no output)" )
 //            .shortOpt( "v")
 //            .longOpt( "verbosity" )
-//            .argName( "level" );
+//            .hint( "level" );
 
         cli.bind( &addTestOrTags )
             .describe( "which test or tests to use" )
-            .argName( "test name, pattern or tags" );
+            .hint( "test name, pattern or tags" );
 
         cli.bind( &setShowDurations )
             .describe( "show test durations" )
             .shortOpt( "d")
             .longOpt( "durations" )
-            .argName( "durations" );
+            .hint( "yes/no" );
 
         return cli;
     }
@@ -5721,11 +5721,12 @@ namespace Catch {
                 m_config.reset();
             }
             catch( std::exception& ex ) {
-                std::cerr   << "\nError in input:\n"
-                            << Text( ex.what(), TextAttributes()
-                                                    .setInitialIndent(2)
-                                                    .setIndent(4) )
-                            << "\n\n";
+                {
+                    Colour colourGuard( Colour::Red );
+                    std::cerr   << "\nError in input:\n"
+                                << Text( ex.what(), TextAttributes().setIndent(2) )
+                                << "\n\n";
+                }
                 m_cli.usage( std::cout, m_configData.processName );
                 return (std::numeric_limits<int>::max)();
             }
@@ -6738,7 +6739,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 1, 0, 7, "master" );
+    Version libraryVersion( 1, 0, 8, "master" );
 }
 
 // #included from: catch_text.hpp
@@ -7011,8 +7012,8 @@ namespace Catch {
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-// #included from: ../reporters/catch_reporter_basic.hpp
-#define TWOBLUECUBES_CATCH_REPORTER_BASIC_HPP_INCLUDED
+// #included from: ../reporters/catch_reporter_xml.hpp
+#define TWOBLUECUBES_CATCH_REPORTER_XML_HPP_INCLUDED
 
 // #included from: ../internal/catch_reporter_registrars.hpp
 #define TWOBLUECUBES_CATCH_REPORTER_REGISTRARS_HPP_INCLUDED
@@ -7023,7 +7024,6 @@ namespace Catch {
     class LegacyReporterRegistrar {
 
         class ReporterFactory : public IReporterFactory {
-
             virtual IStreamingReporter* create( ReporterConfig const& config ) const {
                 return new LegacyReporterAdapter( new T( config ) );
             }
@@ -7077,346 +7077,6 @@ namespace Catch {
     Catch::LegacyReporterRegistrar<reporterType> catch_internal_RegistrarFor##reporterType( name );
 #define INTERNAL_CATCH_REGISTER_REPORTER( name, reporterType ) \
     Catch::ReporterRegistrar<reporterType> catch_internal_RegistrarFor##reporterType( name );
-
-namespace Catch {
-
-    class BasicReporter : public SharedImpl<IReporter> {
-
-        struct SpanInfo {
-
-            SpanInfo()
-            :   emitted( false )
-            {}
-
-            SpanInfo( const std::string& spanName )
-            :   name( spanName ),
-                emitted( false )
-            {}
-
-            SpanInfo( const SpanInfo& other )
-            :   name( other.name ),
-                emitted( other.emitted )
-            {}
-
-            std::string name;
-            bool emitted;
-        };
-
-    public:
-        BasicReporter( const ReporterConfig& config )
-        :   m_config( config ),
-            m_firstSectionInTestCase( true ),
-            m_aborted( false )
-        {}
-
-        virtual ~BasicReporter();
-
-        static std::string getDescription() {
-            return "Reports test results as lines of text";
-        }
-
-    private:
-
-        void ReportCounts( const std::string& label, const Counts& counts, const std::string& allPrefix = "All " ) {
-            if( counts.passed )
-                m_config.stream() << counts.failed << " of " << counts.total() << " " << label << "s failed";
-            else
-                m_config.stream() << ( counts.failed > 1 ? allPrefix : "" ) << pluralise( counts.failed, label ) << " failed";
-        }
-
-        void ReportCounts( const Totals& totals, const std::string& allPrefix = "All " ) {
-            if( totals.assertions.total() == 0 ) {
-                m_config.stream() << "No tests ran";
-            }
-            else if( totals.assertions.failed ) {
-                Colour colour( Colour::ResultError );
-                ReportCounts( "test case", totals.testCases, allPrefix );
-                if( totals.testCases.failed > 0 ) {
-                    m_config.stream() << " (";
-                    ReportCounts( "assertion", totals.assertions, allPrefix );
-                    m_config.stream() << ")";
-                }
-            }
-            else {
-                Colour colour( Colour::ResultSuccess );
-                m_config.stream()   << allPrefix << "tests passed ("
-                                    << pluralise( totals.assertions.passed, "assertion" ) << " in "
-                                    << pluralise( totals.testCases.passed, "test case" ) << ")";
-            }
-        }
-
-    private: // IReporter
-
-        virtual bool shouldRedirectStdout() const {
-            return false;
-        }
-
-        virtual void StartTesting() {
-            m_testingSpan = SpanInfo();
-        }
-
-        virtual void Aborted() {
-            m_aborted = true;
-        }
-
-        virtual void EndTesting( const Totals& totals ) {
-            // Output the overall test results even if "Started Testing" was not emitted
-            if( m_aborted ) {
-                m_config.stream() << "\n[Testing aborted. ";
-                ReportCounts( totals, "The first " );
-            }
-            else {
-                m_config.stream() << "\n[Testing completed. ";
-                ReportCounts( totals );
-            }
-            m_config.stream() << "]\n" << std::endl;
-        }
-
-        virtual void StartGroup( const std::string& groupName ) {
-            m_groupSpan = groupName;
-        }
-
-        virtual void EndGroup( const std::string& groupName, const Totals& totals ) {
-            if( m_groupSpan.emitted && !groupName.empty() ) {
-                m_config.stream() << "[End of group: '" << groupName << "'. ";
-                ReportCounts( totals );
-                m_config.stream() << "]\n" << std::endl;
-                m_groupSpan = SpanInfo();
-            }
-        }
-
-        virtual void StartTestCase( const TestCaseInfo& testInfo ) {
-            m_testSpan = testInfo.name;
-        }
-
-        virtual void StartSection( const std::string& sectionName, const std::string& ) {
-            m_sectionSpans.push_back( SpanInfo( sectionName ) );
-        }
-
-        virtual void NoAssertionsInSection( const std::string& sectionName ) {
-            startSpansLazily();
-            Colour colour( Colour::ResultError );
-            m_config.stream() << "\nNo assertions in section, '" << sectionName << "'\n" << std::endl;
-        }
-        virtual void NoAssertionsInTestCase( const std::string& testName ) {
-            startSpansLazily();
-            Colour colour( Colour::ResultError );
-            m_config.stream() << "\nNo assertions in test case, '" << testName << "'\n" << std::endl;
-        }
-
-        virtual void EndSection( const std::string& sectionName, const Counts& assertions ) {
-
-            SpanInfo& sectionSpan = m_sectionSpans.back();
-            if( sectionSpan.emitted && !sectionSpan.name.empty() ) {
-                m_config.stream() << "[End of section: '" << sectionName << "' ";
-
-                if( assertions.failed ) {
-                    Colour colour( Colour::ResultError );
-                    ReportCounts( "assertion", assertions);
-                }
-                else {
-                    Colour colour( Colour::ResultSuccess );
-                    m_config.stream()   << ( assertions.passed > 1 ? "All " : "" )
-                                        << pluralise( assertions.passed, "assertion" ) << " passed" ;
-                }
-                m_config.stream() << "]\n" << std::endl;
-            }
-            m_sectionSpans.pop_back();
-        }
-
-        virtual void Result( const AssertionResult& assertionResult ) {
-            if( !m_config.fullConfig()->includeSuccessfulResults() && assertionResult.getResultType() == ResultWas::Ok )
-                return;
-
-            startSpansLazily();
-
-            if( !assertionResult.getSourceInfo().empty() ) {
-                Colour colour( Colour::FileName );
-                m_config.stream() << assertionResult.getSourceInfo() << ": ";
-            }
-
-            if( assertionResult.hasExpression() ) {
-                Colour colour( Colour::OriginalExpression );
-                m_config.stream() << assertionResult.getExpression();
-                if( assertionResult.succeeded() ) {
-                    Colour successColour( Colour::Success );
-                    m_config.stream() << " succeeded";
-                }
-                else {
-                    Colour errorColour( Colour::Error );
-                    m_config.stream() << " failed";
-                    if( assertionResult.isOk() ) {
-                        Colour okAnywayColour( Colour::Success );
-                        m_config.stream() << " - but was ok";
-                    }
-                }
-            }
-            switch( assertionResult.getResultType() ) {
-                case ResultWas::ThrewException:
-                    {
-                        Colour colour( Colour::Error );
-                        if( assertionResult.hasExpression() )
-                            m_config.stream() << " with unexpected";
-                        else
-                            m_config.stream() << "Unexpected";
-                        m_config.stream() << " exception with message: '" << assertionResult.getMessage() << "'";
-                    }
-                    break;
-                case ResultWas::DidntThrowException:
-                    {
-                        Colour colour( Colour::Error );
-                        if( assertionResult.hasExpression() )
-                            m_config.stream() << " because no exception was thrown where one was expected";
-                        else
-                            m_config.stream() << "No exception thrown where one was expected";
-                    }
-                    break;
-                case ResultWas::Info:
-                    {
-                        Colour colour( Colour::ReconstructedExpression );
-                        streamVariableLengthText( "info", assertionResult.getMessage() );
-                    }
-                    break;
-                case ResultWas::Warning:
-                    {
-                        Colour colour( Colour::ReconstructedExpression );
-                        streamVariableLengthText( "warning", assertionResult.getMessage() );
-                    }
-                    break;
-                case ResultWas::ExplicitFailure:
-                    {
-                        Colour colour( Colour::Error );
-                        m_config.stream() << "failed with message: '" << assertionResult.getMessage() << "'";
-                    }
-                    break;
-                case ResultWas::Unknown: // These cases are here to prevent compiler warnings
-                case ResultWas::Ok:
-                case ResultWas::FailureBit:
-                case ResultWas::ExpressionFailed:
-                case ResultWas::Exception:
-                    if( !assertionResult.hasExpression() ) {
-                        if( assertionResult.succeeded() ) {
-                            Colour colour( Colour::Success );
-                            m_config.stream() << " succeeded";
-                        }
-                        else {
-                            Colour colour( Colour::Error );
-                            m_config.stream() << " failed";
-                            if( assertionResult.isOk() ) {
-                                Colour okAnywayColour( Colour::Success );
-                                m_config.stream() << " - but was ok";
-                            }
-                        }
-                    }
-                    if( assertionResult.hasMessage() ) {
-                        m_config.stream() << "\n";
-                        Colour colour( Colour::ReconstructedExpression );
-                        streamVariableLengthText( "with message", assertionResult.getMessage() );
-                    }
-                    break;
-            }
-
-            if( assertionResult.hasExpandedExpression() ) {
-                m_config.stream() << " for: ";
-                if( assertionResult.getExpandedExpression().size() > 40 ) {
-                    m_config.stream() << "\n";
-                    if( assertionResult.getExpandedExpression().size() < 70 )
-                        m_config.stream() << "\t";
-                }
-                Colour colour( Colour::ReconstructedExpression );
-                m_config.stream() << assertionResult.getExpandedExpression();
-            }
-            m_config.stream() << std::endl;
-        }
-
-        virtual void EndTestCase(   const TestCaseInfo& testInfo,
-                                    const Totals& totals,
-                                    const std::string& stdOut,
-                                    const std::string& stdErr ) {
-            if( !stdOut.empty() ) {
-                startSpansLazily();
-                streamVariableLengthText( "stdout", stdOut );
-            }
-
-            if( !stdErr.empty() ) {
-                startSpansLazily();
-                streamVariableLengthText( "stderr", stdErr );
-            }
-
-            if( m_testSpan.emitted ) {
-                m_config.stream() << "[Finished: '" << testInfo.name << "' ";
-                ReportCounts( totals );
-                m_config.stream() << "]" << std::endl;
-            }
-        }
-
-    private: // helpers
-
-        void startSpansLazily() {
-            if( !m_testingSpan.emitted ) {
-                if( m_config.fullConfig()->name().empty() )
-                    m_config.stream() << "[Started testing]" << std::endl;
-                else
-                    m_config.stream() << "[Started testing: " << m_config.fullConfig()->name() << "]" << std::endl;
-                m_testingSpan.emitted = true;
-            }
-
-            if( !m_groupSpan.emitted && !m_groupSpan.name.empty() ) {
-                m_config.stream() << "[Started group: '" << m_groupSpan.name << "']" << std::endl;
-                m_groupSpan.emitted = true;
-            }
-
-            if( !m_testSpan.emitted ) {
-                m_config.stream() << std::endl << "[Running: " << m_testSpan.name << "]" << std::endl;
-                m_testSpan.emitted = true;
-            }
-
-            if( !m_sectionSpans.empty() ) {
-                SpanInfo& sectionSpan = m_sectionSpans.back();
-                if( !sectionSpan.emitted && !sectionSpan.name.empty() ) {
-                    if( m_firstSectionInTestCase ) {
-                        m_config.stream() << "\n";
-                        m_firstSectionInTestCase = false;
-                    }
-                    std::vector<SpanInfo>::iterator it = m_sectionSpans.begin();
-                    std::vector<SpanInfo>::iterator itEnd = m_sectionSpans.end();
-                    for(; it != itEnd; ++it ) {
-                        SpanInfo& prevSpan = *it;
-                        if( !prevSpan.emitted && !prevSpan.name.empty() ) {
-                            m_config.stream() << "[Started section: '" << prevSpan.name << "']" << std::endl;
-                            prevSpan.emitted = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        void streamVariableLengthText( const std::string& prefix, const std::string& text ) {
-            std::string trimmed = trim( text );
-            if( trimmed.find_first_of( "\r\n" ) == std::string::npos ) {
-                m_config.stream() << "[" << prefix << ": " << trimmed << "]";
-            }
-            else {
-                m_config.stream() << "\n[" << prefix << "] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n" << trimmed
-                << "\n[end of " << prefix << "] <<<<<<<<<<<<<<<<<<<<<<<<\n";
-            }
-        }
-
-    private:
-        ReporterConfig m_config;
-        bool m_firstSectionInTestCase;
-
-        SpanInfo m_testingSpan;
-        SpanInfo m_groupSpan;
-        SpanInfo m_testSpan;
-        std::vector<SpanInfo> m_sectionSpans;
-        bool m_aborted;
-    };
-
-} // end namespace Catch
-
-// #included from: ../reporters/catch_reporter_xml.hpp
-#define TWOBLUECUBES_CATCH_REPORTER_XML_HPP_INCLUDED
 
 // #included from: ../internal/catch_xmlwriter.hpp
 #define TWOBLUECUBES_CATCH_XMLWRITER_HPP_INCLUDED
@@ -8029,9 +7689,11 @@ namespace Catch {
                     stream << "\nNo assertions in test case";
                 stream << " '" << _sectionStats.sectionInfo.name << "'\n" << std::endl;
             }
-            m_headerPrinted = false;
-            if( m_config->showDurations() == ShowDurations::Always )
-                stream << "Completed in " << _sectionStats.durationInSeconds << "s" << std::endl;
+            if( m_headerPrinted ) {
+                if( m_config->showDurations() == ShowDurations::Always )
+                    stream << "Completed in " << _sectionStats.durationInSeconds << "s" << std::endl;
+                m_headerPrinted = false;
+            }
             StreamingReporterBase::sectionEnded( _sectionStats );
         }
 
@@ -8373,7 +8035,6 @@ namespace Catch {
     CumulativeReporterBase::SectionNode::~SectionNode() {}
     CumulativeReporterBase::~CumulativeReporterBase() {}
 
-    BasicReporter::~BasicReporter() {}
     StreamingReporterBase::~StreamingReporterBase() {}
     ConsoleReporter::~ConsoleReporter() {}
     IRunner::~IRunner() {}
@@ -8396,7 +8057,6 @@ namespace Catch {
 
     void Config::dummy() {}
 
-    INTERNAL_CATCH_REGISTER_LEGACY_REPORTER( "basic", BasicReporter )
     INTERNAL_CATCH_REGISTER_LEGACY_REPORTER( "xml", XmlReporter )
 }
 
