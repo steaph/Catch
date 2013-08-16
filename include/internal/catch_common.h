@@ -137,7 +137,9 @@ namespace Catch {
         bool empty() const {
             return file.empty();
         }
-
+        bool operator == ( SourceLineInfo const& other ) const {
+            return line == other.line && file == other.file;
+        }
         std::string file;
         std::size_t line;
     };
