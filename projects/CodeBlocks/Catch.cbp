@@ -93,6 +93,8 @@
 		<Unit filename="../../include/internal/catch_test_spec.h" />
 		<Unit filename="../../include/internal/catch_text.h" />
 		<Unit filename="../../include/internal/catch_text.hpp" />
+		<Unit filename="../../include/internal/catch_timer.h" />
+		<Unit filename="../../include/internal/catch_timer.hpp" />
 		<Unit filename="../../include/internal/catch_tostring.hpp" />
 		<Unit filename="../../include/internal/catch_totals.hpp" />
 		<Unit filename="../../include/internal/catch_version.h" />
@@ -121,6 +123,7 @@
 		<Unit filename="../SelfTest/MessageTests.cpp" />
 		<Unit filename="../SelfTest/MiscTests.cpp" />
 		<Unit filename="../SelfTest/PointerTests.cpp" />
+		<Unit filename="../SelfTest/SectionTrackerTests.cpp" />
 		<Unit filename="../SelfTest/SurrogateCpps/catch_common.cpp" />
 		<Unit filename="../SelfTest/SurrogateCpps/catch_console_colour.cpp" />
 		<Unit filename="../SelfTest/SurrogateCpps/catch_debugger.cpp" />
