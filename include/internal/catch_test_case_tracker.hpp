@@ -8,6 +8,8 @@
 #ifndef TWOBLUECUBES_CATCH_TEST_CASE_TRACKER_HPP_INCLUDED
 #define TWOBLUECUBES_CATCH_TEST_CASE_TRACKER_HPP_INCLUDED
 
+#include "catch_ptr.hpp"
+
 #include <map>
 #include <string>
 #include <assert.h>
@@ -28,21 +30,16 @@ namespace SectionTracking {
         };
 
         TrackedSection( std::string const& name, TrackedSection* parent )
-        : m_name( name ), m_runState( NotStarted ), m_children( * new TrackedSections() ), m_parent( parent )
+        : m_name( name ), m_runState( NotStarted ), m_children( new TrackedSections() ), m_parent( parent )
         {}
-        
-        // Note: TrackedSection is used via Option<> (catch_option.hpp) in 
-        //       catch_runner_impl.h and  possibly destructed there, so do not 
-        //       destruct it here (again).
-        // ~TrackedSection() { delete m_children; }
 
         RunState runState() const { return m_runState; }
 
         void addChild( std::string const& childName ) {
-            m_children.insert( std::make_pair( childName, TrackedSection( childName, this ) ) );
+            m_children->insert( std::make_pair( childName, TrackedSection( childName, this ) ) );
         }
         TrackedSection* getChild( std::string const& childName ) {
-            return &m_children.find( childName )->second;
+            return &m_children->find( childName )->second;
         }
 
         void enter() {
@@ -50,7 +47,7 @@ namespace SectionTracking {
                 m_runState = Executing;
         }
         void leave() {
-            for( TrackedSections::const_iterator it = m_children.begin(), itEnd = m_children.end();
+            for( TrackedSections::const_iterator it = m_children->begin(), itEnd = m_children->end();
                     it != itEnd;
                     ++it )
                 if( it->second.runState() != Completed ) {
@@ -63,15 +60,16 @@ namespace SectionTracking {
             return m_parent;
         }
         bool hasChildren() const {
-            return !m_children.empty();
+            return !m_children->empty();
         }
 
     private:
         std::string m_name;
         RunState m_runState;
-        TrackedSections& m_children;
+        // smart pointer to prevent 'incomplete type' error with VC6
+        SharedPtr<TrackedSections> m_children;
         TrackedSection* m_parent;
-        
+
     };
 
     class TestCaseTracker {
