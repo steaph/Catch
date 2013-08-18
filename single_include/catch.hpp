@@ -1,6 +1,6 @@
 /*
  *  CATCH-VC6 v1.0 build 8 (master branch)
- *  Generated: 2013-08-16 23:18:05.616000
+ *  Generated: 2013-08-18 23:09:39.074000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -385,6 +385,76 @@ namespace Catch {
         }
 
         mutable unsigned int m_rc;
+    };
+
+    // SharedPtr added for CATCH-VC6; see C++11 interface.
+    template <typename T>
+    class SharedPtr
+    {
+    public:
+        typedef T element_type;
+
+        explicit SharedPtr( T * const ptr )
+        : m_ptr( ptr ), m_count( new long( 1 ) )
+        {}
+
+        SharedPtr( SharedPtr const & other )
+        : m_ptr( other.m_ptr ), m_count( other.m_count )
+        {
+            addRef();
+        }
+
+        ~SharedPtr()
+        {
+            release();
+        }
+
+        SharedPtr& operator=( SharedPtr other )
+        {
+            other.swap( *this );
+            return *this;
+        }
+
+        void reset( T * const ptr )
+        {
+            SharedPtr p( ptr );
+            p.swap( *this );
+        }
+
+        void swap( SharedPtr & other )
+        {
+            using std::swap;
+            swap( m_ptr = other.m_ptr );
+            swap( m_count = other.m_ptr );
+        }
+
+        T * get() const { return m_ptr; }
+        T * operator->() const { return m_ptr; }
+        T & operator*() const { return *m_ptr; }
+
+        long use_count() const { return m_count ? *m_count : 0; }
+
+        operator SafeBool::type() const { return SafeBool::makeSafe( get() != NULL ); }
+
+    private:
+        void addRef()
+        {
+            if ( m_count )
+                ++*m_count;
+        }
+
+        void release()
+        {
+            if( m_count && 0 == *--m_count )
+            {
+                delete m_ptr; m_ptr = 0;
+                delete m_count; m_count = 0;
+            }
+        }
+
+    private:
+        T * m_ptr;
+        long * m_count;
     };
 
 } // end namespace Catch
@@ -5124,21 +5194,16 @@ namespace SectionTracking {
         };
 
         TrackedSection( std::string const& name, TrackedSection* parent )
-        : m_name( name ), m_runState( NotStarted ), m_children( * new TrackedSections() ), m_parent( parent )
+        : m_name( name ), m_runState( NotStarted ), m_children( new TrackedSections() ), m_parent( parent )
         {}
-
-        // Note: TrackedSection is used via Option<> (catch_option.hpp) in
-        //       catch_runner_impl.h and  possibly destructed there, so do not
-        //       destruct it here (again).
-        // ~TrackedSection() { delete m_children; }
 
         RunState runState() const { return m_runState; }
 
         void addChild( std::string const& childName ) {
-            m_children.insert( std::make_pair( childName, TrackedSection( childName, this ) ) );
+            m_children->insert( std::make_pair( childName, TrackedSection( childName, this ) ) );
         }
         TrackedSection* getChild( std::string const& childName ) {
-            return &m_children.find( childName )->second;
+            return &m_children->find( childName )->second;
         }
 
         void enter() {
@@ -5146,7 +5211,7 @@ namespace SectionTracking {
                 m_runState = Executing;
         }
         void leave() {
-            for( TrackedSections::const_iterator it = m_children.begin(), itEnd = m_children.end();
+            for( TrackedSections::const_iterator it = m_children->begin(), itEnd = m_children->end();
                     it != itEnd;
                     ++it )
                 if( it->second.runState() != Completed ) {
@@ -5159,13 +5224,14 @@ namespace SectionTracking {
             return m_parent;
         }
         bool hasChildren() const {
-            return !m_children.empty();
+            return !m_children->empty();
         }
 
     private:
         std::string m_name;
         RunState m_runState;
-        TrackedSections& m_children;
+        // smart pointer to prevent 'incomplete type' error with VC6
+        SharedPtr<TrackedSections> m_children;
         TrackedSection* m_parent;
 
     };
