@@ -8,7 +8,7 @@
 #ifndef TWOBLUECUBES_CATCH_TEST_CASE_TRACKER_HPP_INCLUDED
 #define TWOBLUECUBES_CATCH_TEST_CASE_TRACKER_HPP_INCLUDED
 
-#include "catch_ptr.hpp"
+#include "catch_shared_ptr.hpp"
 
 #include <map>
 #include <string>
