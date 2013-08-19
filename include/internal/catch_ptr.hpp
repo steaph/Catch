@@ -121,9 +121,8 @@ namespace Catch {
 
         void swap( SharedPtr & other )
         {
-            using std::swap;
-            swap( m_ptr = other.m_ptr );
-            swap( m_count = other.m_ptr );
+            std::swap( m_ptr, other.m_ptr );
+            std::swap( m_count, other.m_ptr );
         }
 
         T * get() const { return m_ptr; }
@@ -143,7 +142,7 @@ namespace Catch {
 
         void release()
         {
-            if( m_count && 0 == *--m_count )
+            if( m_count && 0 == --*m_count )
             {
                 delete m_ptr; m_ptr = 0;
                 delete m_count; m_count = 0;

@@ -1,6 +1,6 @@
 /*
  *  CATCH-VC6 v1.0 build 8 (master branch)
- *  Generated: 2013-08-18 23:09:39.074000
+ *  Generated: 2013-08-19 07:37:36.744000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -423,9 +423,8 @@ namespace Catch {
 
         void swap( SharedPtr & other )
         {
-            using std::swap;
-            swap( m_ptr = other.m_ptr );
-            swap( m_count = other.m_ptr );
+            std::swap( m_ptr, other.m_ptr );
+            std::swap( m_count, other.m_ptr );
         }
 
         T * get() const { return m_ptr; }
@@ -445,7 +444,7 @@ namespace Catch {
 
         void release()
         {
-            if( m_count && 0 == *--m_count )
+            if( m_count && 0 == --*m_count )
             {
                 delete m_ptr; m_ptr = 0;
                 delete m_count; m_count = 0;
