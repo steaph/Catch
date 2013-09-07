@@ -83,6 +83,7 @@
 		<Unit filename="../../include/internal/catch_section.hpp" />
 		<Unit filename="../../include/internal/catch_section_info.hpp" />
 		<Unit filename="../../include/internal/catch_sfinae.hpp" />
+		<Unit filename="../../include/internal/catch_shared_ptr.hpp" />
 		<Unit filename="../../include/internal/catch_stream.hpp" />
 		<Unit filename="../../include/internal/catch_streambuf.h" />
 		<Unit filename="../../include/internal/catch_tags.hpp" />
