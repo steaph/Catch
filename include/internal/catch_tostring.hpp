@@ -161,6 +161,9 @@ inline std::string toString( T const & value ) {
 #else // INTERNAL_CATCH_COMPILER_IS_MSVC6
 
 template<typename T>
+std::string toString( T const& value );
+
+template<typename T>
 struct StringMaker :
     Detail::StringMakerBase<Detail::IsStreamInsertable<T>::value> {};
 
