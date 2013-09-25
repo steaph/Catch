@@ -181,18 +181,7 @@ struct StringMaker<T*> {
 
 namespace Detail {
     template<typename InputIterator>
-    std::string rangeToString( InputIterator first, InputIterator last ) {
-        std::ostringstream oss;
-        oss << "{ ";
-        if( first != last ) {
-            oss << toString( *first );
-            for( ++first ; first != last ; ++first ) {
-                oss << ", " << toString( *first );
-            }
-        }
-        oss << " }";
-        return oss.str();
-    }
+    std::string rangeToString( InputIterator first, InputIterator last );
 }
 
 template<typename T, typename Allocator>
@@ -319,6 +308,22 @@ inline std::string toString( std::nullptr_t ) {
         return toString( [nsObject description] );
     }
 #endif
+
+    namespace Detail {
+    template<typename InputIterator>
+    std::string rangeToString( InputIterator first, InputIterator last ) {
+        std::ostringstream oss;
+        oss << "{ ";
+        if( first != last ) {
+            oss << toString( *first );
+            for( ++first ; first != last ; ++first ) {
+                oss << ", " << toString( *first );
+            }
+        }
+        oss << " }";
+        return oss.str();
+    }
+}
 
 } // end namespace Catch
 
