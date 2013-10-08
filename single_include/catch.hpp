@@ -1,6 +1,6 @@
 /*
  *  CATCH-VC6 v1.0 build 10 (master branch)
- *  Generated: 2013-09-25 23:04:08.923000
+ *  Generated: 2013-10-08 19:22:10.607000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -2018,9 +2018,10 @@ namespace Catch {
         }
 
         bool matches( std::set<std::string> const& tags ) const {
-            TagMap::const_iterator it = m_tags.begin();
-            TagMap::const_iterator itEnd = m_tags.end();
-            for(; it != itEnd; ++it ) {
+            for(    TagMap::const_iterator
+                        it = m_tags.begin(), itEnd = m_tags.end();
+                    it != itEnd;
+                    ++it ) {
                 bool found = tags.find( it->first ) != tags.end();
                 if( found == it->second.isNegated() )
                     return false;
@@ -2035,9 +2036,10 @@ namespace Catch {
     class TagExpression {
     public:
         bool matches( std::set<std::string> const& tags ) const {
-            std::vector<TagSet>::const_iterator it = m_tagSets.begin();
-            std::vector<TagSet>::const_iterator itEnd = m_tagSets.end();
-            for(; it != itEnd; ++it )
+            for(    std::vector<TagSet>::const_iterator
+                        it = m_tagSets.begin(), itEnd = m_tagSets.end();
+                    it != itEnd;
+                    ++it )
                 if( it->matches( tags ) )
                     return true;
             return false;
@@ -2070,6 +2072,7 @@ namespace Catch {
                     break;
                 case ',':
                     m_exp.m_tagSets.push_back( m_currentTagSet );
+                    m_currentTagSet = TagSet();
                     break;
             }
         }
@@ -4977,7 +4980,7 @@ namespace Catch {
                 matchedTests++;
                 Text nameWrapper(   it->getTestCaseInfo().name,
                                     TextAttributes()
-                                        .setWidth( maxNameLen )
+                                        .setWidth( maxNameLen+2 )
                                         .setInitialIndent(2)
                                         .setIndent(4) );
 
@@ -7175,9 +7178,9 @@ namespace Catch {
 }
 
 #define INTERNAL_CATCH_REGISTER_LEGACY_REPORTER( name, reporterType ) \
-    Catch::LegacyReporterRegistrar<reporterType> catch_internal_RegistrarFor##reporterType( name );
+    namespace{ Catch::LegacyReporterRegistrar<reporterType> catch_internal_RegistrarFor##reporterType( name ); }
 #define INTERNAL_CATCH_REGISTER_REPORTER( name, reporterType ) \
-    Catch::ReporterRegistrar<reporterType> catch_internal_RegistrarFor##reporterType( name );
+    namespace{ Catch::ReporterRegistrar<reporterType> catch_internal_RegistrarFor##reporterType( name ); }
 
 // #included from: ../internal/catch_xmlwriter.hpp
 #define TWOBLUECUBES_CATCH_XMLWRITER_HPP_INCLUDED
