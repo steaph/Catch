@@ -296,7 +296,7 @@ int getArgc( ArgvT const & argv ) {
     return CATCH_DIMENSION_OF( argv );
 }
 
-TEST_CASE( "selftest/tags", "" ) {
+TEST_CASE( "selftest/tags", "[tags]" ) {
 
     std::string p1 = "[one]";
     std::string p2 = "[one],[two]";
@@ -304,7 +304,7 @@ TEST_CASE( "selftest/tags", "" ) {
     std::string p4 = "[one][two],[three]";
     std::string p5 = "[one][two]~[.],[three]";
 
-    SECTION( "one tag", "" ) {
+    SECTION( "single [one] tag", "" ) {
         Catch::TestCase oneTag = Catch::makeTestCase( NULL, "", "test", "[one]", CATCH_INTERNAL_LINEINFO );
 
         CHECK( oneTag.getTestCaseInfo().description == "" );
@@ -312,6 +312,20 @@ TEST_CASE( "selftest/tags", "" ) {
         CHECK( oneTag.getTags().size() == 1 );
 
         CHECK( oneTag.matchesTags( p1 ) == true );
+        CHECK( oneTag.matchesTags( p2 ) == true );
+        CHECK( oneTag.matchesTags( p3 ) == false );
+        CHECK( oneTag.matchesTags( p4 ) == false );
+        CHECK( oneTag.matchesTags( p5 ) == false );
+    }
+
+    SECTION( "single [two] tag", "" ) {
+        Catch::TestCase oneTag = Catch::makeTestCase( NULL, "", "test", "[two]", CATCH_INTERNAL_LINEINFO );
+
+        CHECK( oneTag.getTestCaseInfo().description == "" );
+        CHECK( oneTag.hasTag( "two" ) );
+        CHECK( oneTag.getTags().size() == 1 );
+
+        CHECK( oneTag.matchesTags( p1 ) == false );
         CHECK( oneTag.matchesTags( p2 ) == true );
         CHECK( oneTag.matchesTags( p3 ) == false );
         CHECK( oneTag.matchesTags( p4 ) == false );
@@ -564,4 +578,16 @@ TEST_CASE( "Text can be formatted using the Text class", "" ) {
     narrow.setWidth( 6 );
 
     CHECK( Text( "hi there", narrow ).toString() == "hi\nthere" );
+}
+
+TEST_CASE( "Long text is truncted", "[Text][Truncated]" ) {
+
+    std::string longLine( 90, '*' );
+
+    std::ostringstream oss;
+    for(int i = 0; i < 600; ++i )
+        oss << longLine << longLine << "\n";
+    Text t( oss.str() );
+    CHECK_THAT( t.toString(), EndsWith( "... message truncated due to excessive size" ) );
+
 }
