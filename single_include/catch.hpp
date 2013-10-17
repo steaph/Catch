@@ -1,6 +1,6 @@
 /*
- *  CATCH-VC6 v1.0 build 10 (master branch)
- *  Generated: 2013-10-08 19:22:10.607000
+ *  CATCH-VC6 v1.0 build 11 (master branch)
+ *  Generated: 2013-10-18 00:04:24.014000
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -6843,7 +6843,7 @@ namespace Catch {
 namespace Catch {
 
     // These numbers are maintained by a script
-    Version libraryVersion( 1, 0, 10, "master" );
+    Version libraryVersion( 1, 0, 11, "master" );
 }
 
 // #included from: catch_text.hpp
@@ -6864,7 +6864,10 @@ namespace Catch {
         std::string remainder = _str;
 
         while( !remainder.empty() ) {
-            assert( lines.size() < 1000 );
+            if( lines.size() >= 1000 ) {
+                lines.push_back( "... message truncated due to excessive size" );
+                return;
+            }
             std::size_t tabPos = std::string::npos;
             std::size_t width = (std::min)( remainder.size(), _attr.width - indent );
             std::size_t pos = remainder.find_first_of( '\n' );
